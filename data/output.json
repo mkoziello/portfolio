@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "id": "contact",
+      "name": "Contact",
+      "color": "#7fb0ff",
+      "shape": "helix",
+      "type": "CAMERA"
+    }
+  ],
+  "note": "Reels, breakdowns and NDA-safe material on request.",
+  "cta": "Send a message"
+}

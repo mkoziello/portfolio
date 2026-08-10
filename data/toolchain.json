@@ -1,0 +1,121 @@
+{
+  "items": [
+    {
+      "id": "skills",
+      "name": "Capabilities",
+      "color": "#9ecb6b",
+      "shape": "sphere",
+      "type": "DATA"
+    },
+    {
+      "id": "software",
+      "name": "Software",
+      "color": "#9ecb6b",
+      "shape": "grid",
+      "type": "DATA"
+    }
+  ],
+  "skills": [
+    {
+      "group": "3D art & modeling",
+      "items": [
+        "3D Props",
+        "Environment Art",
+        "Hard-Surface",
+        "PBR Pipeline",
+        "Real-Time Pipeline",
+        "LOD Optimization"
+      ]
+    },
+    {
+      "group": "Texturing",
+      "items": [
+        "UV Unwrapping",
+        "Texture Painting",
+        "Trim Sheets & Atlases"
+      ]
+    },
+    {
+      "group": "Procedural generation",
+      "items": [
+        "Substance Designer",
+        "Geometry Nodes",
+        "Unity Procedural Tools"
+      ]
+    },
+    {
+      "group": "Rigging & animation",
+      "items": [
+        "Skinning",
+        "Rigging",
+        "Animation",
+        "IK Systems",
+        "Vertex Animation (VAT)"
+      ]
+    },
+    {
+      "group": "VFX & shading",
+      "items": [
+        "VFX",
+        "Shaders",
+        "Materials",
+        "HLSL"
+      ]
+    },
+    {
+      "group": "Performance",
+      "items": [
+        "Profiling",
+        "Optimization"
+      ]
+    },
+    {
+      "group": "Audio",
+      "items": [
+        "SFX Design",
+        "Music Production",
+        "Composition"
+      ]
+    },
+    {
+      "group": "Programming & tech",
+      "items": [
+        "Python",
+        "C#",
+        "JavaScript",
+        "Big Data",
+        "Look Development"
+      ]
+    }
+  ],
+  "software": [
+    {
+      "name": "Blender",
+      "use": "Modeling, geometry nodes, scene assembly"
+    },
+    {
+      "name": "ZBrush",
+      "use": "High-poly sculpting, organic detail"
+    },
+    {
+      "name": "Substance Designer",
+      "use": "Procedural materials, trim sheets"
+    },
+    {
+      "name": "Substance Painter",
+      "use": "Hand-painted PBR texturing"
+    },
+    {
+      "name": "JangaFX IlluGen",
+      "use": "Procedural VFX asset generation"
+    },
+    {
+        "name": "Unity",
+        "use": "Real-time implementation, VAT, lookdev"
+    },
+    {
+        "name": "Git/SVN",
+        "use": "Version control"
+    }
+  ]
+}

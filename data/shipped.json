@@ -1,0 +1,56 @@
+{
+  "items": [
+    {
+      "id": "copa",
+      "name": "Copa City",
+      "color": "#e87d0d",
+      "shape": "city",
+      "type": "MESH",
+      "studio": "Triple Espresso",
+      "genre": "Event-management sim",
+      "year": 2023,
+      "points": [
+        "Built 3D props, city buildings and landmark architecture for real-world stadiums and host cities",
+        "Authored crowd and character animation for tens of thousands of on-screen fans",
+        "Profiled, optimized and bug-hunted at city-wide simulation scale"
+      ]
+    },
+    {
+      "id": "snow",
+      "name": "Above the Snow",
+      "color": "#7fb0ff",
+      "shape": "peak",
+      "type": "MESH",
+      "studio": "Above the desk",
+      "genre": "Alpine resort sim",
+      "year": 2024,
+      "points": [
+        "Modeled props, lodge and resort buildings, and environment assets for a hand-drawn 1960s alpine setting",
+        "Handled character and prop animation",
+        "Owned lighting and lookdev, balancing cozy warmth against genuine survival stakes"
+      ]
+    },
+    {
+      "id": "warh",
+      "name": "War Hospital",
+      "color": "#b06a4a",
+      "shape": "grid",
+      "type": "MESH",
+      "studio": "Brave Lamb Studio / Nacon",
+      "genre": "WWI strategy",
+      "year": 2021,
+      "points": [
+        "Built 3D props, hospital and field buildings, and environment assets",
+        "Contributed animation work to ground a difficult subject in an authentic period setting"
+      ]
+    },
+    {
+      "id": "freelance",
+      "name": "Freelance & R&D",
+      "color": "#5c5c5c",
+      "shape": "grid",
+      "type": "HIDDEN",
+      "note": "Freelance and R&D work — 3D models, animation systems, VFX and shaders across multiple unannounced projects."
+    }
+  ]
+}

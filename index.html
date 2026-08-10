@@ -3,636 +3,884 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Michał Koziełło — CV</title>
-<meta name="description" content="Michał Koziełło — 3D Generalist &amp; Technical Artist. Six years across environment art, real-time shaders, and production pipelines.">
-<meta name="theme-color" content="#0d0907">
-
+<title>Michał Koziełło — VertexVoodoo Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ==========================================================================
-   TOKENS
-   ========================================================================== */
-:root{
-  --bg-dark:#0d0907;
-  --bg-dark-2:#170f0a;
-  --orange:#ff6b00;
-  --amber:#ffa033;
-  --teal:#3a8f88;
-  --cream:#f7ebd9;
-  --muted-dark:#c7b6a6;
-  --paper:#fbf7f2;
-  --ink:#241a12;
-  --ink-muted:#6f5f51;
-  --orange-ink:#c1500a;
-  --teal-ink:#276b64;
-  --rule-light:#e6dccd;
-
-  --skill-art:#ff6b00;      --skill-art-ink:#c1500a;
-  --skill-tex:#3a8f88;      --skill-tex-ink:#276b64;
-  --skill-proc:#ffa033;     --skill-proc-ink:#a06207;
-  --skill-rig:#d46a8c;      --skill-rig-ink:#a3436a;
-  --skill-vfx:#6a9bd4;      --skill-vfx-ink:#3f6ba8;
-  --skill-perf:#7dd46a;     --skill-perf-ink:#4a8f3a;
-  --skill-audio:#d45e5e;    --skill-audio-ink:#a83c3c;
-  --skill-code:#a970ff;     --skill-code-ink:#6b3fb0;
-
-  --font-display:'Bricolage Grotesque', system-ui, sans-serif;
-  --font-body:'Manrope', system-ui, sans-serif;
-  --font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-}
-
-/* ==========================================================================
-   RESET / BASE
-   ========================================================================== */
-*{box-sizing:border-box;margin:0;padding:0;}
-html{-webkit-font-smoothing:antialiased;scroll-snap-type:y proximity;scroll-behavior:smooth;}
-body{font-family:var(--font-body);line-height:1.5;overflow-x:hidden;}
-h1,h2,h3{font-family:var(--font-display);font-weight:700;}
-a{color:inherit;}
-ul{list-style:none;}
-button{font:inherit;background:none;border:none;cursor:pointer;color:inherit;}
-a:focus-visible,button:focus-visible{outline:2px solid var(--orange);outline-offset:3px;border-radius:3px;}
-
-@media (prefers-reduced-motion: reduce){
-  html{scroll-behavior:auto;}
-  *,*::before,*::after{transition-duration:.001ms !important;animation-duration:.001ms !important;}
-}
-
-.skip-link{position:absolute;left:-999px;top:0;background:var(--orange);color:#fff;padding:.6rem 1rem;z-index:200;border-radius:0 0 6px 0;}
-.skip-link:focus{left:0;}
-
-/* ==========================================================================
-   SECTIONS / THEMES
-   ========================================================================== */
-.section{
-  min-height:100vh;
-  scroll-snap-align:start;
-  display:flex;
-  align-items:center;
-  padding:clamp(2.2rem,6vw,4rem) clamp(1.3rem,7vw,6rem);
-  position:relative;
-}
-.section-inner{max-width:880px;margin:0 auto;width:100%;}
-
-.theme-dark{background:var(--bg-dark);color:var(--cream);}
-.theme-dark-alt{background:var(--bg-dark-2);color:var(--cream);}
-.theme-light{background:var(--paper);color:var(--ink);}
-
-.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;font-weight:600;margin-bottom:1rem;display:block;}
-.theme-dark .eyebrow,.theme-dark-alt .eyebrow{color:var(--amber);}
-.theme-light .eyebrow{color:var(--orange-ink);}
-
-.section-title{font-size:clamp(1.7rem,3.6vw,2.5rem);line-height:1.15;margin-bottom:2.2rem;max-width:20ch;text-wrap:balance;}
-
-/* reveal-on-scroll */
-.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease, transform .7s ease;}
-.reveal.in-view{opacity:1;transform:translateY(0);}
-
-/* ==========================================================================
-   SIGNATURE — checker mark, reused as brand + nav
-   ========================================================================== */
-.checker{display:grid;grid-template-columns:repeat(3,10px);grid-template-rows:repeat(3,10px);gap:2px;width:max-content;}
-.checker span{display:block;}
-.checker span:nth-child(1),.checker span:nth-child(4){background:var(--teal);}
-.checker span:nth-child(2),.checker span:nth-child(3){background:var(--orange);}
-    .checker span:nth-child(3), .checker span:nth-child(3) {
-        background: var(--teal);
-    }
-
-.mini-brand{
-  position:fixed;top:1.4rem;left:1.4rem;z-index:100;
-  display:flex;align-items:center;gap:.6rem;
-  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.06em;color:var(--cream);
-  opacity:0;transform:translateY(-8px);pointer-events:none;
-  transition:opacity .4s ease, transform .4s ease;
-  background:rgba(13,9,7,.55);backdrop-filter:blur(6px);
-  padding:.5rem .8rem;border-radius:999px;
-}
-.mini-brand.visible{opacity:1;transform:translateY(0);pointer-events:auto;}
-.mini-brand .checker span{width:6px;height:6px;}
-.mini-brand .checker{grid-template-columns:repeat(2,6px);grid-template-rows:repeat(2,6px);}
-
-/* ==========================================================================
-   SIDE NAV — checker-dot wayfinding / progress
-   ========================================================================== */
-.side-nav{
-  position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
-  z-index:100;display:flex;flex-direction:column;gap:1.1rem;
-}
-.nav-dot{padding:.3rem;border-radius:6px;opacity:.4;transition:opacity .3s ease, transform .3s ease;}
-.nav-dot .checker{grid-template-columns:repeat(2,7px);grid-template-rows:repeat(2,7px);gap:1.5px;}
-.nav-dot .checker span{width:7px;height:7px;border-radius:1px;}
-.nav-dot:hover{opacity:.75;}
-.nav-dot.active{opacity:1;transform:scale(1.25);}
-
-@media (max-width:820px){
-  .side-nav{
-    right:50%;top:auto;bottom:1rem;transform:translateX(50%);
-    flex-direction:row;gap:.7rem;
-    background:rgba(13,9,7,.5);backdrop-filter:blur(6px);
-    padding:.5rem .7rem;border-radius:999px;
+  :root{
+    --bg:#151515; --panel:#232323; --head:#2e2e2e; --edge:#111;
+    --line:#3a3a3a; --txt:#cfcfcf; --dim:#8a8a8a;
+    --acc:#e87d0d;       /* active / highlight */
+    --sel:#4772b3;       /* selection blue */
+    --grn:#5ba85b;
+    --vp1:#1d2026; --vp2:#0e1014;
   }
-  .nav-dot.active{transform:scale(1.15);}
-  .mini-brand{display:none;}
-}
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
+    font-family:Inter,system-ui,sans-serif;font-size:12px;-webkit-font-smoothing:antialiased;
+    -webkit-user-select:none;user-select:none;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;}
+  :focus-visible{outline:1px solid var(--acc);outline-offset:-1px;}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#484848;border-radius:5px;border:2px solid var(--panel)}
 
-/* ==========================================================================
-   HERO
-   ========================================================================== */
-#hero{padding-top:6rem;}
-.hero-checker{margin-bottom:1.8rem;}
-.hero-checker .checker{grid-template-columns:repeat(2,13px);grid-template-rows:repeat(2,13px);gap:3px;}
-.hero-title{font-size:clamp(2.6rem,8vw,5rem);line-height:1.04;color:var(--cream);margin-bottom:.7rem;text-wrap:balance;}
-.hero-role{font-family:var(--font-mono);font-size:clamp(.72rem,1.6vw,.9rem);letter-spacing:.14em;color:var(--amber);font-weight:600;margin-bottom:1.8rem;}
-.hero-bio{font-size:1.05rem;line-height:1.75;color:var(--muted-dark);max-width:58ch;margin-bottom:2.2rem;}
-.hero-stats{display:flex;gap:2.4rem;margin-bottom:1.8rem;flex-wrap:wrap;}
-.stat-num{font-family:var(--font-display);font-weight:700;font-size:2rem;color:var(--amber);line-height:1;display:block;}
-.stat-label{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;color:var(--muted-dark);display:block;margin-top:.3rem;}
-.availability-pill{
-  display:inline-flex;align-items:center;gap:.55rem;
-  border:1px solid rgba(58,143,136,.55);border-radius:999px;
-  padding:.5rem 1.1rem;font-size:.82rem;color:var(--cream);
-}
-.availability-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;}
-@media (prefers-reduced-motion:no-preference){
-  .availability-dot{animation:pulse 2.4s ease-in-out infinite;}
-}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  #app{display:grid;height:100%;
+    grid-template-rows:26px 1fr 62px 20px;
+    grid-template-columns:216px 1fr 300px;
+    grid-template-areas:"menu menu menu" "out vp props" "time time time" "stat stat stat";
+    gap:2px;padding:2px;background:var(--edge);}
 
-.scroll-cue{
-  position:absolute;left:50%;bottom:2rem;transform:translateX(-50%);
-  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;color:var(--muted-dark);
-  display:flex;flex-direction:column;align-items:center;gap:.5rem;
-}
-.scroll-cue .arrow{width:1px;height:22px;background:linear-gradient(var(--teal),transparent);}
-@media (prefers-reduced-motion:no-preference){
-  .scroll-cue{animation:bob 2.4s ease-in-out infinite;}
-}
-@keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,6px);}}
+  /* ---------- menu ---------- */
+  #menu{grid-area:menu;background:var(--head);display:flex;align-items:center;gap:2px;padding:0 6px;position:relative;z-index:70;}
+  #menu .logo{display:flex;align-items:center;gap:7px;padding-right:10px;margin-right:4px;border-right:1px solid var(--line);}
+  #menu .logo svg{display:block;flex-shrink:0;}
+  #menu .logo b{font-size:11.5px;font-weight:600;letter-spacing:.01em;}
+  #menu .mnu{position:relative;}
+  #menu .mi{padding:4px 8px;border-radius:3px;color:var(--dim);font-size:11.5px;}
+  #menu .mi:hover{background:#3d3d3d;color:var(--txt);}
+  #menu .mnu.open .mi{background:#3d3d3d;color:var(--txt);}
+  #menu .sp{flex:1;}
+  #menu .badge{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);padding:0 6px;}
+  #menu .badge b{color:var(--grn);font-weight:500;}
 
-/* ==========================================================================
-   EXPERIENCE
-   ========================================================================== */
-.exp-list{display:flex;flex-direction:column;gap:2.1rem;}
-.exp-entry{border-top:1px solid var(--rule-light);padding-top:1.4rem;}
-.exp-entry:first-child{border-top:none;padding-top:0;}
-.exp-eyebrow{display:block;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.05em;color:var(--orange-ink);margin-bottom:.45rem;}
-.exp-title{font-size:1.25rem;color:var(--ink);margin-bottom:.6rem;}
-.exp-title a{text-decoration:none;border-bottom:1.5px solid var(--orange);}
-.exp-title a:hover{color:var(--orange-ink);}
-.exp-bullets li{position:relative;padding-left:1.05rem;font-size:.95rem;color:var(--ink-muted);line-height:1.65;margin-bottom:.4rem;}
-.exp-bullets li::before{content:'';position:absolute;left:0;top:.6em;width:5px;height:5px;background:var(--orange);}
+  /* ---------- menu dropdowns ---------- */
+  .dd{position:absolute;top:calc(100% + 2px);left:0;min-width:196px;background:#282828;
+    border:1px solid var(--line);box-shadow:0 10px 26px rgba(0,0,0,.45);padding:4px;display:none;z-index:80;}
+  .mnu.open .dd{display:block;}
+  .di{display:flex;align-items:center;gap:9px;width:100%;padding:6px 9px;border-radius:2px;
+    font-size:11.5px;color:var(--txt);text-align:left;}
+  .di:hover{background:var(--sel);color:#fff;}
+  .di .ck{width:10px;flex-shrink:0;color:var(--acc);font-size:10px;opacity:0;}
+  .di.checked .ck{opacity:1;}
+  .di:hover .ck{color:#fff;}
+  .di .lb{flex:1;}
+  .di .kx{color:var(--dim);font-size:10px;}
+  .di:hover .kx{color:#dfe4ec;}
+  .ddsep{height:1px;background:var(--line);margin:4px 3px;}
 
-/* ==========================================================================
-   PERSONAL PROJECTS
-   ========================================================================== */
-.proj-grid{display:flex;flex-direction:column;gap:1.9rem;}
-.proj-card{
-  border:1px solid rgba(58,143,136,.35);border-radius:14px;
-  padding:1.6rem 1.8rem;background:rgba(255,255,255,.02);
-  transition:border-color .25s ease, background .25s ease;
-}
-.proj-card:hover{border-color:var(--teal);background:rgba(58,143,136,.06);}
-.proj-eyebrow{display:block;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.05em;color:var(--teal);margin-bottom:.5rem;}
-.proj-title{font-size:1.18rem;color:var(--cream);margin-bottom:.5rem;}
-.proj-desc{font-size:.92rem;color:var(--muted-dark);line-height:1.65;max-width:58ch;margin-bottom:.7rem;}
-.proj-link{display:inline-flex;align-items:center;gap:.35rem;font-family:var(--font-mono);font-size:.75rem;color:var(--amber);text-decoration:none;}
-.proj-link:hover{color:var(--orange);}
+  /* ---------- boot / loading overlay ---------- */
+  #boot{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
+  #boot.gone{display:none;}
+  #boot-msg{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim);text-align:center;
+    max-width:440px;line-height:1.7;white-space:pre-line;}
+  #boot-msg .t{color:var(--txt);font-size:12.5px;letter-spacing:.05em;margin-bottom:10px;display:block;}
+  #boot-msg.err{color:#e0a79a;}
+  #boot-msg.err .t{color:#e0796f;}
+  #boot-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);display:inline-block;
+    margin-right:7px;animation:pulse 1.1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
 
-/* ==========================================================================
-   SKILLS
-   ========================================================================== */
-.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.7rem 2rem;}
-.skill-cat-title{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;font-weight:600;margin-bottom:.65rem;}
-.chip-row{display:flex;flex-wrap:wrap;gap:.5rem;}
-.chip{
-  border-radius:999px;padding:.38rem .82rem;font-size:.8rem;color:var(--ink);
-  border:1.4px solid;background:rgba(0,0,0,.02);transition:background .2s ease;
-}
-.skills-grid>div:nth-child(1) .skill-cat-title{color:var(--skill-art-ink);} .skills-grid>div:nth-child(1) .chip{border-color:var(--skill-art);} .skills-grid>div:nth-child(1) .chip:hover{background:rgba(255,107,0,.1);}
-.skills-grid>div:nth-child(2) .skill-cat-title{color:var(--skill-tex-ink);} .skills-grid>div:nth-child(2) .chip{border-color:var(--skill-tex);} .skills-grid>div:nth-child(2) .chip:hover{background:rgba(58,143,136,.1);}
-.skills-grid>div:nth-child(3) .skill-cat-title{color:var(--skill-proc-ink);} .skills-grid>div:nth-child(3) .chip{border-color:var(--skill-proc);} .skills-grid>div:nth-child(3) .chip:hover{background:rgba(255,160,51,.12);}
-.skills-grid>div:nth-child(4) .skill-cat-title{color:var(--skill-rig-ink);} .skills-grid>div:nth-child(4) .chip{border-color:var(--skill-rig);} .skills-grid>div:nth-child(4) .chip:hover{background:rgba(212,106,140,.1);}
-.skills-grid>div:nth-child(5) .skill-cat-title{color:var(--skill-vfx-ink);} .skills-grid>div:nth-child(5) .chip{border-color:var(--skill-vfx);} .skills-grid>div:nth-child(5) .chip:hover{background:rgba(106,155,212,.1);}
-.skills-grid>div:nth-child(6) .skill-cat-title{color:var(--skill-perf-ink);} .skills-grid>div:nth-child(6) .chip{border-color:var(--skill-perf);} .skills-grid>div:nth-child(6) .chip:hover{background:rgba(125,212,106,.12);}
-.skills-grid>div:nth-child(7) .skill-cat-title{color:var(--skill-audio-ink);} .skills-grid>div:nth-child(7) .chip{border-color:var(--skill-audio);} .skills-grid>div:nth-child(7) .chip:hover{background:rgba(212,94,94,.1);}
-.skills-grid>div:nth-child(8) .skill-cat-title{color:var(--skill-code-ink);} .skills-grid>div:nth-child(8) .chip{border-color:var(--skill-code);} .skills-grid>div:nth-child(8) .chip:hover{background:rgba(169,112,255,.12);}
+  /* ---------- outliner ---------- */
+  #out{grid-area:out;background:var(--panel);display:flex;flex-direction:column;min-height:0;}
+  .ph{background:var(--head);padding:5px 9px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .ph .k{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#666;margin-left:auto;}
+  #tree{flex:1;overflow-y:auto;padding:5px 0;}
+  .grp{margin-bottom:2px;}
+  .gh{display:flex;align-items:center;gap:6px;width:100%;padding:4px 9px;color:var(--dim);font-size:11.5px;text-align:left;}
+  .gh:hover{background:#2a2a2a;}
+  .gh .car{font-size:8px;transition:transform .18s;color:#777;}
+  .grp.closed .gh .car{transform:rotate(-90deg);}
+  .gh .cnt{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#666;}
+  .grp.closed .kids{display:none;}
+  .ob{display:flex;align-items:center;gap:7px;width:100%;padding:4px 9px 4px 26px;text-align:left;
+    font-size:11.5px;color:var(--txt);position:relative;}
+  .ob:hover{background:#2c2c2c;}
+  .ob.on{background:var(--sel);color:#fff;}
+  .ob .ic{width:11px;height:11px;flex-shrink:0;border-radius:2px;}
+  .ob .nm{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .ob .lock{margin-left:auto;font-size:9px;color:#777;}
+  .ob.on .lock{color:#cddcf5;}
 
-/* ==========================================================================
-   SOFTWARE
-   ========================================================================== */
-.software-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem 2.2rem;}
-.software-item{border-left:2px solid rgba(255,160,51,.4);padding-left:1rem;}
-.software-name{display:block;font-weight:600;font-size:.98rem;color:var(--cream);margin-bottom:.25rem;}
-.software-caption{display:block;font-size:.82rem;color:var(--muted-dark);line-height:1.5;}
+  /* ---------- viewport ---------- */
+  #vp{grid-area:vp;position:relative;overflow:hidden;background:var(--vp2);cursor:grab;}
+  #vp.drag{cursor:grabbing;}
+  #vp canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .ov{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:10px;pointer-events:none;color:#9aa4b4;}
+  #vp-head{top:0;left:0;right:0;height:24px;display:flex;align-items:center;gap:8px;padding:0 8px;
+    background:rgba(20,22,27,.72);border-bottom:1px solid rgba(255,255,255,.06);pointer-events:auto;}
+  #vp-head .mode{background:#3a3f4a;color:#dfe4ec;padding:2px 7px;border-radius:3px;font-size:10px;}
+  #vp-head .path{color:#7e8797;}
+  #vp-head .path b{color:var(--acc);font-weight:500;}
+  #vp-head .sp{flex:1;}
+  #vp-head button{color:#7e8797;padding:2px 6px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+  #vp-head button:hover{background:#3a3f4a;color:#dfe4ec;}
+  #vp-head button.on{color:var(--acc);}
+  #variants{display:none;gap:3px;margin-right:2px;}
+  #variants.show{display:flex;}
+  #variants button{width:18px;height:18px;padding:0;border-radius:3px;background:rgba(255,255,255,.07);
+    color:#8b95a5;font-size:9.5px;font-family:'IBM Plex Mono',monospace;display:grid;place-items:center;
+    border:1px solid transparent;}
+  #variants button:hover{background:rgba(255,255,255,.14);color:#dfe4ec;}
+  #variants button.on{background:var(--acc);color:#1a1004;border-color:var(--acc);}
+  #vp-stats{top:32px;left:10px;line-height:1.65;color:#7e8797;}
+  #vp-stats b{color:#b9c2d0;font-weight:500;}
+  #vp-hint{bottom:10px;left:10px;color:#5e6674;}
+  #gizmo{position:absolute;top:32px;right:12px;width:66px;height:66px;pointer-events:none;}
 
-/* ==========================================================================
-   CONTACT
-   ========================================================================== */
-.contact-lede{font-size:clamp(1.6rem,3.4vw,2.3rem);line-height:1.2;margin-bottom:1.6rem;max-width:18ch;text-wrap:balance;}
-.contact-note{font-size:.92rem;color:var(--ink-muted);line-height:1.6;max-width:52ch;margin-bottom:2.2rem;}
-.cta-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:2.6rem;}
-.btn-primary{
-  display:inline-flex;align-items:center;gap:.5rem;
-  background:var(--orange);color:#fff;font-weight:600;font-size:.95rem;
-  padding:.85rem 1.5rem;border-radius:10px;text-decoration:none;
-  transition:transform .2s ease, background .2s ease;
-}
-.btn-primary:hover{background:var(--orange-ink);transform:translateY(-2px);}
-.btn-ghost{
-  display:inline-flex;align-items:center;gap:.5rem;
-  border:1.5px solid var(--ink);color:var(--ink);font-weight:600;font-size:.95rem;
-  padding:.85rem 1.5rem;border-radius:10px;background:none;
-  transition:background .2s ease, transform .2s ease;
-}
-.btn-ghost:hover{background:rgba(36,26,18,.06);transform:translateY(-2px);}
-.contact-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.3rem 2rem;margin-bottom:2.2rem;}
-.contact-label{display:block;font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;color:var(--teal-ink);margin-bottom:.2rem;}
-.contact-value{display:inline-block;font-size:.92rem;color:var(--ink);text-decoration:none;}
-.contact-value:hover{color:var(--orange-ink);}
-.footer-note{font-family:var(--font-mono);font-size:.66rem;color:var(--ink-muted);opacity:.7;}
+  /* ---------- properties ---------- */
+  #props{grid-area:props;background:var(--panel);display:flex;flex-direction:column;min-height:0;}
+  #pbody{flex:1;overflow-y:auto;}
+  .pnl{border-bottom:1px solid var(--edge);}
+  .pnl .pt{display:flex;align-items:center;gap:6px;width:100%;padding:6px 10px;background:#292929;
+    font-size:11px;font-weight:600;color:#bdbdbd;text-align:left;}
+  .pnl .pt:hover{background:#333;}
+  .pnl .pt .car{font-size:8px;color:#777;transition:transform .18s;}
+  .pnl.closed .pt .car{transform:rotate(-90deg);}
+  .pnl.closed .pc{display:none;}
+  .pc{padding:9px 10px 12px;}
+  .fld{display:flex;gap:8px;align-items:flex-start;margin-bottom:5px;}
+  .fld .fl{width:82px;flex-shrink:0;color:var(--dim);font-size:11px;padding-top:3px;}
+  .fld .fv{flex:1;background:#1b1b1b;border:1px solid #383838;border-radius:3px;padding:3px 7px;
+    font-size:11.5px;color:#e0e0e0;min-height:22px;line-height:1.45;word-break:break-word;}
+  .fld .fv.a{color:var(--acc);}
+  .fld a{color:#7fb0ff;text-decoration:none;}
+  .fld a:hover{text-decoration:underline;}
+  .note{font-size:11.5px;line-height:1.65;color:#b0b0b0;}
+  .note p{margin:0 0 9px;}
+  .bul{list-style:none;margin:0;padding:0;}
+  .bul li{position:relative;padding:5px 0 5px 15px;font-size:11.5px;line-height:1.6;color:#b8b8b8;
+    border-bottom:1px solid #2b2b2b;}
+  .bul li:last-child{border-bottom:none;}
+  .bul li::before{content:'';position:absolute;left:2px;top:11px;width:5px;height:5px;
+    background:var(--acc);transform:rotate(45deg);}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;}
+  .chip{background:#333;border:1px solid #444;border-radius:3px;padding:3px 7px;font-size:10.5px;color:#c8c8c8;}
+  .chip:hover{border-color:var(--acc);color:var(--acc);}
+  .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px;}
+  .cta{display:block;width:100%;margin-top:8px;padding:8px;text-align:center;background:var(--acc);
+    color:#1a1004;font-weight:600;font-size:11.5px;border-radius:3px;text-decoration:none;}
+  .cta:hover{filter:brightness(1.12);}
+  .tabs{display:flex;background:#1e1e1e;border-bottom:1px solid var(--edge);flex-shrink:0;}
+  .tabs button{flex:1;padding:6px 4px;font-size:10.5px;color:var(--dim);border-bottom:2px solid transparent;}
+  .tabs button.on{color:#fff;border-bottom-color:var(--acc);background:var(--panel);}
 
-.toast{
-  position:fixed;left:50%;bottom:2rem;transform:translateX(-50%) translateY(20px);
-  background:var(--ink);color:var(--paper);font-size:.82rem;
-  padding:.7rem 1.1rem;border-radius:8px;opacity:0;pointer-events:none;
-  transition:opacity .3s ease, transform .3s ease;z-index:200;
-}
-.toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
+  /* ---------- timeline ---------- */
+  #time{grid-area:time;background:var(--panel);display:flex;flex-direction:column;min-height:0;}
+  #track{flex:1;position:relative;margin:0 14px;}
+  #axis{position:absolute;left:0;right:0;top:50%;height:1px;background:#3d3d3d;}
+  .yr{position:absolute;top:calc(50% + 9px);transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;color:#6d6d6d;}
+  .yr i{position:absolute;left:50%;top:-13px;width:1px;height:6px;background:#3d3d3d;}
+  .kf{position:absolute;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:11px;height:11px;
+    background:#4a4a4a;border:1px solid #666;transition:background .2s,transform .25s,border-color .2s;}
+  .kf:hover{background:#7a7a7a;transform:translate(-50%,-50%) rotate(45deg) scale(1.25);}
+  .kf.on{background:var(--acc);border-color:#ffb968;transform:translate(-50%,-50%) rotate(45deg) scale(1.3);}
+  .kf .lb{position:absolute;left:50%;top:-24px;transform:translate(-50%,0) rotate(-45deg);white-space:nowrap;
+    font-size:10px;color:#9b9b9b;pointer-events:none;}
+  .kf.on .lb{color:var(--acc);}
+  #play{position:absolute;top:6px;bottom:6px;width:1px;background:var(--acc);transition:left .45s cubic-bezier(.3,.9,.3,1);}
+  #play::before{content:'';position:absolute;top:-1px;left:-5px;width:11px;height:7px;background:var(--acc);border-radius:2px;}
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
-@media (max-width:640px){
-  .section{padding:5rem 1.3rem 3.5rem;}
-  .hero-stats{gap:1.6rem;}
-  .cta-row{flex-direction:column;}
-  .btn-primary,.btn-ghost{justify-content:center;}
-}
+  /* ---------- status ---------- */
+  #stat{grid-area:stat;background:var(--head);display:flex;align-items:center;gap:14px;padding:0 9px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);}
+  #stat .sp{flex:1;}
+  #stat b{color:#b9b9b9;font-weight:500;}
+  #stat .dot{width:6px;height:6px;border-radius:50%;background:var(--grn);display:inline-block;margin-right:5px;}
 
-/* ==========================================================================
-   PRINT
-   ========================================================================== */
-@media print{
-  .side-nav,.mini-brand,.scroll-cue,.skip-link{display:none;}
-  html{scroll-snap-type:none;}
-  body{background:#fff;color:#241a12;}
-  .section{min-height:0;display:block;padding:14px 18px;break-inside:avoid;}
-  .theme-dark,.theme-dark-alt{background:#fff;color:#241a12;}
-  .theme-dark .eyebrow,.theme-dark-alt .eyebrow{color:var(--orange-ink);}
-  .hero-title,.exp-title,.proj-title,.software-name,.contact-lede{color:#241a12;}
-  .hero-bio,.proj-desc,.software-caption{color:#4a3d33;}
-  .reveal{opacity:1;transform:none;}
-}
+  /* ---------- mobile ---------- */
+  @media (max-width:900px){
+    #app{grid-template-columns:1fr;grid-template-rows:26px 128px 40vh 1fr 46px 20px;
+      grid-template-areas:"menu" "out" "vp" "props" "time" "stat";}
+    #out{max-height:128px;}
+    #tree{display:flex;overflow-x:auto;overflow-y:hidden;padding:5px;gap:5px;}
+    .grp{margin:0;flex-shrink:0;}
+    .grp.closed .kids{display:flex;}
+    .kids{display:flex;gap:4px;}
+    .gh{display:none;}
+    .ob{padding:5px 9px;width:auto;white-space:nowrap;border:1px solid #383838;border-radius:3px;}
+    .ob .lock{display:none;}
+    .kf .lb{display:none;}
+    #time{min-height:46px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;}}
 </style>
 </head>
 <body>
 
-<a class="skip-link" href="#hero">Skip to content</a>
-
-<div class="mini-brand" aria-hidden="true">
-  <div class="checker"><span></span><span></span><span></span><span></span></div>
-  Michał Koziełło
+<div id="boot">
+  <div id="boot-msg"><span class="t"><span id="boot-dot"></span>VertexVoodoo Editor</span>Loading scene…</div>
 </div>
 
-<nav class="side-nav" aria-label="Section navigation">
-  <button class="nav-dot" data-target="hero" aria-label="Go to Intro"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
-  <button class="nav-dot" data-target="experience" aria-label="Go to Professional Experience"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
-  <button class="nav-dot" data-target="personal" aria-label="Go to Personal Projects"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
-  <button class="nav-dot" data-target="skills" aria-label="Go to Skills"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
-  <button class="nav-dot" data-target="software" aria-label="Go to Software"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
-  <button class="nav-dot" data-target="contact" aria-label="Go to Contact"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
-</nav>
+<div id="app">
+  <div id="menu">
+    <span class="logo">
+      <svg width="12" height="18" viewBox="0 0 80 120" aria-hidden="true">
+        <path d="M8 48 L40 116 L72 48 H54 L40 78 L26 48 Z" fill="#E4DCC9"/>
+        <path d="M40 6 L52 28 L40 44 L28 28 Z" fill="#C1272D"/>
+      </svg>
+      <b>VertexVoodoo</b>
+    </span>
 
-<!-- ============================== HERO ============================== -->
-<section class="section theme-dark" id="hero">
-  <div class="section-inner">
-    <div class="hero-checker reveal"><div class="checker"><span></span><span></span><span></span><span></span></div></div>
-    <h1 class="hero-title reveal">Michał Koziełło</h1>
-    <div class="hero-role reveal">3D GENERALIST &amp; TECHNICAL ARTIST</div>
-    <p class="hero-bio reveal">Six years in the games industry, working across environment art, real-time shading, rigging, and the pipelines that connect them. I care as much about how a scene performs as how it looks — and I write and produce music on the side, which shapes how I think about mood and pacing.</p>
-    <div class="hero-stats reveal">
-      <div><span class="stat-num">6</span><span class="stat-label">YEARS EXP.</span></div>
-      <div><span class="stat-num">3</span><span class="stat-label">SHIPPED TITLES</span></div>
+    <div class="mnu" data-menu="file">
+      <button class="mi">File</button>
+      <div class="dd">
+        <button class="di" data-action="open-cv"><span class="ck"></span><span class="lb">Open CV</span><span class="kx">↗</span></button>
+        <div class="ddsep"></div>
+        <button class="di" data-action="reload"><span class="ck"></span><span class="lb">Reload Scene</span></button>
+      </div>
     </div>
-    <div class="reveal">
-      <span class="availability-pill"><span class="availability-dot"></span>Open to new projects &amp; full-time roles</span>
+
+    <div class="mnu" data-menu="edit">
+      <button class="mi">Edit</button>
+      <div class="dd">
+        <button class="di" data-action="copy-email"><span class="ck"></span><span class="lb">Copy Email</span></button>
+        <button class="di" data-action="copy-link"><span class="ck"></span><span class="lb">Copy Portfolio Link</span></button>
+      </div>
     </div>
+
+    <div class="mnu" data-menu="view">
+      <button class="mi">View</button>
+      <div class="dd">
+        <button class="di" id="mi-orbit" data-action="toggle-orbit"><span class="ck">✓</span><span class="lb">Auto-Orbit</span></button>
+        <button class="di" id="mi-grid" data-action="toggle-grid"><span class="ck">✓</span><span class="lb">Grid</span></button>
+        <div class="ddsep"></div>
+        <button class="di" data-action="frame"><span class="ck"></span><span class="lb">Frame Selected</span></button>
+        <button class="di" data-action="fullscreen"><span class="ck"></span><span class="lb">Toggle Fullscreen</span></button>
+      </div>
+    </div>
+
+    <div class="mnu" data-menu="render">
+      <button class="mi">Render</button>
+      <div class="dd">
+        <button class="di" data-action="save-image"><span class="ck"></span><span class="lb">Save Viewport Image…</span></button>
+      </div>
+    </div>
+
+    <div class="mnu" data-menu="window">
+      <button class="mi">Window</button>
+      <div class="dd" id="window-dd">
+        <!-- populated at runtime from the loaded collections -->
+      </div>
+    </div>
+
+    <span class="sp"></span>
+    <span class="badge">Scene: <b id="scene-name">portfolio_v6</b></span>
+    <span class="badge" id="fps">60 fps</span>
   </div>
-  <div class="scroll-cue"><span>SCROLL</span><span class="arrow"></span></div>
-</section>
 
-<!-- ========================== EXPERIENCE ========================== -->
-<section class="section theme-light" id="experience">
-  <div class="section-inner">
-    <span class="eyebrow reveal">PROFESSIONAL EXPERIENCE</span>
-    <h2 class="section-title reveal">Shipped, tested, played.</h2>
+  <aside id="out">
+    <div class="ph">Outliner <span class="k">Scene Collection</span></div>
+    <div id="tree"></div>
+  </aside>
 
-    <div class="exp-list">
-      <div class="exp-entry reveal">
-        <span class="exp-eyebrow">COMMERCIAL PROJECT · TRIPLE ESPRESSO · EVENT-MANAGEMENT SIM</span>
-        <h3 class="exp-title"><a href="https://store.steampowered.com/app/2210520/COPA_CITY/" target="_blank" rel="noopener">Copa City</a></h3>
-        <ul class="exp-bullets">
-          <li>Built 3D props, city buildings, and landmark architecture for real-world stadiums and host cities</li>
-          <li>Authored crowd and character animation for tens of thousands of on-screen fans</li>
-          <li>Profiled, optimized, and bug-hunted at city-wide simulation scale</li>
-        </ul>
-      </div>
-
-      <div class="exp-entry reveal">
-        <span class="exp-eyebrow">COMMERCIAL PROJECT · ALPINE RESORT SIM</span>
-        <h3 class="exp-title"><a href="https://store.steampowered.com/app/2423760/Above_the_Snow/" target="_blank" rel="noopener">Above the Snow</a></h3>
-        <ul class="exp-bullets">
-          <li>Modeled 3D props, lodge and resort buildings, and environment assets for a hand-drawn 1960s alpine setting</li>
-          <li>Handled character and prop animation</li>
-          <li>Owned lighting and lookdev, balancing cozy warmth against genuine survival stakes</li>
-        </ul>
-      </div>
-
-      <div class="exp-entry reveal">
-        <span class="exp-eyebrow">COMMERCIAL PROJECT · BRAVE LAMB STUDIO / NACON · WWI STRATEGY</span>
-        <h3 class="exp-title"><a href="https://store.steampowered.com/app/1553000/War_Hospital/" target="_blank" rel="noopener">War Hospital</a></h3>
-        <ul class="exp-bullets">
-          <li>Built 3D props, hospital and field buildings, and environment assets</li>
-          <li>Contributed animation work to ground a difficult subject in an authentic period setting</li>
-        </ul>
-      </div>
-
-      <div class="exp-entry reveal">
-        <span class="exp-eyebrow">3 ADDITIONAL TITLES UNDER NDA</span>
-        <h3 class="exp-title">Freelance &amp; R&amp;D</h3>
-        <ul class="exp-bullets">
-          <li>3D models, animation systems, VFX, and shaders across multiple unannounced and freelance projects</li>
-        </ul>
-      </div>
+  <section id="vp">
+    <canvas id="cv"></canvas>
+    <div class="ov" id="vp-head">
+      <span class="mode">Object Mode</span>
+      <span class="path">View › <b id="vp-obj">Profile</b></span>
+      <span class="sp"></span>
+      <div id="variants"></div>
+      <button id="btn-spin" class="on">Auto-orbit</button>
+      <button id="btn-wire">Grid</button>
     </div>
+    <div class="ov" id="vp-stats"></div>
+    <div class="ov" id="vp-hint">Drag to orbit · scroll to zoom</div>
+    <svg class="ov" id="gizmo" viewBox="0 0 66 66"></svg>
+  </section>
+
+  <aside id="props">
+    <div class="ph">Properties <span class="k" id="prop-type">OBJECT</span></div>
+    <div id="pbody"></div>
+  </aside>
+
+  <div id="time">
+    <div class="ph">Timeline <span class="k">2020 — 2026</span></div>
+    <div id="track"><div id="axis"></div><div id="play"></div></div>
   </div>
-</section>
 
-<!-- ========================= PERSONAL PROJECTS ========================= -->
-<section class="section theme-dark-alt" id="personal">
-  <div class="section-inner">
-    <span class="eyebrow reveal">PERSONAL PROJECTS</span>
-    <h2 class="section-title reveal">What I build off the clock.</h2>
-
-    <div class="proj-grid">
-      <div class="proj-card reveal">
-        <span class="proj-eyebrow">IN DEVELOPMENT</span>
-        <h3 class="proj-title">Sea of Clouds</h3>
-        <p class="proj-desc">Solo game project — full ownership of atmospheric world-building and technical systems, from block-out to final shader.</p>
-      </div>
-
-      <div class="proj-card reveal">
-        <span class="proj-eyebrow">MUSIC / HARMONY</span>
-        <h3 class="proj-title">Harmony</h3>
-        <p class="proj-desc">A music game built around deliberately simple design, letting composition and sound design lead the experience.</p>
-        <a class="proj-link" href="https://VertexVoodoo.studio" target="_blank" rel="noopener">VertexVoodoo.studio (WIP) →</a>
-      </div>
-
-      <div class="proj-card reveal">
-        <span class="proj-eyebrow">DATA VISUALIZATION</span>
-        <h3 class="proj-title">Gaia 3D Galaxy</h3>
-        <p class="proj-desc">Real-time 3D visualization of ESA's Gaia catalog — nearly two million real stars — queried via SQL and rendered with a custom optimized shader, built in both PlayCanvas and Unity.</p>
-        <a class="proj-link" href="https://playcanvas.com/project/1523304/overview/floatingpoints" target="_blank" rel="noopener">View on PlayCanvas →</a>
-      </div>
-    </div>
+  <div id="stat">
+    <span><span class="dot"></span>Ready</span>
+    <span>Verts <b id="s-verts">0</b></span>
+    <span>Objects <b id="s-obj">0</b></span>
+    <span class="sp"></span>
+    <span id="s-sel">Profile</span>
+    <span>v7.0</span>
   </div>
-</section>
-
-<!-- =============================== SKILLS =============================== -->
-<section class="section theme-light" id="skills">
-  <div class="section-inner">
-    <span class="eyebrow reveal">SKILLS</span>
-    <h2 class="section-title reveal">Generalist, full stack.</h2>
-
-    <div class="skills-grid reveal">
-      <div>
-        <div class="skill-cat-title">3D ART &amp; MODELING</div>
-        <div class="chip-row">
-          <span class="chip">3D Props</span><span class="chip">Environment Art</span><span class="chip">Hard-Surface</span><span class="chip">PBR Pipeline</span><span class="chip">Real-Time Pipeline</span><span class="chip">LOD Optimization</span>
-        </div>
-      </div>
-      <div>
-        <div class="skill-cat-title">TEXTURING</div>
-        <div class="chip-row">
-          <span class="chip">UV Unwrapping</span><span class="chip">Texture Painting</span><span class="chip">Trim Sheets &amp; Atlases</span>
-        </div>
-      </div>
-      <div>
-        <div class="skill-cat-title">PROCEDURAL GENERATION</div>
-        <div class="chip-row">
-          <span class="chip">Substance Designer</span><span class="chip">Geometry Nodes</span><span class="chip">Unity Procedural Tools</span>
-        </div>
-      </div>
-      <div>
-        <div class="skill-cat-title">RIGGING &amp; ANIMATION</div>
-        <div class="chip-row">
-          <span class="chip">Skinning</span><span class="chip">Rigging</span><span class="chip">Animation</span><span class="chip">IK Systems</span><span class="chip">Vertex Animation (VAT)</span>
-        </div>
-      </div>
-      <div>
-        <div class="skill-cat-title">VFX &amp; SHADING</div>
-        <div class="chip-row">
-          <span class="chip">VFX</span><span class="chip">Shaders</span><span class="chip">Materials</span><span class="chip">HLSL</span>
-        </div>
-      </div>
-      <div>
-        <div class="skill-cat-title">PERFORMANCE &amp; OPTIMIZATION</div>
-        <div class="chip-row">
-          <span class="chip">Profiling</span><span class="chip">Optimization</span>
-        </div>
-      </div>
-      <div>
-        <div class="skill-cat-title">AUDIO</div>
-        <div class="chip-row">
-          <span class="chip">SFX Design</span><span class="chip">Music Production</span><span class="chip">Composition</span>
-        </div>
-      </div>
-      <div>
-        <div class="skill-cat-title">PROGRAMMING &amp; TECH</div>
-        <div class="chip-row">
-          <span class="chip">Python</span><span class="chip">C#</span><span class="chip">JavaScript</span><span class="chip">Big Data</span><span class="chip">Look Development</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================== SOFTWARE ============================== -->
-<section class="section theme-dark" id="software">
-  <div class="section-inner">
-    <span class="eyebrow reveal">SOFTWARE</span>
-    <h2 class="section-title reveal">Daily toolkit.</h2>
-
-    <div class="software-grid reveal">
-      <div class="software-item">
-        <span class="software-name">Blender</span>
-        <span class="software-caption">Modeling, Geometry Nodes, scene assembly</span>
-      </div>
-      <div class="software-item">
-        <span class="software-name">ZBrush</span>
-        <span class="software-caption">High-poly sculpting, organic detail</span>
-      </div>
-      <div class="software-item">
-        <span class="software-name">Substance Designer</span>
-        <span class="software-caption">Procedural materials, trim sheets</span>
-      </div>
-      <div class="software-item">
-        <span class="software-name">Substance Painter</span>
-        <span class="software-caption">Hand-painted PBR texturing</span>
-      </div>
-      <div class="software-item">
-        <span class="software-name">JangaFX IlluGen</span>
-        <span class="software-caption">Procedural VFX asset generation</span>
-      </div>
-      <div class="software-item">
-        <span class="software-name">Unity</span>
-        <span class="software-caption">Real-time implementation, VAT, lookdev</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================== CONTACT ============================== -->
-<section class="section theme-light" id="contact">
-  <div class="section-inner">
-    <span class="eyebrow reveal">SAY HELLO</span>
-    <h2 class="contact-lede reveal">Got something worth building? Let's talk.</h2>
-    <p class="contact-note reveal">This page summarizes the work — the interactive portfolio has full project breakdowns, renders, and the complete skill set.</p>
-
-    <div class="cta-row reveal">
-      <a class="btn-primary" href="mailto:mkoziello@gmail.com">Say hello →</a>
-      <button class="btn-ghost" id="copyEmailBtn" type="button">Copy email</button>
-    </div>
-
-    <div class="contact-links reveal">
-      <div>
-        <span class="contact-label">EMAIL</span>
-        <a class="contact-value" href="mailto:mkoziello@gmail.com">mkoziello@gmail.com</a>
-      </div>
-      <div>
-        <span class="contact-label">PORTFOLIO</span>
-        <a class="contact-value" href="""https://VertexVoodoo.studio" target="_blank" rel="noopener">VertexVoodoo.studio (WIP)</a>
-      </div>
-      <div>
-        <span class="contact-label">ARTSTATION</span>
-        <a class="contact-value" href="https://www.artstation.com/whoisthetomatoman" target="_blank" rel="noopener">whoisthetomatoman</a>
-      </div>
-      <div>
-        <span class="contact-label">LINKEDIN</span>
-        <a class="contact-value" href="https://www.linkedin.com/in/micha%C5%82-kozie%C5%82%C5%82o-853582161/" target="_blank" rel="noopener">Michał-Koziełło</a>
-      </div>
-      <div>
-        <span class="contact-label">LOCATION</span>
-        <a class="contact-value" href="https://share.google/SjTNS5GGv32LVgSEV" target="_blank" rel="noopener">Poland</a>
-      </div>
-    </div>
-
-    <div class="footer-note reveal">MICHAŁ KOZIEŁŁO · UPDATED JULY 2026</div>
-  </div>
-</section>
-
-<div class="toast" id="toast" role="status" aria-live="polite">Copied — mkoziello@gmail.com</div>
+</div>
 
 <script>
-(function(){
-  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
-  var navDots = Array.prototype.slice.call(document.querySelectorAll('.nav-dot'));
-  var miniBrand = document.querySelector('.mini-brand');
-  var hero = document.getElementById('hero');
+/* ============================================================
+   SITE CONFIG — the couple of things that aren't content
+   ============================================================ */
+const CV_URL = "cv.html";
+// File > Open CV uses this. Point it at a relative file next to this
+// HTML (default: cv.html, included alongside this file), an absolute
+// URL on your own site, or a PDF — anything window.open() can load.
 
-  /* ---- reveal on scroll ---- */
-  if('IntersectionObserver' in window){
-    var revealObserver = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting){
-          entry.target.classList.add('in-view');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    }, {threshold:0.15});
-    document.querySelectorAll('.reveal').forEach(function(el){ revealObserver.observe(el); });
+/* ============================================================
+   DATA LOADING
+   ============================================================
+   This file holds no portfolio content itself. Everything the
+   outliner, properties panel and viewport show is fetched from JSON
+   next to this file, at load time:
 
-    /* ---- active nav dot ---- */
-    var navObserver = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting){
-          navDots.forEach(function(dot){
-            dot.classList.toggle('active', dot.dataset.target === entry.target.id);
-          });
-        }
-      });
-    }, {threshold:0.5});
-    sections.forEach(function(s){ navObserver.observe(s); });
+     data/profile.json     data/shipped.json    data/personal.json
+     data/toolchain.json   data/output.json
+     points/<object-id>.points.json   (optional, per object)
 
-    /* ---- mini brand mark after hero ---- */
-    var heroObserver = new IntersectionObserver(function(entries){
-      miniBrand.classList.toggle('visible', !entries[0].isIntersecting);
-    }, {threshold:0});
-    heroObserver.observe(hero);
-  } else {
-    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
-  }
+   Edit those files to change what the site shows — nothing in this
+   <script> block should need touching for ordinary content changes.
+   Full naming conventions and schema are in DATA_CONVENTIONS.md.
 
-  /* ---- nav dot / mini brand clicks ---- */
-  function goToSection(id){
-    var el = document.getElementById(id);
-    if(el) el.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
-  }
-  navDots.forEach(function(dot){
-    dot.addEventListener('click', function(){ goToSection(dot.dataset.target); });
-  });
-  miniBrand.addEventListener('click', function(){ goToSection('hero'); });
+   REQUIRES an http(s) origin, not a file:// double-click — browsers
+   block fetch() for local files. For local iteration, serve this
+   folder with e.g. `python3 -m http.server 8000` and open
+   http://localhost:8000/koziello-viewport.html
+   ============================================================ */
 
-  /* ---- keyboard navigation ---- */
-  function currentIndex(){
-    var best = 0, bestDist = Infinity;
-    sections.forEach(function(s, i){
-      var dist = Math.abs(s.getBoundingClientRect().top);
-      if(dist < bestDist){ bestDist = dist; best = i; }
+const COLLECTIONS=[
+  {group:"Profile",         key:"profile"},
+  {group:"Shipped Titles",  key:"shipped"},
+  {group:"Personal / R&D",  key:"personal"},
+  {group:"Toolchain",       key:"toolchain"},
+  {group:"Output",          key:"output"}
+];
+
+let SCENE=[], FLAT={};
+let PROFILE=null, SHIPPED=[], PERSONAL=[], TOOLCHAIN={skills:[],software:[]}, OUTPUT={};
+
+async function loadCollection(c){
+  const res=await fetch(`data/${c.key}.json`,{cache:'no-store'});
+  if(!res.ok) throw new Error(`data/${c.key}.json → HTTP ${res.status}`);
+  return res.json();
+}
+
+async function boot(){
+  try{
+    const raws=await Promise.all(COLLECTIONS.map(loadCollection));
+    COLLECTIONS.forEach((c,i)=>{
+      const raw=raws[i];
+      if(!Array.isArray(raw.items)) throw new Error(`data/${c.key}.json is missing an "items" array`);
+      SCENE.push({group:c.group,key:c.key,items:raw.items});
+      if(c.key==="profile")   PROFILE=raw.items[0];
+      if(c.key==="shipped")   SHIPPED=raw.items;
+      if(c.key==="personal")  PERSONAL=raw.items;
+      if(c.key==="toolchain") TOOLCHAIN={skills:raw.skills||[],software:raw.software||[]};
+      if(c.key==="output")    OUTPUT={note:raw.note||"",cta:raw.cta||"Send a message"};
     });
-    return best;
+    SCENE.forEach(g=>g.items.forEach(i=>FLAT[i.id]=i));
+
+    buildOutliner();
+    buildWindowMenu();
+    buildTimeline();
+
+    const totalObj=SCENE.reduce((a,g)=>a+g.items.length,0);
+    document.getElementById('s-verts').textContent=N.toLocaleString();
+    document.getElementById('s-obj').textContent=totalObj;
+    document.getElementById('vp-stats').innerHTML=
+      `Verts <b>${N.toLocaleString()}</b><br>Objects <b>${totalObj}</b><br>Shading <b>Point cloud</b>`;
+
+    document.getElementById('boot').classList.add('gone');
+    select("profile");
+  }catch(err){
+    const el=document.getElementById('boot-msg');
+    el.classList.add('err');
+    const file=location.pathname.split('/').pop()||'koziello-viewport.html';
+    el.innerHTML=`<span class="t">Couldn't load scene data</span>`+
+      `This page fetches JSON from the data/ and points/ folders next to it — `+
+      `that only works when served over http(s), not opened directly as a file:// URL.\n\n`+
+      `From this folder, run:\n  python3 -m http.server 8000\n`+
+      `then open:\n  http://localhost:8000/${file}\n\n`+
+      `(${err.message})`;
+    console.error(err);
   }
-  document.addEventListener('keydown', function(e){
-    var tag = (document.activeElement && document.activeElement.tagName) || '';
-    if(tag === 'INPUT' || tag === 'TEXTAREA') return;
-    if(e.key === 'ArrowDown' || e.key === 'PageDown'){
-      e.preventDefault();
-      var next = sections[Math.min(currentIndex() + 1, sections.length - 1)];
-      next.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
-    } else if(e.key === 'ArrowUp' || e.key === 'PageUp'){
-      e.preventDefault();
-      var prev = sections[Math.max(currentIndex() - 1, 0)];
-      prev.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
-    }
-  });
+}
 
-  /* ---- copy email ---- */
-  var copyBtn = document.getElementById('copyEmailBtn');
-  var toast = document.getElementById('toast');
-  var toastTimer;
-  copyBtn.addEventListener('click', function(){
-    var email = 'mkoziello@gmail.com';
-    function showToast(){
-      toast.classList.add('visible');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(function(){ toast.classList.remove('visible'); }, 2400);
-    }
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(email).then(showToast).catch(function(){
-        window.location.href = 'mailto:' + email;
-      });
-    } else {
-      window.location.href = 'mailto:' + email;
-    }
+/* ---------- properties content ---------- */
+const fld=(l,v,cls='')=>`<div class="fld"><span class="fl">${l}</span><span class="fv ${cls}">${v}</span></div>`;
+const pnl=(t,c,open=true)=>`<div class="pnl ${open?'':'closed'}"><button class="pt"><span class="car">▼</span>${t}</button><div class="pc">${c}</div></div>`;
+
+function propsFor(id){
+  if(id==="profile"){
+    const p=PROFILE;
+    return {type:"EMPTY",html:
+      pnl("Object",
+        fld("Name",p.fullName)+fld("Role",p.title,"a")+fld("Location",p.location)+
+        fld("Status",p.status,"a"))+
+      pnl("Notes",`<div class="note"><p>${p.bio}</p></div>`)+
+      pnl("Statistics",
+        fld("Years",p.stats.years)+fld("Shipped",p.stats.shipped)+fld("Under NDA",p.stats.nda))};
+  }
+
+  const s=SHIPPED.find(x=>x.id===id&&x.type!=="HIDDEN");
+  if(s) return {type:"MESH",html:
+    pnl("Object",fld("Name",s.name)+fld("Studio",s.studio)+fld("Genre",s.genre)+fld("Started",String(s.year),"a"))+
+    pnl("Contribution",`<ul class="bul">${s.points.map(p=>`<li>${p}</li>`).join('')}</ul>`)+
+    pnl("Material",fld("Base color",`<span class="swatch" style="background:${s.color}"></span>${s.color}`)+
+      fld("Pipeline","Real-time PBR"),false)};
+
+  const per=PERSONAL.find(x=>x.id===id);
+  if(per) return {type:"MESH",html:
+    pnl("Object",fld("Name",per.name)+fld("Type",per.tag,"a")+fld("Stack",per.stack))+
+    pnl("Notes",`<div class="note"><p>${per.desc}</p></div>`)};
+
+  if(id==="freelance"){
+    const n=SHIPPED.find(x=>x.id==="freelance");
+    return {type:"HIDDEN",html:
+      pnl("Object",fld("Name",n.name)+fld("Visibility","Hidden in viewport"))+
+      pnl("Notes",`<div class="note"><p>${n.note}</p></div>`)};
+  }
+
+  if(id==="skills") return {type:"DATA",html:
+    TOOLCHAIN.skills.map((g,i)=>pnl(g.group,`<div class="chips">${g.items.map(t=>`<span class="chip">${t}</span>`).join('')}</div>`,i<3)).join('')};
+
+  if(id==="software") return {type:"DATA",html:
+    pnl("Daily drivers",TOOLCHAIN.software.map(sw=>fld(sw.name,sw.use)).join(''))};
+
+  if(id==="contact") return {type:"CAMERA",html:
+    pnl("Channels",
+      fld("Email",`<a href="mailto:${PROFILE.email}">${PROFILE.email}</a>`)+
+      fld("Studio",`<a href="https://${PROFILE.site}" target="_blank" rel="noopener">${PROFILE.site}</a>`)+
+      fld("ArtStation",`<a href="https://www.${PROFILE.artstation}" target="_blank" rel="noopener">whoisthetomatoman</a>`)+
+      fld("LinkedIn",`<a href="https://www.${PROFILE.linkedin}" target="_blank" rel="noopener">${PROFILE.fullName}</a>`))+
+    pnl("Availability",`<div class="note"><p>${PROFILE.status}. ${OUTPUT.note}</p></div>
+      <a class="cta" href="mailto:${PROFILE.email}?subject=${encodeURIComponent("Project enquiry")}">${OUTPUT.cta}</a>`)};
+
+  return {type:"OBJECT",html:""};
+}
+
+/* ---------- build outliner ---------- */
+const tree=document.getElementById('tree');
+function buildOutliner(){
+  tree.innerHTML='';
+  SCENE.forEach(g=>{
+    const d=document.createElement('div'); d.className='grp';
+    d.innerHTML=`<button class="gh"><span class="car">▼</span>${g.group}<span class="cnt">${g.items.length}</span></button>
+      <div class="kids">${g.items.map(i=>`<button class="ob" data-id="${i.id}">
+        <span class="ic" style="background:${i.color}"></span><span class="nm">${i.name}</span>
+        <span class="lock">${i.type==="HIDDEN"?"○":"◉"}</span></button>`).join('')}</div>`;
+    d.querySelector('.gh').onclick=()=>d.classList.toggle('closed');
+    tree.appendChild(d);
   });
-})();
+}
+tree.addEventListener('click',e=>{const b=e.target.closest('.ob'); if(b)select(b.dataset.id);});
+
+/* ---------- properties panel behaviour ---------- */
+const pbody=document.getElementById('pbody');
+pbody.addEventListener('click',e=>{const t=e.target.closest('.pt'); if(t)t.parentElement.classList.toggle('closed');});
+
+/* ---------- timeline ---------- */
+const KEYS=[
+  {id:"profile",year:2020,label:"Start"},
+  {id:"warh",year:2021,label:"War Hospital"},
+  {id:"copa",year:2023,label:"Copa City"},
+  {id:"snow",year:2024,label:"Above the Snow"},
+  {id:"harm",year:2025,label:"Harmony"},
+  {id:"sea",year:2026,label:"Sea of Clouds"}
+];
+const track=document.getElementById('track'),play=document.getElementById('play');
+const Y0=2020,Y1=2026;
+const pct=y=>((y-Y0)/(Y1-Y0))*100;
+function buildTimeline(){
+  for(let y=Y0;y<=Y1;y++){
+    const e=document.createElement('span'); e.className='yr';
+    e.style.left=pct(y)+'%'; e.innerHTML=`<i></i>${y}`;
+    track.appendChild(e);
+  }
+  KEYS.forEach(k=>{
+    if(!FLAT[k.id])return; // skip keyframes for objects that aren't in the loaded data
+    const b=document.createElement('button'); b.className='kf'; b.id='kf-'+k.id;
+    b.style.left=pct(k.year)+'%';
+    b.innerHTML=`<span class="lb">${k.label}</span>`;
+    b.onclick=()=>select(k.id);
+    track.appendChild(b);
+  });
+}
+
+/* ---------- Window menu: quick-jump to each collection ---------- */
+function buildWindowMenu(){
+  const dd=document.getElementById('window-dd');
+  dd.innerHTML=SCENE.map(g=>
+    `<button class="di" data-jump="${g.key}"><span class="ck"></span><span class="lb">${g.group}</span></button>`
+  ).join('');
+}
+function jumpTo(key){
+  const g=SCENE.find(x=>x.key===key);
+  if(g&&g.items.length) select(g.items[0].id);
+}
+
+/* ---------- menu bar: dropdowns + actions ---------- */
+function closeMenus(){document.querySelectorAll('.mnu.open').forEach(x=>x.classList.remove('open'));}
+document.querySelectorAll('.mnu').forEach(m=>{
+  m.querySelector('.mi').addEventListener('click',e=>{
+    e.stopPropagation();
+    const wasOpen=m.classList.contains('open');
+    closeMenus();
+    if(!wasOpen)m.classList.add('open');
+  });
+});
+document.addEventListener('click',closeMenus);
+addEventListener('keydown',e=>{if(e.key==='Escape')closeMenus();});
+
+function copyText(t){
+  if(!t)return;
+  navigator.clipboard?.writeText(t).catch(()=>{});
+}
+function saveViewportImage(){
+  const a=document.createElement('a');
+  a.href=cv.toDataURL('image/png');
+  a.download=`vertexvoodoo_${current||'viewport'}.png`;
+  a.click();
+}
+function syncViewChecks(){
+  document.getElementById('mi-orbit').classList.toggle('checked',spin);
+  document.getElementById('mi-grid').classList.toggle('checked',showGrid);
+}
+
+document.getElementById('menu').addEventListener('click',e=>{
+  const jump=e.target.closest('[data-jump]');
+  if(jump){jumpTo(jump.dataset.jump);closeMenus();return;}
+
+  const act=e.target.closest('[data-action]');
+  if(!act)return;
+  switch(act.dataset.action){
+    case 'open-cv':      window.open(CV_URL,'_blank','noopener'); break;
+    case 'reload':       location.reload(); break;
+    case 'copy-email':   copyText(PROFILE?.email); break;
+    case 'copy-link':    copyText(location.href); break;
+    case 'toggle-orbit': document.getElementById('btn-spin').click(); break;
+    case 'toggle-grid':  document.getElementById('btn-wire').click(); break;
+    case 'frame':        yaw=DEFAULT_VIEW.yaw; pitch=DEFAULT_VIEW.pitch; dist=DEFAULT_VIEW.dist; break;
+    case 'fullscreen':   document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); break;
+    case 'save-image':   saveViewportImage(); break;
+  }
+  closeMenus();
+});
+
+/* ---------- selection ---------- */
+let current="profile";
+function select(id){
+  if(!FLAT[id])return;
+  stopCycle(); // halt auto-advancing for whatever was previously selected
+  current=id;
+  document.querySelectorAll('.ob').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  document.querySelectorAll('.kf').forEach(b=>b.classList.remove('on'));
+  const k=KEYS.find(x=>x.id===id);
+  const kfEl=k&&document.getElementById('kf-'+id);
+  if(kfEl){kfEl.classList.add('on');play.style.left=pct(k.year)+'%';}
+  const p=propsFor(id);
+  pbody.innerHTML=p.html;
+  document.getElementById('prop-type').textContent=p.type;
+  document.getElementById('vp-obj').textContent=FLAT[id].name;
+  document.getElementById('s-sel').textContent=FLAT[id].name;
+
+  const av=activeVariant[id]||1;
+  variantsEl.classList.remove('show'); variantsEl.innerHTML=''; // clear stale picker from previous object
+  morphTo(id,FLAT[id].shape,FLAT[id].color,av);
+
+  // Kick off (or reuse) the fetch for all 3 possible variants. Once they
+  // resolve: populate the picker with whichever ones actually exist, and
+  // if the currently-active variant just arrived (wasn't cached before)
+  // and the user is still looking at this object, re-morph into it.
+  loadAllVariants(id).then(results=>{
+    if(current!==id)return;
+    renderVariantPicker(id,results);
+    const activeData=results[(activeVariant[id]||1)-1];
+    if(activeData) morphTo(id,FLAT[id].shape,FLAT[id].color,activeVariant[id]||1);
+  });
+}
+
+/* ============================================================
+   VIEWPORT — point cloud that morphs between shapes
+   ============================================================ */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const N=32000;
+let W=1,H=1,dpr=Math.min(devicePixelRatio||1,2);
+
+/* ============================================================
+   CAMERA SETTINGS — every tunable number for the viewport camera
+   lives here. Nothing below this block should need touching to
+   change how the camera looks or behaves.
+   ============================================================ */
+let yaw=Math.PI/4,pitch=-15*Math.PI/180,dist=3.1,spin=true,showGrid=true;
+const DEFAULT_VIEW={yaw:Math.PI/4,pitch:65*Math.PI/180,dist:3.1}; // View > Frame Selected resets here
+
+const FOCAL=0.862;
+// "Lens" width. Bigger number = narrower FOV, more zoomed-in/telephoto,
+// flatter-looking perspective. Smaller number = wider FOV, more
+// fisheye-like, more exaggerated depth distortion. This is currently
+// coupled with `dist` (see the `f` formula in render() below) — scrolling
+// to zoom changes `dist`, which changes apparent size AND perspective
+// strength together, the way a real camera dolly does. FOCAL is the
+// separate multiplier on top of that; it doesn't move the camera, it
+// just changes how tightly framed everything is at whatever distance
+// you're currently at.
+
+const DIST_MIN=1., DIST_MAX=4.5;   // how close/far scroll-to-zoom can go
+const ZOOM_SPEED=0.0016;            // scroll-wheel sensitivity
+
+const PITCH_MIN=-1.35, PITCH_MAX=1.35; // drag-to-orbit vertical limits (radians, ~±77°)
+const ORBIT_SENSITIVITY_X=0.008;       // drag sensitivity, left/right (yaw)
+const ORBIT_SENSITIVITY_Y=0.006;       // drag sensitivity, up/down (pitch)
+const AUTO_ORBIT_SPEED=0.1;           // radians/sec when Auto-orbit is on
+
+const VERTICAL_FRAME_OFFSET=8;
+// Shifts the vanishing point down by this many px from dead-center, to
+// leave visual room under the vp-head bar. Set to 0 for a perfectly
+// centered horizon.
+
+const POINT_MIN_SIZE=0.9, POINT_SIZE_SCALE=1.6, POINT_DEPTH_REF=2.4;
+// Point rendering, not camera framing, but related to the "look": how
+// big each rendered point is up close vs far away. POINT_DEPTH_REF is
+// the reference distance points are compared against to compute that
+// near/far falloff.
+
+let cloudColor="#e87d0d";
+
+function rand(){return Math.random();}
+function shapePoints(kind){
+  const P=[];
+  for(let i=0;i<N;i++){
+    let x,y,z;
+    const t=i/N;
+    switch(kind){
+      case "galaxy":{
+        const arm=(i%3)*(Math.PI*2/3);
+        const r=Math.pow(rand(),.55)*1.5;
+        const a=arm+r*2.6+(rand()-.5)*.5;
+        x=Math.cos(a)*r; z=Math.sin(a)*r;
+        y=(rand()-.5)*.18*(1.2-r/1.6);
+        break;}
+      case "city":{
+        const gx=Math.floor(rand()*9)-4, gz=Math.floor(rand()*9)-4;
+        const h=.15+Math.abs(Math.sin(gx*1.7)*Math.cos(gz*1.3))*1.25;
+        x=gx*.3+(rand()-.5)*.14; z=gz*.3+(rand()-.5)*.14;
+        y=rand()*h-.55;
+        break;}
+      case "peak":{
+        const r=Math.pow(rand(),.7)*1.35;
+        const a=rand()*Math.PI*2;
+        x=Math.cos(a)*r; z=Math.sin(a)*r;
+        y=(1.25-r)*.85-.5+(rand()-.5)*.09;
+        break;}
+      case "grid":{
+        const c=Math.round(rand()*10)-5, d=Math.round(rand()*10)-5;
+        x=c*.26; z=d*.26; y=(rand()-.5)*.5;
+        break;}
+      case "cloud":{
+        const a=rand()*Math.PI*2, r=Math.pow(rand(),.4)*1.25;
+        x=Math.cos(a)*r; z=Math.sin(a)*r*.6;
+        y=Math.sin(r*3.1)*.28+(rand()-.5)*.42;
+        break;}
+      case "helix":{
+        const a=t*Math.PI*9, r=.72;
+        const s=i%2?1:-1;
+        x=Math.cos(a)*r*s; z=Math.sin(a)*r*s;
+        y=(t-.5)*2.1+(rand()-.5)*.05;
+        break;}
+      default:{ // sphere
+        const u=rand()*2-1, a=rand()*Math.PI*2, s=Math.sqrt(1-u*u);
+        x=s*Math.cos(a)*1.2; y=u*1.2; z=s*Math.sin(a)*1.2;
+      }
+    }
+    P.push([x,y,z]);
+  }
+  return P;
+}
+
+/* ---------- custom point clouds, fetched on demand ----------
+   Up to 3 variants per object: points/<id>.points.json (variant 1),
+   points/<id>.2.points.json, points/<id>.3.points.json. All optional —
+   any missing variant is just absent, no error, no picker slot shown
+   for it. See DATA_CONVENTIONS.md. */
+const customCache={};   // id -> {1: array|null, 2: array|null, 3: array|null}
+const activeVariant={}; // id -> which variant number is currently shown (default 1)
+
+function variantFile(id,v){
+  return v===1 ? `points/${id}.points.json` : `points/${id}.${v}.points.json`;
+}
+
+async function loadVariant(id,v){
+  customCache[id]=customCache[id]||{};
+  if(v in customCache[id]) return customCache[id][v];
+  try{
+    const res=await fetch(variantFile(id,v),{cache:'no-store'});
+    if(!res.ok){customCache[id][v]=null; return null;}
+    const data=await res.json();
+    if(!Array.isArray(data)||!data.length){customCache[id][v]=null; return null;}
+    customCache[id][v]=data;
+    return data;
+  }catch(err){
+    customCache[id][v]=null;
+    return null;
+  }
+}
+function loadAllVariants(id){
+  return Promise.all([1,2,3].map(v=>loadVariant(id,v)));
+}
+
+const variantsEl=document.getElementById('variants');
+const CYCLE_MS=3500; // auto-advance interval when an object has 2+ loaded variants
+let cycleTimer=null, cyclePresent=[];
+
+function stopCycle(){ if(cycleTimer){clearInterval(cycleTimer); cycleTimer=null;} }
+function applyVariant(id,v){
+  activeVariant[id]=v;
+  variantsEl.querySelectorAll('button').forEach(x=>x.classList.toggle('on',+x.dataset.v===v));
+  morphTo(id,FLAT[id].shape,FLAT[id].color,v);
+}
+function startCycle(id){
+  stopCycle();
+  if(cyclePresent.length<=1)return;
+  cycleTimer=setInterval(()=>{
+    if(current!==id){stopCycle(); return;}
+    const idx=cyclePresent.indexOf(activeVariant[id]||cyclePresent[0]);
+    applyVariant(id,cyclePresent[(idx+1)%cyclePresent.length]);
+  },CYCLE_MS);
+}
+
+function renderVariantPicker(id,results){
+  cyclePresent=[1,2,3].filter(v=>results[v-1]);
+  if(cyclePresent.length<=1){variantsEl.classList.remove('show'); variantsEl.innerHTML=''; stopCycle(); return;}
+  const av=activeVariant[id]||1;
+  variantsEl.classList.add('show');
+  variantsEl.innerHTML=cyclePresent.map(v=>`<button data-v="${v}" class="${v===av?'on':''}">${v}</button>`).join('');
+  startCycle(id); // starts auto-advancing; a manual click below resets the window
+}
+variantsEl.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  applyVariant(current,+b.dataset.v);
+  startCycle(current); // manual pick gets a fresh CYCLE_MS before it auto-advances again
+});
+
+function fitToN(arr){
+  if(arr.length===N) return arr.map(p=>p.slice());
+  if(arr.length>N) return arr.slice(0,N).map(p=>p.slice());
+  const out=arr.map(p=>p.slice());
+  while(out.length<N) out.push(arr[out.length % arr.length].slice());
+  return out;
+}
+
+let cur=shapePoints("galaxy"), tgt=cur.map(p=>p.slice()), mix=1;
+function morphTo(id,kind,color,variant=1){
+  cur=cur.map(p=>[p[0],p[1],p[2]]);
+  const pts=customCache[id]&&customCache[id][variant];
+  tgt=(pts&&pts.length) ? fitToN(pts) : shapePoints(kind||"sphere");
+  cloudColor=color||"#e87d0d";
+  mix=0;
+}
+
+function resize(){
+  const r=cv.parentElement.getBoundingClientRect();
+  W=r.width;H=r.height;
+  cv.width=W*dpr;cv.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+new ResizeObserver(resize).observe(document.getElementById('vp'));
+resize();
+
+function hexRGB(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+
+let lastT=performance.now(),fpsAcc=0,fpsN=0;
+function render(now){
+  const dt=Math.min((now-lastT)/1000,.05); lastT=now;
+  fpsAcc+=1/Math.max(dt,.001); fpsN++;
+  if(fpsN>=30){document.getElementById('fps').textContent=Math.round(fpsAcc/fpsN)+' fps';fpsAcc=0;fpsN=0;}
+
+  if(mix<1){mix=Math.min(1,mix+dt*1.6);}
+  if(spin&&!dragging)yaw+=dt*AUTO_ORBIT_SPEED;
+
+  const bgG=ctx.createLinearGradient(0,0,0,H);
+  bgG.addColorStop(0,'#1d2026'); bgG.addColorStop(1,'#0d0f13');
+  ctx.fillStyle=bgG; ctx.fillRect(0,0,W,H);
+
+  const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  const f=Math.min(W,H)*FOCAL/dist, cxp=W/2, cyp=H/2+VERTICAL_FRAME_OFFSET;
+  const proj=(x,y,z)=>{
+    let X=x*cy-z*sy, Z=x*sy+z*cy;
+    let Y=y*cp-Z*sp; Z=y*sp+Z*cp;
+    const d=Z+dist;
+    if(d<=.05)return null;
+    return [cxp+X*f/d, cyp-Y*f/d, d];
+  };
+
+  if(showGrid){
+    ctx.strokeStyle='rgba(255,255,255,.055)'; ctx.lineWidth=1;
+    for(let g=-4;g<=4;g++){
+      const a=proj(g*.5,-.62,-2), b=proj(g*.5,-.62,2);
+      const c=proj(-2,-.62,g*.5), d=proj(2,-.62,g*.5);
+      if(a&&b){ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+      if(c&&d){ctx.beginPath();ctx.moveTo(c[0],c[1]);ctx.lineTo(d[0],d[1]);ctx.stroke();}
+    }
+  }
+
+  const e=mix<1?(mix*mix*(3-2*mix)):1;
+  const [R,G,B]=hexRGB(cloudColor);
+  for(let i=0;i<N;i++){
+    const a=cur[i],b=tgt[i];
+    const x=a[0]+(b[0]-a[0])*e, y=a[1]+(b[1]-a[1])*e, z=a[2]+(b[2]-a[2])*e;
+    const p=proj(x,y,z);
+    if(!p)continue;
+    const depth=Math.max(.15,Math.min(1,POINT_DEPTH_REF/p[2]));
+    const s=Math.max(POINT_MIN_SIZE,depth*POINT_SIZE_SCALE);
+    ctx.fillStyle=`rgba(${R},${G},${B},${.22+depth*.62})`;
+    ctx.fillRect(p[0],p[1],s,s);
+  }
+  if(mix>=1)cur=tgt.map(p=>p.slice());
+
+  drawGizmo(cy,sy,cp,sp);
+  requestAnimationFrame(render);
+}
+
+const giz=document.getElementById('gizmo');
+function drawGizmo(cy,sy,cp,sp){
+  // Labels/colors follow Blender's convention (Z=blue=up, Y=green=depth),
+  // even though the viewport's internal math is Y-up — this is purely a
+  // relabeling of which arm gets which letter/color; the underlying
+  // rotation vectors (and their correlation with the grid/point cloud)
+  // are unchanged and were verified to match exactly.
+  const ax=[[1,0,0,'#e0574f','X'],[0,1,0,'#5a8ecc','Z'],[0,0,1,'#8bcc5a','Y']];
+  let out='';
+  ax.forEach(([x,y,z,c,l])=>{
+    let X=x*cy-z*sy, Z=x*sy+z*cy;
+    let Y=y*cp-Z*sp;
+    const px=33+X*21, py=33-Y*21;
+    out+=`<line x1="33" y1="33" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="${c}" stroke-width="1.4" opacity=".85"/>
+      <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5.4" fill="${c}" opacity=".9"/>
+      <text x="${px.toFixed(1)}" y="${(py+2.6).toFixed(1)}" font-size="7" text-anchor="middle" fill="#12141a" font-family="IBM Plex Mono">${l}</text>`;
+  });
+  giz.innerHTML=out;
+}
+
+/* ---------- viewport interaction ---------- */
+const vp=document.getElementById('vp');
+let dragging=false,px=0,py=0;
+vp.addEventListener('pointerdown',e=>{
+  if(e.target.closest('#vp-head'))return;
+  dragging=true;px=e.clientX;py=e.clientY;vp.classList.add('drag');vp.setPointerCapture(e.pointerId);
+});
+vp.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  yaw+=(e.clientX-px)*ORBIT_SENSITIVITY_X;
+  pitch=Math.max(PITCH_MIN,Math.min(PITCH_MAX,pitch+(e.clientY-py)*ORBIT_SENSITIVITY_Y));
+  px=e.clientX;py=e.clientY;
+});
+const endDrag=()=>{dragging=false;vp.classList.remove('drag');};
+vp.addEventListener('pointerup',endDrag);
+vp.addEventListener('pointercancel',endDrag);
+vp.addEventListener('wheel',e=>{e.preventDefault();dist=Math.max(DIST_MIN,Math.min(DIST_MAX,dist+e.deltaY*ZOOM_SPEED));},{passive:false});
+
+document.getElementById('btn-spin').onclick=e=>{spin=!spin;e.currentTarget.classList.toggle('on',spin);syncViewChecks();};
+document.getElementById('btn-wire').onclick=e=>{showGrid=!showGrid;e.currentTarget.classList.toggle('on',showGrid);syncViewChecks();};
+syncViewChecks();
+
+/* ---------- keyboard ---------- */
+addEventListener('keydown',e=>{
+  if(!SCENE.length)return;
+  const order=SCENE.flatMap(g=>g.items.map(i=>i.id));
+  if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();
+    select(order[(order.indexOf(current)+1)%order.length]);}
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();
+    select(order[(order.indexOf(current)-1+order.length)%order.length]);}
+});
+
+/* ---------- go ---------- */
+requestAnimationFrame(render); // viewport animates immediately, even while data loads
+boot();
 </script>
-
 </body>
 </html>

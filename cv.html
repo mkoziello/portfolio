@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michał Koziełło — CV</title>
+<meta name="description" content="Michał Koziełło — 3D Generalist &amp; Technical Artist. Six years across environment art, real-time shaders, and production pipelines.">
+<meta name="theme-color" content="#0d0907">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<style>
+/* ==========================================================================
+   TOKENS
+   ========================================================================== */
+:root{
+  --bg-dark:#0d0907;
+  --bg-dark-2:#170f0a;
+  --orange:#ff6b00;
+  --amber:#ffa033;
+  --teal:#3a8f88;
+  --cream:#f7ebd9;
+  --muted-dark:#c7b6a6;
+  --paper:#fbf7f2;
+  --ink:#241a12;
+  --ink-muted:#6f5f51;
+  --orange-ink:#c1500a;
+  --teal-ink:#276b64;
+  --rule-light:#e6dccd;
+
+  --skill-art:#ff6b00;      --skill-art-ink:#c1500a;
+  --skill-tex:#3a8f88;      --skill-tex-ink:#276b64;
+  --skill-proc:#ffa033;     --skill-proc-ink:#a06207;
+  --skill-rig:#d46a8c;      --skill-rig-ink:#a3436a;
+  --skill-vfx:#6a9bd4;      --skill-vfx-ink:#3f6ba8;
+  --skill-perf:#7dd46a;     --skill-perf-ink:#4a8f3a;
+  --skill-audio:#d45e5e;    --skill-audio-ink:#a83c3c;
+  --skill-code:#a970ff;     --skill-code-ink:#6b3fb0;
+
+  --font-display:'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body:'Manrope', system-ui, sans-serif;
+  --font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ==========================================================================
+   RESET / BASE
+   ========================================================================== */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-font-smoothing:antialiased;scroll-snap-type:y proximity;scroll-behavior:smooth;}
+body{font-family:var(--font-body);line-height:1.5;overflow-x:hidden;}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;}
+a{color:inherit;}
+ul{list-style:none;}
+button{font:inherit;background:none;border:none;cursor:pointer;color:inherit;}
+a:focus-visible,button:focus-visible{outline:2px solid var(--orange);outline-offset:3px;border-radius:3px;}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  *,*::before,*::after{transition-duration:.001ms !important;animation-duration:.001ms !important;}
+}
+
+.skip-link{position:absolute;left:-999px;top:0;background:var(--orange);color:#fff;padding:.6rem 1rem;z-index:200;border-radius:0 0 6px 0;}
+.skip-link:focus{left:0;}
+
+/* ==========================================================================
+   SECTIONS / THEMES
+   ========================================================================== */
+.section{
+  min-height:100vh;
+  scroll-snap-align:start;
+  display:flex;
+  align-items:center;
+  padding:clamp(2.2rem,6vw,4rem) clamp(1.3rem,7vw,6rem);
+  position:relative;
+}
+.section-inner{max-width:880px;margin:0 auto;width:100%;}
+
+.theme-dark{background:var(--bg-dark);color:var(--cream);}
+.theme-dark-alt{background:var(--bg-dark-2);color:var(--cream);}
+.theme-light{background:var(--paper);color:var(--ink);}
+
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;font-weight:600;margin-bottom:1rem;display:block;}
+.theme-dark .eyebrow,.theme-dark-alt .eyebrow{color:var(--amber);}
+.theme-light .eyebrow{color:var(--orange-ink);}
+
+.section-title{font-size:clamp(1.7rem,3.6vw,2.5rem);line-height:1.15;margin-bottom:2.2rem;max-width:20ch;text-wrap:balance;}
+
+/* reveal-on-scroll */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease, transform .7s ease;}
+.reveal.in-view{opacity:1;transform:translateY(0);}
+
+/* ==========================================================================
+   SIGNATURE — checker mark, reused as brand + nav
+   ========================================================================== */
+.checker{display:grid;grid-template-columns:repeat(3,10px);grid-template-rows:repeat(3,10px);gap:2px;width:max-content;}
+.checker span{display:block;}
+.checker span:nth-child(1),.checker span:nth-child(4){background:var(--teal);}
+.checker span:nth-child(2),.checker span:nth-child(3){background:var(--orange);}
+    .checker span:nth-child(3), .checker span:nth-child(3) {
+        background: var(--teal);
+    }
+
+.mini-brand{
+  position:fixed;top:1.4rem;left:1.4rem;z-index:100;
+  display:flex;align-items:center;gap:.6rem;
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.06em;color:var(--cream);
+  opacity:0;transform:translateY(-8px);pointer-events:none;
+  transition:opacity .4s ease, transform .4s ease;
+  background:rgba(13,9,7,.55);backdrop-filter:blur(6px);
+  padding:.5rem .8rem;border-radius:999px;
+}
+.mini-brand.visible{opacity:1;transform:translateY(0);pointer-events:auto;}
+.mini-brand .checker span{width:6px;height:6px;}
+.mini-brand .checker{grid-template-columns:repeat(2,6px);grid-template-rows:repeat(2,6px);}
+
+/* ==========================================================================
+   SIDE NAV — checker-dot wayfinding / progress
+   ========================================================================== */
+.side-nav{
+  position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
+  z-index:100;display:flex;flex-direction:column;gap:1.1rem;
+}
+.nav-dot{padding:.3rem;border-radius:6px;opacity:.4;transition:opacity .3s ease, transform .3s ease;}
+.nav-dot .checker{grid-template-columns:repeat(2,7px);grid-template-rows:repeat(2,7px);gap:1.5px;}
+.nav-dot .checker span{width:7px;height:7px;border-radius:1px;}
+.nav-dot:hover{opacity:.75;}
+.nav-dot.active{opacity:1;transform:scale(1.25);}
+
+@media (max-width:820px){
+  .side-nav{
+    right:50%;top:auto;bottom:1rem;transform:translateX(50%);
+    flex-direction:row;gap:.7rem;
+    background:rgba(13,9,7,.5);backdrop-filter:blur(6px);
+    padding:.5rem .7rem;border-radius:999px;
+  }
+  .nav-dot.active{transform:scale(1.15);}
+  .mini-brand{display:none;}
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+#hero{padding-top:6rem;}
+.hero-checker{margin-bottom:1.8rem;}
+.hero-checker .checker{grid-template-columns:repeat(2,13px);grid-template-rows:repeat(2,13px);gap:3px;}
+.hero-title{font-size:clamp(2.6rem,8vw,5rem);line-height:1.04;color:var(--cream);margin-bottom:.7rem;text-wrap:balance;}
+.hero-role{font-family:var(--font-mono);font-size:clamp(.72rem,1.6vw,.9rem);letter-spacing:.14em;color:var(--amber);font-weight:600;margin-bottom:1.8rem;}
+.hero-bio{font-size:1.05rem;line-height:1.75;color:var(--muted-dark);max-width:58ch;margin-bottom:2.2rem;}
+.hero-stats{display:flex;gap:2.4rem;margin-bottom:1.8rem;flex-wrap:wrap;}
+.stat-num{font-family:var(--font-display);font-weight:700;font-size:2rem;color:var(--amber);line-height:1;display:block;}
+.stat-label{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;color:var(--muted-dark);display:block;margin-top:.3rem;}
+.availability-pill{
+  display:inline-flex;align-items:center;gap:.55rem;
+  border:1px solid rgba(58,143,136,.55);border-radius:999px;
+  padding:.5rem 1.1rem;font-size:.82rem;color:var(--cream);
+}
+.availability-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+@media (prefers-reduced-motion:no-preference){
+  .availability-dot{animation:pulse 2.4s ease-in-out infinite;}
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.scroll-cue{
+  position:absolute;left:50%;bottom:2rem;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;color:var(--muted-dark);
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+}
+.scroll-cue .arrow{width:1px;height:22px;background:linear-gradient(var(--teal),transparent);}
+@media (prefers-reduced-motion:no-preference){
+  .scroll-cue{animation:bob 2.4s ease-in-out infinite;}
+}
+@keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,6px);}}
+
+/* ==========================================================================
+   EXPERIENCE
+   ========================================================================== */
+.exp-list{display:flex;flex-direction:column;gap:2.1rem;}
+.exp-entry{border-top:1px solid var(--rule-light);padding-top:1.4rem;}
+.exp-entry:first-child{border-top:none;padding-top:0;}
+.exp-eyebrow{display:block;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.05em;color:var(--orange-ink);margin-bottom:.45rem;}
+.exp-title{font-size:1.25rem;color:var(--ink);margin-bottom:.6rem;}
+.exp-title a{text-decoration:none;border-bottom:1.5px solid var(--orange);}
+.exp-title a:hover{color:var(--orange-ink);}
+.exp-bullets li{position:relative;padding-left:1.05rem;font-size:.95rem;color:var(--ink-muted);line-height:1.65;margin-bottom:.4rem;}
+.exp-bullets li::before{content:'';position:absolute;left:0;top:.6em;width:5px;height:5px;background:var(--orange);}
+
+/* ==========================================================================
+   PERSONAL PROJECTS
+   ========================================================================== */
+.proj-grid{display:flex;flex-direction:column;gap:1.9rem;}
+.proj-card{
+  border:1px solid rgba(58,143,136,.35);border-radius:14px;
+  padding:1.6rem 1.8rem;background:rgba(255,255,255,.02);
+  transition:border-color .25s ease, background .25s ease;
+}
+.proj-card:hover{border-color:var(--teal);background:rgba(58,143,136,.06);}
+.proj-eyebrow{display:block;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.05em;color:var(--teal);margin-bottom:.5rem;}
+.proj-title{font-size:1.18rem;color:var(--cream);margin-bottom:.5rem;}
+.proj-desc{font-size:.92rem;color:var(--muted-dark);line-height:1.65;max-width:58ch;margin-bottom:.7rem;}
+.proj-link{display:inline-flex;align-items:center;gap:.35rem;font-family:var(--font-mono);font-size:.75rem;color:var(--amber);text-decoration:none;}
+.proj-link:hover{color:var(--orange);}
+
+/* ==========================================================================
+   SKILLS
+   ========================================================================== */
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.7rem 2rem;}
+.skill-cat-title{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;font-weight:600;margin-bottom:.65rem;}
+.chip-row{display:flex;flex-wrap:wrap;gap:.5rem;}
+.chip{
+  border-radius:999px;padding:.38rem .82rem;font-size:.8rem;color:var(--ink);
+  border:1.4px solid;background:rgba(0,0,0,.02);transition:background .2s ease;
+}
+.skills-grid>div:nth-child(1) .skill-cat-title{color:var(--skill-art-ink);} .skills-grid>div:nth-child(1) .chip{border-color:var(--skill-art);} .skills-grid>div:nth-child(1) .chip:hover{background:rgba(255,107,0,.1);}
+.skills-grid>div:nth-child(2) .skill-cat-title{color:var(--skill-tex-ink);} .skills-grid>div:nth-child(2) .chip{border-color:var(--skill-tex);} .skills-grid>div:nth-child(2) .chip:hover{background:rgba(58,143,136,.1);}
+.skills-grid>div:nth-child(3) .skill-cat-title{color:var(--skill-proc-ink);} .skills-grid>div:nth-child(3) .chip{border-color:var(--skill-proc);} .skills-grid>div:nth-child(3) .chip:hover{background:rgba(255,160,51,.12);}
+.skills-grid>div:nth-child(4) .skill-cat-title{color:var(--skill-rig-ink);} .skills-grid>div:nth-child(4) .chip{border-color:var(--skill-rig);} .skills-grid>div:nth-child(4) .chip:hover{background:rgba(212,106,140,.1);}
+.skills-grid>div:nth-child(5) .skill-cat-title{color:var(--skill-vfx-ink);} .skills-grid>div:nth-child(5) .chip{border-color:var(--skill-vfx);} .skills-grid>div:nth-child(5) .chip:hover{background:rgba(106,155,212,.1);}
+.skills-grid>div:nth-child(6) .skill-cat-title{color:var(--skill-perf-ink);} .skills-grid>div:nth-child(6) .chip{border-color:var(--skill-perf);} .skills-grid>div:nth-child(6) .chip:hover{background:rgba(125,212,106,.12);}
+.skills-grid>div:nth-child(7) .skill-cat-title{color:var(--skill-audio-ink);} .skills-grid>div:nth-child(7) .chip{border-color:var(--skill-audio);} .skills-grid>div:nth-child(7) .chip:hover{background:rgba(212,94,94,.1);}
+.skills-grid>div:nth-child(8) .skill-cat-title{color:var(--skill-code-ink);} .skills-grid>div:nth-child(8) .chip{border-color:var(--skill-code);} .skills-grid>div:nth-child(8) .chip:hover{background:rgba(169,112,255,.12);}
+
+/* ==========================================================================
+   SOFTWARE
+   ========================================================================== */
+.software-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem 2.2rem;}
+.software-item{border-left:2px solid rgba(255,160,51,.4);padding-left:1rem;}
+.software-name{display:block;font-weight:600;font-size:.98rem;color:var(--cream);margin-bottom:.25rem;}
+.software-caption{display:block;font-size:.82rem;color:var(--muted-dark);line-height:1.5;}
+
+/* ==========================================================================
+   CONTACT
+   ========================================================================== */
+.contact-lede{font-size:clamp(1.6rem,3.4vw,2.3rem);line-height:1.2;margin-bottom:1.6rem;max-width:18ch;text-wrap:balance;}
+.contact-note{font-size:.92rem;color:var(--ink-muted);line-height:1.6;max-width:52ch;margin-bottom:2.2rem;}
+.cta-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:2.6rem;}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--orange);color:#fff;font-weight:600;font-size:.95rem;
+  padding:.85rem 1.5rem;border-radius:10px;text-decoration:none;
+  transition:transform .2s ease, background .2s ease;
+}
+.btn-primary:hover{background:var(--orange-ink);transform:translateY(-2px);}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:.5rem;
+  border:1.5px solid var(--ink);color:var(--ink);font-weight:600;font-size:.95rem;
+  padding:.85rem 1.5rem;border-radius:10px;background:none;
+  transition:background .2s ease, transform .2s ease;
+}
+.btn-ghost:hover{background:rgba(36,26,18,.06);transform:translateY(-2px);}
+.contact-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.3rem 2rem;margin-bottom:2.2rem;}
+.contact-label{display:block;font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;color:var(--teal-ink);margin-bottom:.2rem;}
+.contact-value{display:inline-block;font-size:.92rem;color:var(--ink);text-decoration:none;}
+.contact-value:hover{color:var(--orange-ink);}
+.footer-note{font-family:var(--font-mono);font-size:.66rem;color:var(--ink-muted);opacity:.7;}
+
+.toast{
+  position:fixed;left:50%;bottom:2rem;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);font-size:.82rem;
+  padding:.7rem 1.1rem;border-radius:8px;opacity:0;pointer-events:none;
+  transition:opacity .3s ease, transform .3s ease;z-index:200;
+}
+.toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width:640px){
+  .section{padding:5rem 1.3rem 3.5rem;}
+  .hero-stats{gap:1.6rem;}
+  .cta-row{flex-direction:column;}
+  .btn-primary,.btn-ghost{justify-content:center;}
+}
+
+/* ==========================================================================
+   PRINT
+   ========================================================================== */
+@media print{
+  .side-nav,.mini-brand,.scroll-cue,.skip-link{display:none;}
+  html{scroll-snap-type:none;}
+  body{background:#fff;color:#241a12;}
+  .section{min-height:0;display:block;padding:14px 18px;break-inside:avoid;}
+  .theme-dark,.theme-dark-alt{background:#fff;color:#241a12;}
+  .theme-dark .eyebrow,.theme-dark-alt .eyebrow{color:var(--orange-ink);}
+  .hero-title,.exp-title,.proj-title,.software-name,.contact-lede{color:#241a12;}
+  .hero-bio,.proj-desc,.software-caption{color:#4a3d33;}
+  .reveal{opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#hero">Skip to content</a>
+
+<div class="mini-brand" aria-hidden="true">
+  <div class="checker"><span></span><span></span><span></span><span></span></div>
+  Michał Koziełło
+</div>
+
+<nav class="side-nav" aria-label="Section navigation">
+  <button class="nav-dot" data-target="hero" aria-label="Go to Intro"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
+  <button class="nav-dot" data-target="experience" aria-label="Go to Professional Experience"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
+  <button class="nav-dot" data-target="personal" aria-label="Go to Personal Projects"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
+  <button class="nav-dot" data-target="skills" aria-label="Go to Skills"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
+  <button class="nav-dot" data-target="software" aria-label="Go to Software"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
+  <button class="nav-dot" data-target="contact" aria-label="Go to Contact"><div class="checker"><span></span><span></span><span></span><span></span></div></button>
+</nav>
+
+<!-- ============================== HERO ============================== -->
+<section class="section theme-dark" id="hero">
+  <div class="section-inner">
+    <div class="hero-checker reveal"><div class="checker"><span></span><span></span><span></span><span></span></div></div>
+    <h1 class="hero-title reveal">Michał Koziełło</h1>
+    <div class="hero-role reveal">3D GENERALIST &amp; TECHNICAL ARTIST</div>
+    <p class="hero-bio reveal">Six years in the games industry, working across environment art, real-time shading, rigging, and the pipelines that connect them. I care as much about how a scene performs as how it looks — and I write and produce music on the side, which shapes how I think about mood and pacing.</p>
+    <div class="hero-stats reveal">
+      <div><span class="stat-num">6</span><span class="stat-label">YEARS EXP.</span></div>
+      <div><span class="stat-num">3</span><span class="stat-label">SHIPPED TITLES</span></div>
+    </div>
+    <div class="reveal">
+      <span class="availability-pill"><span class="availability-dot"></span>Open to new projects &amp; full-time roles</span>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>SCROLL</span><span class="arrow"></span></div>
+</section>
+
+<!-- ========================== EXPERIENCE ========================== -->
+<section class="section theme-light" id="experience">
+  <div class="section-inner">
+    <span class="eyebrow reveal">PROFESSIONAL EXPERIENCE</span>
+    <h2 class="section-title reveal">Shipped, tested, played.</h2>
+
+    <div class="exp-list">
+      <div class="exp-entry reveal">
+        <span class="exp-eyebrow">COMMERCIAL PROJECT · TRIPLE ESPRESSO · EVENT-MANAGEMENT SIM</span>
+        <h3 class="exp-title"><a href="https://store.steampowered.com/app/2210520/COPA_CITY/" target="_blank" rel="noopener">Copa City</a></h3>
+        <ul class="exp-bullets">
+          <li>Built 3D props, city buildings, and landmark architecture for real-world stadiums and host cities</li>
+          <li>Authored crowd and character animation for tens of thousands of on-screen fans</li>
+          <li>Profiled, optimized, and bug-hunted at city-wide simulation scale</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry reveal">
+        <span class="exp-eyebrow">COMMERCIAL PROJECT · ALPINE RESORT SIM</span>
+        <h3 class="exp-title"><a href="https://store.steampowered.com/app/2423760/Above_the_Snow/" target="_blank" rel="noopener">Above the Snow</a></h3>
+        <ul class="exp-bullets">
+          <li>Modeled 3D props, lodge and resort buildings, and environment assets for a hand-drawn 1960s alpine setting</li>
+          <li>Handled character and prop animation</li>
+          <li>Owned lighting and lookdev, balancing cozy warmth against genuine survival stakes</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry reveal">
+        <span class="exp-eyebrow">COMMERCIAL PROJECT · BRAVE LAMB STUDIO / NACON · WWI STRATEGY</span>
+        <h3 class="exp-title"><a href="https://store.steampowered.com/app/1553000/War_Hospital/" target="_blank" rel="noopener">War Hospital</a></h3>
+        <ul class="exp-bullets">
+          <li>Built 3D props, hospital and field buildings, and environment assets</li>
+          <li>Contributed animation work to ground a difficult subject in an authentic period setting</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry reveal">
+        <span class="exp-eyebrow">3 ADDITIONAL TITLES UNDER NDA</span>
+        <h3 class="exp-title">Freelance &amp; R&amp;D</h3>
+        <ul class="exp-bullets">
+          <li>3D models, animation systems, VFX, and shaders across multiple unannounced and freelance projects</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= PERSONAL PROJECTS ========================= -->
+<section class="section theme-dark-alt" id="personal">
+  <div class="section-inner">
+    <span class="eyebrow reveal">PERSONAL PROJECTS</span>
+    <h2 class="section-title reveal">What I build off the clock.</h2>
+
+    <div class="proj-grid">
+      <div class="proj-card reveal">
+        <span class="proj-eyebrow">IN DEVELOPMENT</span>
+        <h3 class="proj-title">Sea of Clouds</h3>
+        <p class="proj-desc">Solo game project — full ownership of atmospheric world-building and technical systems, from block-out to final shader.</p>
+      </div>
+
+      <div class="proj-card reveal">
+        <span class="proj-eyebrow">MUSIC / HARMONY</span>
+        <h3 class="proj-title">Harmony</h3>
+        <p class="proj-desc">A music game built around deliberately simple design, letting composition and sound design lead the experience.</p>
+        <a class="proj-link" href="https://VertexVoodoo.studio" target="_blank" rel="noopener">VertexVoodoo.studio (WIP) →</a>
+      </div>
+
+      <div class="proj-card reveal">
+        <span class="proj-eyebrow">DATA VISUALIZATION</span>
+        <h3 class="proj-title">Gaia 3D Galaxy</h3>
+        <p class="proj-desc">Real-time 3D visualization of ESA's Gaia catalog — nearly two million real stars — queried via SQL and rendered with a custom optimized shader, built in both PlayCanvas and Unity.</p>
+        <a class="proj-link" href="https://playcanvas.com/project/1523304/overview/floatingpoints" target="_blank" rel="noopener">View on PlayCanvas →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== SKILLS =============================== -->
+<section class="section theme-light" id="skills">
+  <div class="section-inner">
+    <span class="eyebrow reveal">SKILLS</span>
+    <h2 class="section-title reveal">Generalist, full stack.</h2>
+
+    <div class="skills-grid reveal">
+      <div>
+        <div class="skill-cat-title">3D ART &amp; MODELING</div>
+        <div class="chip-row">
+          <span class="chip">3D Props</span><span class="chip">Environment Art</span><span class="chip">Hard-Surface</span><span class="chip">PBR Pipeline</span><span class="chip">Real-Time Pipeline</span><span class="chip">LOD Optimization</span>
+        </div>
+      </div>
+      <div>
+        <div class="skill-cat-title">TEXTURING</div>
+        <div class="chip-row">
+          <span class="chip">UV Unwrapping</span><span class="chip">Texture Painting</span><span class="chip">Trim Sheets &amp; Atlases</span>
+        </div>
+      </div>
+      <div>
+        <div class="skill-cat-title">PROCEDURAL GENERATION</div>
+        <div class="chip-row">
+          <span class="chip">Substance Designer</span><span class="chip">Geometry Nodes</span><span class="chip">Unity Procedural Tools</span>
+        </div>
+      </div>
+      <div>
+        <div class="skill-cat-title">RIGGING &amp; ANIMATION</div>
+        <div class="chip-row">
+          <span class="chip">Skinning</span><span class="chip">Rigging</span><span class="chip">Animation</span><span class="chip">IK Systems</span><span class="chip">Vertex Animation (VAT)</span>
+        </div>
+      </div>
+      <div>
+        <div class="skill-cat-title">VFX &amp; SHADING</div>
+        <div class="chip-row">
+          <span class="chip">VFX</span><span class="chip">Shaders</span><span class="chip">Materials</span><span class="chip">HLSL</span>
+        </div>
+      </div>
+      <div>
+        <div class="skill-cat-title">PERFORMANCE &amp; OPTIMIZATION</div>
+        <div class="chip-row">
+          <span class="chip">Profiling</span><span class="chip">Optimization</span>
+        </div>
+      </div>
+      <div>
+        <div class="skill-cat-title">AUDIO</div>
+        <div class="chip-row">
+          <span class="chip">SFX Design</span><span class="chip">Music Production</span><span class="chip">Composition</span>
+        </div>
+      </div>
+      <div>
+        <div class="skill-cat-title">PROGRAMMING &amp; TECH</div>
+        <div class="chip-row">
+          <span class="chip">Python</span><span class="chip">C#</span><span class="chip">JavaScript</span><span class="chip">Big Data</span><span class="chip">Look Development</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== SOFTWARE ============================== -->
+<section class="section theme-dark" id="software">
+  <div class="section-inner">
+    <span class="eyebrow reveal">SOFTWARE</span>
+    <h2 class="section-title reveal">Daily toolkit.</h2>
+
+    <div class="software-grid reveal">
+      <div class="software-item">
+        <span class="software-name">Blender</span>
+        <span class="software-caption">Modeling, Geometry Nodes, scene assembly</span>
+      </div>
+      <div class="software-item">
+        <span class="software-name">ZBrush</span>
+        <span class="software-caption">High-poly sculpting, organic detail</span>
+      </div>
+      <div class="software-item">
+        <span class="software-name">Substance Designer</span>
+        <span class="software-caption">Procedural materials, trim sheets</span>
+      </div>
+      <div class="software-item">
+        <span class="software-name">Substance Painter</span>
+        <span class="software-caption">Hand-painted PBR texturing</span>
+      </div>
+      <div class="software-item">
+        <span class="software-name">JangaFX IlluGen</span>
+        <span class="software-caption">Procedural VFX asset generation</span>
+      </div>
+      <div class="software-item">
+        <span class="software-name">Unity</span>
+        <span class="software-caption">Real-time implementation, VAT, lookdev</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CONTACT ============================== -->
+<section class="section theme-light" id="contact">
+  <div class="section-inner">
+    <span class="eyebrow reveal">SAY HELLO</span>
+    <h2 class="contact-lede reveal">Got something worth building? Let's talk.</h2>
+    <p class="contact-note reveal">This page summarizes the work — the interactive portfolio has full project breakdowns, renders, and the complete skill set.</p>
+
+    <div class="cta-row reveal">
+      <a class="btn-primary" href="mailto:mkoziello@gmail.com">Say hello →</a>
+      <button class="btn-ghost" id="copyEmailBtn" type="button">Copy email</button>
+    </div>
+
+    <div class="contact-links reveal">
+      <div>
+        <span class="contact-label">EMAIL</span>
+        <a class="contact-value" href="mailto:mkoziello@gmail.com">mkoziello@gmail.com</a>
+      </div>
+      <div>
+        <span class="contact-label">PORTFOLIO</span>
+        <a class="contact-value" href="""https://VertexVoodoo.studio" target="_blank" rel="noopener">VertexVoodoo.studio (WIP)</a>
+      </div>
+      <div>
+        <span class="contact-label">ARTSTATION</span>
+        <a class="contact-value" href="https://www.artstation.com/whoisthetomatoman" target="_blank" rel="noopener">whoisthetomatoman</a>
+      </div>
+      <div>
+        <span class="contact-label">LINKEDIN</span>
+        <a class="contact-value" href="https://www.linkedin.com/in/micha%C5%82-kozie%C5%82%C5%82o-853582161/" target="_blank" rel="noopener">Michał-Koziełło</a>
+      </div>
+      <div>
+        <span class="contact-label">LOCATION</span>
+        <a class="contact-value" href="https://share.google/SjTNS5GGv32LVgSEV" target="_blank" rel="noopener">Poland</a>
+      </div>
+    </div>
+
+    <div class="footer-note reveal">MICHAŁ KOZIEŁŁO · UPDATED JULY 2026</div>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Copied — mkoziello@gmail.com</div>
+
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+  var navDots = Array.prototype.slice.call(document.querySelectorAll('.nav-dot'));
+  var miniBrand = document.querySelector('.mini-brand');
+  var hero = document.getElementById('hero');
+
+  /* ---- reveal on scroll ---- */
+  if('IntersectionObserver' in window){
+    var revealObserver = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('in-view');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.15});
+    document.querySelectorAll('.reveal').forEach(function(el){ revealObserver.observe(el); });
+
+    /* ---- active nav dot ---- */
+    var navObserver = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          navDots.forEach(function(dot){
+            dot.classList.toggle('active', dot.dataset.target === entry.target.id);
+          });
+        }
+      });
+    }, {threshold:0.5});
+    sections.forEach(function(s){ navObserver.observe(s); });
+
+    /* ---- mini brand mark after hero ---- */
+    var heroObserver = new IntersectionObserver(function(entries){
+      miniBrand.classList.toggle('visible', !entries[0].isIntersecting);
+    }, {threshold:0});
+    heroObserver.observe(hero);
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
+  }
+
+  /* ---- nav dot / mini brand clicks ---- */
+  function goToSection(id){
+    var el = document.getElementById(id);
+    if(el) el.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
+  }
+  navDots.forEach(function(dot){
+    dot.addEventListener('click', function(){ goToSection(dot.dataset.target); });
+  });
+  miniBrand.addEventListener('click', function(){ goToSection('hero'); });
+
+  /* ---- keyboard navigation ---- */
+  function currentIndex(){
+    var best = 0, bestDist = Infinity;
+    sections.forEach(function(s, i){
+      var dist = Math.abs(s.getBoundingClientRect().top);
+      if(dist < bestDist){ bestDist = dist; best = i; }
+    });
+    return best;
+  }
+  document.addEventListener('keydown', function(e){
+    var tag = (document.activeElement && document.activeElement.tagName) || '';
+    if(tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if(e.key === 'ArrowDown' || e.key === 'PageDown'){
+      e.preventDefault();
+      var next = sections[Math.min(currentIndex() + 1, sections.length - 1)];
+      next.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
+    } else if(e.key === 'ArrowUp' || e.key === 'PageUp'){
+      e.preventDefault();
+      var prev = sections[Math.max(currentIndex() - 1, 0)];
+      prev.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
+    }
+  });
+
+  /* ---- copy email ---- */
+  var copyBtn = document.getElementById('copyEmailBtn');
+  var toast = document.getElementById('toast');
+  var toastTimer;
+  copyBtn.addEventListener('click', function(){
+    var email = 'mkoziello@gmail.com';
+    function showToast(){
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function(){ toast.classList.remove('visible'); }, 2400);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(email).then(showToast).catch(function(){
+        window.location.href = 'mailto:' + email;
+      });
+    } else {
+      window.location.href = 'mailto:' + email;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

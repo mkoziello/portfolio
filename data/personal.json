@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "id": "sea",
+      "name": "Sea of Clouds",
+      "color": "#8ecfd6",
+      "shape": "cloud",
+      "type": "MESH",
+      "tag": "In development",
+      "desc": "Solo game project. Full ownership of atmospheric world-building and technical systems, from block-out to final shader.",
+      "stack": "Solo · art + tech"
+    },
+    {
+      "id": "harm",
+      "name": "Harmony",
+      "color": "#c98ee0",
+      "shape": "helix",
+      "type": "MESH",
+      "tag": "Music game",
+      "desc": "Built around deliberately simple design, letting composition and sound design lead the experience.",
+      "stack": "Design · composition · sound"
+    },
+    {
+      "id": "gaia",
+      "name": "Gaia 3D Galaxy",
+      "color": "#ffd27f",
+      "shape": "galaxy",
+      "type": "MESH",
+      "tag": "Data visualization",
+      "desc": "Real-time 3D visualization of ESA's Gaia catalog — nearly two million real stars — rendered with a custom optimized shader.",
+      "stack": "PlayCanvas · Unity · custom shader"
+    }
+  ]
+}

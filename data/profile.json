@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "profile",
+      "name": "Profile",
+      "color": "#e87d0d",
+      "shape": "galaxy",
+      "type": "EMPTY",
+      "fullName": "Michał Koziełło",
+      "title": "3D Generalist & Technical Artist",
+      "location": "Poland",
+      "email": "mkoziello@gmail.com",
+      "site": "VertexVoodoo.studio",
+      "artstation": "artstation.com/whoisthetomatoman",
+      "linkedin": "linkedin.com/in/michał-koziełło-853582161/",
+      "bio": "3D generalist and technical artist with six years in the games industry, working across environment art, real-time shading, rigging, and the pipelines that connect them.",
+      "status": "Open to new projects and full-time roles",
+      "stats": {
+        "years": "6",
+        "shipped": "3 commercial titles",
+        "nda": "3"
+      }
+    }
+  ]
+}
