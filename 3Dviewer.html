@@ -641,6 +641,8 @@ let modelRadius = 1;
 
 function disposeCurrent(){
   if (!root) return;
+  // textures handed over by the manifest are shared and get disposed on their own schedule
+  const keep = new Set(Object.values(manifestTex));
   root.traverse(o => {
     if (!o.isMesh) return;
     o.geometry.dispose();
@@ -651,7 +653,6 @@ function disposeCurrent(){
     });
   });
   meshes.forEach(m => { if (m.unlitVC) m.unlitVC.dispose(); });
-  const keep = new Set(Object.values(manifestTex));   // shared across meshes, disposed separately
   scene.remove(root);
   root = null; meshes = [];
   if (unlitMat){ unlitMat.dispose(); unlitMat = null; }
