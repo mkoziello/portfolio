@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michał Koziełło — VertexVoodoo Model Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#151515; --panel:#232323; --head:#2e2e2e; --edge:#111;
+    --line:#3a3a3a; --txt:#cfcfcf; --dim:#8a8a8a;
+    --acc:#e87d0d;       /* active / highlight */
+    --sel:#4772b3;       /* selection blue */
+    --grn:#5ba85b;
+    --vp1:#1d2026; --vp2:#0e1014;
+    --fill:#3f4a5a;      /* slider fill */
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
+    font-family:Inter,system-ui,sans-serif;font-size:12px;-webkit-font-smoothing:antialiased;
+    -webkit-user-select:none;user-select:none;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;}
+  :focus-visible{outline:1px solid var(--acc);outline-offset:-1px;}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#484848;border-radius:5px;border:2px solid var(--panel)}
+
+  #app{display:grid;height:100%;
+    grid-template-rows:26px 1fr 20px;
+    grid-template-columns:216px 1fr 300px;
+    grid-template-areas:"menu menu menu" "out vp props" "stat stat stat";
+    gap:2px;padding:2px;background:var(--edge);}
+
+  /* ---------- menu ---------- */
+  #menu{grid-area:menu;background:var(--head);display:flex;align-items:center;gap:2px;padding:0 6px;position:relative;z-index:70;}
+  #menu .logo{display:flex;align-items:center;gap:7px;padding-right:10px;margin-right:4px;border-right:1px solid var(--line);}
+  #menu .logo svg{display:block;flex-shrink:0;}
+  #menu .logo b{font-size:11.5px;font-weight:600;letter-spacing:.01em;}
+  #menu .mnu{position:relative;}
+  #menu .mi{padding:4px 8px;border-radius:3px;color:var(--dim);font-size:11.5px;}
+  #menu .mi:hover{background:#3d3d3d;color:var(--txt);}
+  #menu .mnu.open .mi{background:#3d3d3d;color:var(--txt);}
+  #menu .sp{flex:1;}
+  #menu .badge{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);padding:0 6px;}
+  #menu .badge b{color:var(--grn);font-weight:500;}
+
+  .dd{position:absolute;top:calc(100% + 2px);left:0;min-width:210px;background:#282828;
+    border:1px solid var(--line);box-shadow:0 10px 26px rgba(0,0,0,.45);padding:4px;display:none;z-index:80;}
+  .mnu.open .dd{display:block;}
+  .di{display:flex;align-items:center;gap:9px;width:100%;padding:6px 9px;border-radius:2px;
+    font-size:11.5px;color:var(--txt);text-align:left;}
+  .di:hover{background:var(--sel);color:#fff;}
+  .di .ck{width:10px;flex-shrink:0;color:var(--acc);font-size:10px;opacity:0;}
+  .di.checked .ck{opacity:1;}
+  .di .lb{flex:1;}
+  .di .kx{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#777;}
+  .di:hover .kx{color:#dfe4ec;}
+  .ddsep{height:1px;background:var(--line);margin:4px 3px;}
+
+  /* ---------- outliner ---------- */
+  #out{grid-area:out;background:var(--panel);display:flex;flex-direction:column;min-height:0;}
+  .ph{background:var(--head);padding:5px 9px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .ph .k{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#666;margin-left:auto;text-transform:none;letter-spacing:0;}
+  #tree{flex:1;overflow-y:auto;padding:5px 0;}
+  .grp{margin-bottom:2px;}
+  .gh{display:flex;align-items:center;gap:6px;width:100%;padding:4px 9px;color:var(--dim);font-size:11.5px;text-align:left;}
+  .gh:hover{background:#2a2a2a;}
+  .gh .car{font-size:8px;transition:transform .18s;color:#777;}
+  .grp.closed .gh .car{transform:rotate(-90deg);}
+  .gh .cnt{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#666;}
+  .grp.closed .kids{display:none;}
+  .ob{display:flex;align-items:center;gap:7px;width:100%;padding:4px 9px 4px 26px;text-align:left;
+    font-size:11.5px;color:var(--txt);position:relative;}
+  .ob:hover{background:#2c2c2c;}
+  .ob.on{background:var(--sel);color:#fff;}
+  .ob .ic{width:11px;height:11px;flex-shrink:0;border-radius:2px;background:#4a4a4a;}
+  .ob .nm{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .ob .tagx{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#777;}
+  .ob.on .tagx{color:#cddcf5;}
+
+  /* ---------- viewport ---------- */
+  #vp{grid-area:vp;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--vp1) 0%,var(--vp2) 100%);cursor:grab;}
+  #vp.drag{cursor:grabbing;}
+  #vp canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  #vp.over::after{content:'Drop .glb / .gltf to preview';position:absolute;inset:6px;z-index:5;
+    border:1px dashed var(--acc);border-radius:3px;display:grid;place-items:center;
+    background:rgba(232,125,13,.07);color:var(--acc);font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  .ov{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:10px;pointer-events:none;color:#9aa4b4;}
+  #vp-head{top:0;left:0;right:0;height:24px;display:flex;align-items:center;gap:8px;padding:0 8px;
+    background:rgba(20,22,27,.72);border-bottom:1px solid rgba(255,255,255,.06);pointer-events:auto;z-index:4;}
+  #vp-head .mode{background:#3a3f4a;color:#dfe4ec;padding:2px 7px;border-radius:3px;font-size:10px;}
+  #vp-head .path{color:#7e8797;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  #vp-head .path b{color:var(--acc);font-weight:500;}
+  #vp-head .sp{flex:1;}
+  #vp-head button{color:#7e8797;padding:2px 6px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+  #vp-head button:hover{background:#3a3f4a;color:#dfe4ec;}
+  #vp-head button.on{color:var(--acc);}
+  #shading{display:flex;gap:3px;margin-right:2px;}
+  #shading button{padding:2px 7px;background:rgba(255,255,255,.07);border:1px solid transparent;}
+  #shading button.on{background:var(--acc);color:#1a1004;border-color:var(--acc);}
+  #vp-stats{top:32px;left:10px;line-height:1.65;color:#7e8797;}
+  #vp-stats b{color:#b9c2d0;font-weight:500;}
+  #vp-hint{bottom:10px;left:10px;color:#5e6674;}
+  #gizmo{position:absolute;top:32px;right:12px;width:66px;height:66px;pointer-events:none;}
+  #vp-load{inset:0;display:none;place-items:center;background:rgba(14,16,20,.55);z-index:6;
+    font-size:11.5px;color:#9aa4b4;}
+  #vp-load.show{display:grid;}
+  #vp-load .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);display:inline-block;
+    margin-right:7px;animation:pulse 1.1s ease-in-out infinite;vertical-align:1px;}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+  /* ---------- properties ---------- */
+  #props{grid-area:props;background:var(--panel);display:flex;flex-direction:column;min-height:0;}
+  #pbody{flex:1;overflow-y:auto;}
+  .pnl{border-bottom:1px solid var(--edge);}
+  .pnl .pt{display:flex;align-items:center;gap:6px;width:100%;padding:6px 10px;background:#292929;
+    font-size:11px;font-weight:600;color:#bdbdbd;text-align:left;}
+  .pnl .pt:hover{background:#333;}
+  .pnl .pt .car{font-size:8px;color:#777;transition:transform .18s;}
+  .pnl.closed .pt .car{transform:rotate(-90deg);}
+  .pnl.closed .pc{display:none;}
+  .pc{padding:9px 10px 12px;}
+  .fld{display:flex;gap:8px;align-items:flex-start;margin-bottom:5px;}
+  .fld .fl{width:82px;flex-shrink:0;color:var(--dim);font-size:11px;padding-top:3px;}
+  .fld .fv{flex:1;background:#1b1b1b;border:1px solid #383838;border-radius:3px;padding:3px 7px;
+    font-size:11.5px;color:#e0e0e0;min-height:22px;line-height:1.45;word-break:break-word;}
+  .fld .fv.a{color:var(--acc);}
+  .fld .fv.mono{font-family:'IBM Plex Mono',monospace;font-size:10.5px;}
+  .note{font-size:11.5px;line-height:1.65;color:#b0b0b0;}
+  .note p{margin:0 0 9px;}
+  .note p:last-child{margin:0;}
+  .note code{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#d9b48a;
+    background:#1b1b1b;border:1px solid #333;border-radius:2px;padding:0 3px;}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;}
+  .mrow{display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid #2b2b2b;font-size:11px;}
+  .mrow:last-of-type{border-bottom:none;}
+  .mrow .mk{width:64px;flex-shrink:0;color:var(--dim);}
+  .mrow .mv{flex:1;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#b8b8b8;
+    overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .mrow .mz{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6d6d6d;}
+  .mrow.off .mv,.mrow.off .mk{color:#5a5a5a;}
+  .mrow .src{font-size:9px;padding:1px 4px;border-radius:2px;background:#333;color:#8f8f8f;}
+  .mrow .src.json{background:#3a2e1c;color:var(--acc);}
+  .tgl.sm{padding:3px 6px;font-size:10px;}
+  .chip{background:#333;border:1px solid #444;border-radius:3px;padding:3px 7px;font-size:10.5px;color:#c8c8c8;}
+
+  /* ---------- sliders / toggles ---------- */
+  .sld{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+  .sld .fl{width:78px;flex-shrink:0;color:var(--dim);font-size:11px;}
+  .rng{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:20px;border-radius:3px;
+    border:1px solid #383838;cursor:ew-resize;
+    background:linear-gradient(90deg,var(--fill) 0 var(--p,50%),#1b1b1b var(--p,50%) 100%);}
+  .rng::-webkit-slider-thumb{-webkit-appearance:none;width:4px;height:18px;border-radius:2px;
+    background:var(--acc);border:none;cursor:ew-resize;}
+  .rng::-moz-range-thumb{width:4px;height:18px;border-radius:2px;background:var(--acc);border:none;cursor:ew-resize;}
+  .rng:hover{border-color:#4a4a4a;}
+  .sld .val{width:42px;flex-shrink:0;text-align:right;font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;color:#dcdcdc;}
+  .sld .rst{width:14px;flex-shrink:0;color:#5f5f5f;font-size:11px;line-height:1;text-align:center;}
+  .sld .rst:hover{color:var(--acc);}
+  .sld .rst.hide{visibility:hidden;}
+  .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+  .tgl{background:#1b1b1b;border:1px solid #383838;border-radius:3px;padding:4px 8px;
+    font-size:10.5px;color:#a8a8a8;display:flex;align-items:center;gap:6px;}
+  .tgl:hover{border-color:#4a4a4a;color:var(--txt);}
+  .tgl .bx{width:8px;height:8px;border-radius:2px;background:#3a3a3a;}
+  .tgl.on{color:var(--acc);border-color:#5c452a;}
+  .tgl.on .bx{background:var(--acc);}
+  .tgl[disabled]{opacity:.4;cursor:not-allowed;}
+  .clr{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+  .clr .fl{width:78px;flex-shrink:0;color:var(--dim);font-size:11px;}
+  input[type=color]{-webkit-appearance:none;appearance:none;flex:1;height:20px;padding:0;
+    background:none;border:1px solid #383838;border-radius:3px;cursor:pointer;}
+  input[type=color]::-webkit-color-swatch-wrapper{padding:2px;}
+  input[type=color]::-webkit-color-swatch{border:none;border-radius:2px;}
+  .btn{display:block;width:100%;margin-top:8px;padding:7px;text-align:center;background:#333;
+    border:1px solid #444;color:#cfcfcf;font-size:11px;border-radius:3px;}
+  .btn:hover{border-color:var(--acc);color:var(--acc);}
+  .btn.pri{background:var(--acc);color:#1a1004;font-weight:600;border-color:var(--acc);}
+  .btn.pri:hover{filter:brightness(1.12);color:#1a1004;}
+
+  /* ---------- status ---------- */
+  #stat{grid-area:stat;background:var(--head);display:flex;align-items:center;gap:14px;padding:0 9px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);overflow:hidden;white-space:nowrap;}
+  #stat .sp{flex:1;}
+  #stat b{color:#b9b9b9;font-weight:500;}
+  #stat .dot{width:6px;height:6px;border-radius:50%;background:var(--grn);display:inline-block;margin-right:5px;}
+  #stat .dot.warn{background:var(--acc);}
+  #s-msg.warn{color:var(--acc);}
+
+  /* ---------- mobile ---------- */
+  @media (max-width:900px){
+    #app{grid-template-columns:1fr;grid-template-rows:26px 112px 44vh 1fr 20px;
+      grid-template-areas:"menu" "out" "vp" "props" "stat";}
+    #out{max-height:112px;}
+    #tree{display:flex;overflow-x:auto;overflow-y:hidden;padding:5px;gap:5px;}
+    .grp{margin:0;flex-shrink:0;}
+    .grp.closed .kids{display:flex;}
+    .kids{display:flex;gap:4px;}
+    .gh{display:none;}
+    .ob{padding:5px 9px;width:auto;white-space:nowrap;border:1px solid #383838;border-radius:3px;}
+    .ob .tagx{display:none;}
+    #vp-stats{display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="menu">
+    <span class="logo">
+      <svg width="12" height="18" viewBox="0 0 80 120" aria-hidden="true">
+        <path d="M8 48 L40 116 L72 48 H54 L40 78 L26 48 Z" fill="#E4DCC9"/>
+        <path d="M40 6 L52 28 L40 44 L28 28 Z" fill="#C1272D"/>
+      </svg>
+      <b>VertexVoodoo</b>
+    </span>
+
+    <div class="mnu" data-menu="file">
+      <button class="mi">File</button>
+      <div class="dd">
+        <button class="di" data-action="open-local"><span class="ck"></span><span class="lb">Open Model…</span><span class="kx">.glb</span></button>
+        <button class="di" data-action="reload"><span class="ck"></span><span class="lb">Reload Manifest</span><span class="kx">R</span></button>
+        <div class="ddsep"></div>
+        <button class="di" data-action="copy-preset"><span class="ck"></span><span class="lb">Copy Material Preset</span><span class="kx">JSON</span></button>
+      </div>
+    </div>
+
+    <div class="mnu" data-menu="view">
+      <button class="mi">View</button>
+      <div class="dd">
+        <button class="di" id="mi-orbit" data-action="toggle-orbit"><span class="ck">✓</span><span class="lb">Auto-Orbit</span></button>
+        <button class="di" id="mi-grid" data-action="toggle-grid"><span class="ck">✓</span><span class="lb">Grid</span></button>
+        <button class="di" id="mi-shadow" data-action="toggle-shadow"><span class="ck">✓</span><span class="lb">Ground Shadow</span></button>
+        <div class="ddsep"></div>
+        <button class="di" data-action="frame"><span class="ck"></span><span class="lb">Frame Selected</span><span class="kx">F</span></button>
+        <button class="di" data-action="fullscreen"><span class="ck"></span><span class="lb">Toggle Fullscreen</span></button>
+      </div>
+    </div>
+
+    <div class="mnu" data-menu="render">
+      <button class="mi">Render</button>
+      <div class="dd">
+        <button class="di" data-action="save-image"><span class="ck"></span><span class="lb">Save Viewport Image…</span><span class="kx">PNG</span></button>
+      </div>
+    </div>
+
+    <span class="sp"></span>
+    <span class="badge">Scene: <b id="scene-name">models</b></span>
+    <span class="badge" id="fps">— fps</span>
+  </div>
+
+  <aside id="out">
+    <div class="ph">Outliner <span class="k" id="out-count">0 models</span></div>
+    <div id="tree"></div>
+  </aside>
+
+  <section id="vp">
+    <canvas id="cv"></canvas>
+    <div class="ov" id="vp-head">
+      <span class="mode">Object Mode</span>
+      <span class="path">View › <b id="vp-obj">—</b></span>
+      <span class="sp"></span>
+      <div id="shading">
+        <button data-shade="pbr" class="on">PBR</button>
+        <button data-shade="unlit">Unlit</button>
+        <button data-shade="normal">Nrm</button>
+      </div>
+      <button id="btn-spin" class="on">Auto-orbit</button>
+      <button id="btn-grid" class="on">Grid</button>
+    </div>
+    <div class="ov" id="vp-stats"></div>
+    <div class="ov" id="vp-hint">Drag to orbit · scroll to zoom · drop a .glb to preview</div>
+    <svg class="ov" id="gizmo" viewBox="0 0 66 66"></svg>
+    <div class="ov" id="vp-load"><span><span class="dot"></span><span id="vp-load-t">Loading…</span></span></div>
+  </section>
+
+  <aside id="props">
+    <div class="ph">Properties <span class="k" id="prop-type">MESH</span></div>
+    <div id="pbody">
+
+      <div class="pnl" id="pnl-object">
+        <button class="pt"><span class="car">▼</span>Object</button>
+        <div class="pc" id="pc-object"></div>
+      </div>
+
+      <div class="pnl" id="pnl-mat">
+        <button class="pt"><span class="car">▼</span>Material</button>
+        <div class="pc">
+          <div class="sld">
+            <span class="fl">Metallic</span>
+            <input class="rng" type="range" id="s-metal" min="0" max="1" step="0.01" value="1">
+            <span class="val" id="v-metal">1.00</span>
+            <button class="rst" id="r-metal" title="Reset to file value">⟲</button>
+          </div>
+          <div class="sld">
+            <span class="fl">Roughness</span>
+            <input class="rng" type="range" id="s-rough" min="0" max="1" step="0.01" value="1">
+            <span class="val" id="v-rough">1.00</span>
+            <button class="rst" id="r-rough" title="Reset to file value">⟲</button>
+          </div>
+          <div class="clr">
+            <span class="fl">Base tint</span>
+            <input type="color" id="s-tint" value="#ffffff">
+            <button class="rst" id="r-tint" title="Reset to file value">⟲</button>
+          </div>
+          <div class="row">
+            <button class="tgl on" id="t-vcol"><span class="bx"></span>Vertex colors</button>
+            <button class="tgl" id="t-wire"><span class="bx"></span>Wireframe</button>
+          </div>
+          <div class="sld">
+            <span class="fl">Env intensity</span>
+            <input class="rng" type="range" id="s-env" min="0" max="3" step="0.01" value="1">
+            <span class="val" id="v-env">1.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <button class="btn" id="btn-reset-mat">Reset to file values</button>
+          <button class="btn pri" id="btn-copy">Copy material preset</button>
+        </div>
+      </div>
+
+      <div class="pnl" id="pnl-maps">
+        <button class="pt"><span class="car">▼</span>Maps</button>
+        <div class="pc">
+          <div id="map-list"></div>
+          <div class="row" id="map-toggles"></div>
+          <div class="sld">
+            <span class="fl">Normal scale</span>
+            <input class="rng" type="range" id="s-nrm" min="0" max="3" step="0.01" value="1">
+            <span class="val" id="v-nrm">1.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="sld">
+            <span class="fl">AO intensity</span>
+            <input class="rng" type="range" id="s-ao" min="0" max="2" step="0.01" value="1">
+            <span class="val" id="v-ao">1.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="sld">
+            <span class="fl">Emission</span>
+            <input class="rng" type="range" id="s-emi" min="0" max="5" step="0.01" value="1">
+            <span class="val" id="v-emi">1.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="clr">
+            <span class="fl">Emissive tint</span>
+            <input type="color" id="s-emc" value="#ffffff">
+            <button class="rst hide">⟲</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pnl" id="pnl-vp">
+        <button class="pt"><span class="car">▼</span>Viewport</button>
+        <div class="pc">
+          <div class="sld">
+            <span class="fl">Exposure</span>
+            <input class="rng" type="range" id="s-exp" min="0.1" max="2.5" step="0.01" value="1">
+            <span class="val" id="v-exp">1.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="row">
+            <button class="tgl on" id="t-shadow"><span class="bx"></span>Ground shadow</button>
+            <button class="tgl" id="t-turn"><span class="bx"></span>Turntable ×2</button>
+          </div>
+          <button class="btn" id="btn-frame">Frame selected</button>
+        </div>
+      </div>
+
+      <div class="pnl closed" id="pnl-notes">
+        <button class="pt"><span class="car">▼</span>Notes</button>
+        <div class="pc" id="pc-notes"></div>
+      </div>
+
+      <div class="pnl closed" id="pnl-help">
+        <button class="pt"><span class="car">▼</span>Adding models</button>
+        <div class="pc">
+          <div class="note">
+            <p>Drop a <code>.glb</code> into <code>models/</code>, then add one entry to <code>data/models.json</code>. Only <code>file</code> is required — everything else falls back to a default.</p>
+            <p>Tune the sliders here, hit <b>Copy material preset</b>, and paste the result into that model's entry. Reload to confirm it opens the way you left it.</p>
+            <p>Dropping a file straight onto the viewport previews it without touching the manifest.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <div id="stat">
+    <span><span class="dot" id="s-dot"></span><span id="s-msg">Ready</span></span>
+    <span>Verts <b id="s-verts">0</b></span>
+    <span>Tris <b id="s-tris">0</b></span>
+    <span>Materials <b id="s-mats">0</b></span>
+    <span class="sp"></span>
+    <span id="s-sel">—</span>
+    <span>v1.0</span>
+  </div>
+</div>
+
+<input type="file" id="filepick" accept=".glb,.gltf" multiple style="display:none">
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls }    from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader }       from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader }      from 'three/addons/loaders/DRACOLoader.js';
+import { KTX2Loader }       from 'three/addons/loaders/KTX2Loader.js';
+import { MeshoptDecoder }   from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment }  from 'three/addons/environments/RoomEnvironment.js';
+
+/* ============================================================
+   SITE CONFIG — the few things that aren't content
+   ============================================================ */
+const MANIFEST      = 'data/models.json'; // the model registry, fetched at load
+const CDN           = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/libs/';
+const FOV           = 38;
+const FIT_MARGIN    = 1.45;   // >1 leaves air around the framed model
+const ORBIT_SPEED   = 1.1;    // auto-orbit, degrees-ish per frame tick
+const MIN_PITCH     = 0.05;   // radians above the ground plane
+const MAX_PITCH     = Math.PI * 0.52;
+
+/* ============================================================
+   MODEL REGISTRY
+   ============================================================
+   Everything the outliner and viewport show comes from
+   data/models.json next to this file:
+
+     { "models": [ { "file": "models/thing.glb", ... } ] }
+
+   Per-entry fields (all optional except file):
+     id, name, group, tags[], note,
+     material: { metalness, roughness, tint, vertexColors, envIntensity }
+     view:     { autoOrbit, exposure, grid, shadow, fit }
+
+   Adding a model = one .glb in models/ + one entry here. Nothing
+   in this script needs touching. Full schema in MODELS.md.
+
+   Fetch needs an http(s) origin — a file:// double-click can't read
+   the manifest, so the page falls back to the built-in sample below.
+   For local iteration: python3 -m http.server 8000
+   ============================================================ */
+
+const BUILTIN = [{
+  id: 'vv-logo',
+  name: 'VertexVoodoo Logo',
+  group: 'Branding',
+  file: 'data:model/gltf-binary;base64,Z2xURgIAAAD0DgAAaAQAAEpTT057ImFzc2V0Ijp7ImdlbmVyYXRvciI6Iktocm9ub3MgZ2xURiBCbGVuZGVyIEkvTyB2NC41LjQ5IiwidmVyc2lvbiI6IjIuMCJ9LCJzY2VuZSI6MCwic2NlbmVzIjpbeyJuYW1lIjoiU2NlbmUiLCJub2RlcyI6WzBdfV0sIm5vZGVzIjpbeyJtZXNoIjowLCJuYW1lIjoiVGV4dCJ9XSwibWVzaGVzIjpbeyJuYW1lIjoiVGV4dCIsInByaW1pdGl2ZXMiOlt7ImF0dHJpYnV0ZXMiOnsiUE9TSVRJT04iOjAsIk5PUk1BTCI6MSwiVEVYQ09PUkRfMCI6MiwiQ09MT1JfMCI6M30sImluZGljZXMiOjR9XX1dLCJhY2Nlc3NvcnMiOlt7ImJ1ZmZlclZpZXciOjAsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50Ijo2MiwibWF4IjpbMS4wNDI2Mzc5NDQyMjE0OTY2LDMuNTc5OTc2Nzk3MTAzODgyLDAuMTE3NDkzNjg5MDYwMjExMThdLCJtaW4iOlstMS4wNjYyNjE0MTA3MTMxOTU4LC01Ljk2MDQ2NDQ3NzUzOTA2M2UtMDgsLTAuMTE3NDkzNTEwMjQ2Mjc2ODZdLCJ0eXBlIjoiVkVDMyJ9LHsiYnVmZmVyVmlldyI6MSwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjYyLCJ0eXBlIjoiVkVDMyJ9LHsiYnVmZmVyVmlldyI6MiwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjYyLCJ0eXBlIjoiVkVDMiJ9LHsiYnVmZmVyVmlldyI6MywiY29tcG9uZW50VHlwZSI6NTEyMywiY291bnQiOjYyLCJub3JtYWxpemVkIjp0cnVlLCJ0eXBlIjoiVkVDNCJ9LHsiYnVmZmVyVmlldyI6NCwiY29tcG9uZW50VHlwZSI6NTEyMywiY291bnQiOjk2LCJ0eXBlIjoiU0NBTEFSIn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlTGVuZ3RoIjo3NDQsImJ5dGVPZmZzZXQiOjAsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlTGVuZ3RoIjo3NDQsImJ5dGVPZmZzZXQiOjc0NCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVMZW5ndGgiOjQ5NiwiYnl0ZU9mZnNldCI6MTQ4OCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVMZW5ndGgiOjQ5NiwiYnl0ZU9mZnNldCI6MTk4NCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVMZW5ndGgiOjE5MiwiYnl0ZU9mZnNldCI6MjQ4MCwidGFyZ2V0IjozNDk2M31dLCJidWZmZXJzIjpbeyJieXRlTGVuZ3RoIjoyNjcyfV19ICBwCgAAQklOAAAAbbQAAIgzcKDwPQAAbbQAAIgzcKDwPQAAbbQAAIgzcKDwPSl1hT+PuQxAgKDwPSl1hT+PuQxAgKDwPSl1hT+PuQxAgKDwPd955j7ymwxAgKDwPd955j7ymwxAgKDwPd955j7ymwxAgKDwPd955j7ymwxAgKDwPQ4g2LrqP50/eKDwPQ4g2LrqP50/eKDwPQ4g2LrqP50/eKDwPRHV7b7ymwxAgKDwPRHV7b7ymwxAgKDwPRHV7b7ymwxAgKDwPUF7iL+PuQxAgKDwPUF7iL+PuQxAgKDwPUF7iL+PuQxAgKDwPSbIxT7AMDdAgKDwPSbIxT7AMDdAgKDwPSbIxT7AMDdAgKDwPXwqvbrvCBVAgKDwPXwqvbrvCBVAgKDwPXwqvbrvCBVAgKDwPY4Qzb7AMDdAgKDwPY4Qzb7AMDdAgKDwPY4Qzb7AMDdAgKDwPfIM6btXHmVAiKDwPfIM6btXHmVAiKDwPfIM6btXHmVAiKDwPQDAbDQAAICzcKDwvQDAbDQAAICzcKDwvQDAbDQAAICzcKDwvSh1hT+PuQxAZKDwvSh1hT+PuQxAZKDwvSh1hT+PuQxAZKDwvSh1hT+PuQxAZKDwvdZ55j7ymwxAZKDwvdZ55j7ymwxAZKDwvdZ55j7ymwxAZKDwvdQZ2LrrP50/aKDwvdQZ2LrrP50/aKDwvdQZ2LrrP50/aKDwvQjV7b7zmwxAZKDwvQjV7b7zmwxAZKDwvQjV7b7zmwxAZKDwvUB7iL+QuQxAZKDwvUB7iL+QuQxAZKDwvUB7iL+QuQxAZKDwvS7IxT7AMDdAYKDwvS7IxT7AMDdAYKDwvS7IxT7AMDdAYKDwvcQYvbruCBVAZKDwvcQYvbruCBVAZKDwvcQYvbruCBVAZKDwvY4Qzb7BMDdAYKDwvY4Qzb7BMDdAYKDwvY4Qzb7BMDdAYKDwvUQL6btXHmVAXKDwvUQL6btXHmVAXKDwvUQL6btXHmVAXKDwvQAAAAAAAAAAAACAPzdPZz9mYdu+AAAAAFxZZr/IYt++AAAAAAAAAAAAAAAAAACAPzdPZz9mYdu+AAAAACApS7uw/38/AAAAAAAAAAAAAAAAAACAP22bRLu2/38/AAAAACApS7uw/38/AAAAAPb9Z79metg+AAAAAAAAAAAAAAAAAACAP8/6Zj8GxNw+AAAAAPb9Z79metg+AAAAAAAAAAAAAAAAAACAP22bRDu2/38/AAAAAM/6Zj8GxNw+AAAAAAAAAAAAAAAAAACAP22bRDu2/38/AAAAAFxZZr/IYt++AAAAAAAAAAAAAAAAAACAP+UaTz9Ceha/AAAAAMZ7YD99HfY+AAAAAAAAAAAAAAAAAACAP+UaTz9Ceha/AAAAAJQETb8eTxm/AAAAAAAAAAAAAAAAAACAP5QETb8eTxm/AAAAAMZ7YL99HfY+AAAAAAAAAAAAAAAAAACAP8Z7YD99HfY+AAAAAMZ7YL99HfY+AAAAAAAAAAAAAAAAAACAvzdPZz9mYdu+AAAAAFxZZr/IYt++AAAAAAAAAAAAAAAAAACAvzdPZz9mYdu+AAAAAG2bRLu2/38/AAAAACApS7uw/38/AAAAAAAAAAAAAAAAAACAv22bRLu2/38/AAAAAPb9Z79metg+AAAAAAAAAAAAAAAAAACAv8/6Zj8GxNw+AAAAAPb9Z79metg+AAAAAAAAAAAAAAAAAACAv22bRDu2/38/AAAAAM/6Zj8GxNw+AAAAAAAAAAAAAAAAAACAv22bRDu2/38/AAAAAFxZZr/IYt++AAAAAAAAAAAAAAAAAACAv+UaTz9Ceha/AAAAAMZ7YD99HfY+AAAAAAAAAAAAAAAAAACAv+UaTz9Ceha/AAAAAJQETb8eTxm/AAAAAAAAAAAAAAAAAACAv5QETb8eTxm/AAAAAMZ7YL99HfY+AAAAAAAAAAAAAAAAAACAv8Z7YD99HfY+AAAAAMZ7YL99HfY+AAAAAKyqqj0AAIA/rKqqPQAAgD+sqqo9AACAP6yqqj4AAIA/rKqqPgAAgD+sqqo+AACAPwEAAD8AAIA/AQAAPwAAgD8BAAA/AACAPwEAAD8AAIA/rKoqPwAAgD+sqio/AACAP6yqKj8AAIA/V1VVPwAAgD9XVVU/AACAP1dVVT8AAIA/AQCAPwAAgD8BAIA/AACAPwEAgD8AAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/rKqqPQAAgD+sqqo9AACAP6yqqj0AAIA/rKqqPgAAgD+sqqo+AACAP6yqqj4AAIA/rKqqPgAAgD8BAAA/AACAPwEAAD8AAIA/AQAAPwAAgD+sqio/AACAP6yqKj8AAIA/rKoqPwAAgD9XVVU/AACAP1dVVT8AAIA/V1VVPwAAgD8BAIA/AACAPwEAgD8AAIA/AQCAPwAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//4SIbwX+Bv//hIhvBf4G//+EiG8F/gb//4SIbwX+Bv//hIhvBf4G//+EiG8F/gb//4SIbwX+Bv//hIhvBf4G//+EiG8F/gb//4SIbwX+Bv//hIhvBf4G//+EiG8F/gb//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///nMY3t9yT//+cxje33JP//5zGN7fck///hIhvBf4G//+EiG8F/gb//4SIbwX+Bv//hIhvBf4G//+EiG8F/gb//4SIbwX+Bv//hIhvBf4G//+EiG8F/gb//4SIbwX+Bv//hIhvBf4G//+EiG8F/gb//4SIbwX+Bv//CgAQAAAAEwAZABYAKgAPAAsAOAAyADUAKQAiAB8AAgAxACEADgAwABEAAQAjAAQABwAkACcACQArAAwAFQA8AB0AOQAYABoANgAUABcAHgA6ABsACgANABAAAAADAAoAAwAGAAoAEwAcABkAKgAuAA8AOAA7ADIAKQAmACIAHwAvACkALwAsACkAAgASADEADgAtADAAAQAgACMACAAFACUACQAoACsAFQA0ADwAOQA3ABgANgAzABQAHgA9ADoA',
+  tags: ['Blender 4.5', 'glTF 2.0', 'Vertex colors'],
+  note: 'Built-in sample, embedded in this page so the viewer works even before the manifest loads.',
+  material: { metalness: 0.85, roughness: 0.28, vertexColors: true, tint: '#ffffff', envIntensity: 1.0 },
+  view: { autoOrbit: true, exposure: 1.0 }
+}];
+
+const DEFAULTS = {
+  material: { metalness: null, roughness: null, tint: '#ffffff', vertexColors: true, envIntensity: 1.0,
+              normalScale: 1.0, aoIntensity: 1.0, emissive: null, emissiveIntensity: 1.0 },
+  view:     { autoOrbit: true, exposure: 1.0, grid: true, shadow: true, fit: 'ground' }
+};
+
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+function normalize(raw, i){
+  const file = raw.file || raw.url || '';
+  const base = (file.split('/').pop() || '').replace(/\.(glb|gltf)$/i,'') || ('model-' + i);
+  return {
+    id:    raw.id   || slug(raw.name || base) || ('model-' + i),
+    name:  raw.name || base,
+    group: raw.group || 'Models',
+    file,
+    tags:  Array.isArray(raw.tags) ? raw.tags : [],
+    note:  raw.note || '',
+    material: Object.assign({}, DEFAULTS.material, raw.material || {}),
+    textures: raw.textures || null,
+    view:     Object.assign({}, DEFAULTS.view,     raw.view     || {})
+  };
+}
+
+let REGISTRY = [], current = null, currentEntry = null;
+
+/* ============================================================
+   RENDERER / SCENE
+   ============================================================ */
+const cv = document.getElementById('cv');
+const vp = document.getElementById('vp');
+
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearAlpha(0);                       // the CSS gradient behind the canvas is the backdrop
+renderer.outputColorSpace   = THREE.SRGBColorSpace;
+renderer.toneMapping        = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1;
+renderer.shadowMap.enabled  = true;
+renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(FOV, 1, 0.01, 1000);
+camera.position.set(3, 2.4, 5);
+
+const controls = new OrbitControls(camera, cv);
+controls.enableDamping = true;
+controls.dampingFactor = 0.075;
+controls.autoRotate = true;
+controls.autoRotateSpeed = ORBIT_SPEED;
+controls.minPolarAngle = MIN_PITCH;
+controls.maxPolarAngle = MAX_PITCH;
+controls.addEventListener('start', () => vp.classList.add('drag'));
+controls.addEventListener('end',   () => vp.classList.remove('drag'));
+
+// image-based lighting: soft studio box, no external HDR to host
+const pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
+scene.environment = envRT.texture;
+
+// a key light on top of the env, mostly for the contact shadow and specular bite
+const key = new THREE.DirectionalLight(0xffffff, 1.9);
+key.position.set(2.6, 4.2, 2.2);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.bias = -0.0008;
+key.shadow.normalBias = 0.02;
+scene.add(key, key.target);
+
+const fill = new THREE.DirectionalLight(0x9fb4d6, 0.35);
+fill.position.set(-3, 1.6, -2.4);
+scene.add(fill);
+
+// ground: catches the shadow only, stays invisible otherwise
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(1, 1),
+  new THREE.ShadowMaterial({ opacity: 0.34 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+let grid = null;
+function buildGrid(radius){
+  if (grid){ scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); }
+  const step = Math.pow(10, Math.floor(Math.log10(radius))) / 2 || 0.5;
+  const half = Math.max(4, Math.ceil(radius * 3 / step)) * step;
+  grid = new THREE.GridHelper(half * 2, Math.round(half * 2 / step), 0x4a5464, 0x2b313b);
+  grid.material.transparent = true;
+  grid.material.opacity = 0.55;
+  grid.position.y = 0.0005;                       // hairline lift, keeps it off the shadow plane
+  grid.visible = state.grid;
+  scene.add(grid);
+}
+
+/* ---------- loaders (draco / ktx2 / meshopt ready for real game assets) ---------- */
+const draco = new DRACOLoader().setDecoderPath(CDN + 'draco/gltf/');
+const ktx2  = new KTX2Loader().setTranscoderPath(CDN + 'basis/').detectSupport(renderer);
+const gltf  = new GLTFLoader()
+  .setDRACOLoader(draco)
+  .setKTX2Loader(ktx2)
+  .setMeshoptDecoder(MeshoptDecoder);
+
+/* ============================================================
+   TEXTURE SLOTS
+   ============================================================
+   A manifest entry can hand the material its maps as plain files:
+
+     "textures": { "albedo": "textures/x_albedo.png", "normal": "…", … }
+
+   Maps already baked into the .glb are used when the manifest is
+   silent, so both workflows land in the same panel.
+   ============================================================ */
+const SLOTS = {
+  albedo:    { prop: 'map',          label: 'Albedo',    srgb: true  },
+  normal:    { prop: 'normalMap',    label: 'Normal',    srgb: false },
+  roughness: { prop: 'roughnessMap', label: 'Roughness', srgb: false },
+  metalness: { prop: 'metalnessMap', label: 'Metalness', srgb: false },
+  ao:        { prop: 'aoMap',        label: 'AO',        srgb: false },
+  emissive:  { prop: 'emissiveMap',  label: 'Emissive',  srgb: true  }
+};
+const SLOT_KEYS = Object.keys(SLOTS);
+
+const texLoader = new THREE.TextureLoader();
+let manifestTex = {};   // slot -> THREE.Texture supplied by data/models.json
+
+async function loadManifestTextures(entry){
+  const t = entry.textures;
+  disposeManifestTex();
+  if (!t) return;
+  const keys = SLOT_KEYS.filter(k => t[k]);
+  if (!keys.length) return;
+  setLoading(true, 'Loading ' + keys.length + ' texture' + (keys.length > 1 ? 's' : '') + '…');
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
+  await Promise.all(keys.map(async k => {
+    try {
+      const tex = await texLoader.loadAsync(t[k]);
+      tex.colorSpace = SLOTS[k].srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      tex.flipY = t.flipY === true;                    // glTF UVs start top-left, so false is the norm
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      if (Array.isArray(t.repeat)) tex.repeat.set(t.repeat[0], t.repeat[1]);
+      tex.anisotropy = Math.min(t.anisotropy || 8, maxAniso);
+      tex.userData.src = t[k];
+      tex.needsUpdate = true;
+      manifestTex[k] = tex;
+    } catch (err){
+      console.warn('texture failed:', t[k], err);
+      status('Missing texture: ' + t[k], true);
+    }
+  }));
+}
+function disposeManifestTex(){
+  Object.values(manifestTex).forEach(t => t.dispose());
+  manifestTex = {};
+}
+
+/* ============================================================
+   VIEWER STATE
+   ============================================================ */
+const state = {
+  metalness: 1, roughness: 1, tint: '#ffffff', vertexColors: true,
+  normalScale: 1, aoIntensity: 1, emissive: '#ffffff', emissiveIntensity: 1,
+  maps: { albedo: true, normal: true, roughness: true, metalness: true, ao: true, emissive: true },
+  envIntensity: 1, wireframe: false, exposure: 1,
+  grid: true, shadow: true, autoOrbit: true, turntable: false,
+  shading: 'pbr'
+};
+
+let root = null;            // currently loaded gltf scene
+let meshes = [];            // { mesh, pbr, fileValues, hasColor }
+let unlitMat = null, normalMat = null;
+let modelRadius = 1;
+
+function disposeCurrent(){
+  if (!root) return;
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    o.geometry.dispose();
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    mats.forEach(m => {
+      for (const k in m){ const v = m[k]; if (v && v.isTexture && !keep.has(v)) v.dispose(); }
+      m.dispose();
+    });
+  });
+  meshes.forEach(m => { if (m.unlitVC) m.unlitVC.dispose(); });
+  const keep = new Set(Object.values(manifestTex));   // shared across meshes, disposed separately
+  scene.remove(root);
+  root = null; meshes = [];
+  if (unlitMat){ unlitMat.dispose(); unlitMat = null; }
+  if (normalMat){ normalMat.dispose(); normalMat = null; }
+}
+
+async function loadEntry(entry){
+  setLoading(true, 'Loading ' + entry.name + '…');
+  try {
+    const [g] = await Promise.all([gltf.loadAsync(entry.file), loadManifestTextures(entry)]);
+    disposeCurrent();
+    root = g.scene;
+
+    meshes = [];
+    root.traverse(o => {
+      if (!o.isMesh) return;
+      o.castShadow = true;
+      o.receiveShadow = true;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      const pbr = mats[0];
+      // glTF with no material block lands on the spec default (metal 1 / rough 1);
+      // whatever it is, remember it so "reset to file values" means something.
+      const fileMaps = {};
+      SLOT_KEYS.forEach(k => { fileMaps[k] = pbr[SLOTS[k].prop] || null; });
+      meshes.push({
+        mesh: o,
+        pbr,
+        fileMaps,
+        hasColor: !!o.geometry.attributes.color,
+        fileValues: {
+          metalness: pbr.metalness ?? 1,
+          roughness: pbr.roughness ?? 1,
+          tint: '#' + (pbr.color ? pbr.color.getHexString() : 'ffffff'),
+          envIntensity: pbr.envMapIntensity ?? 1,
+          emissive: '#' + (pbr.emissive ? pbr.emissive.getHexString() : '000000')
+        }
+      });
+    });
+
+    scene.add(root);
+    frame(entry.view.fit);
+    applyEntryState(entry);
+    buildMapUI();
+    applyMaterial();
+    setShading(state.shading);
+    updateStats(entry);
+    setLoading(false);
+    status(meshes.length ? 'Ready' : 'Loaded, but the file has no meshes', !meshes.length);
+  } catch (err){
+    setLoading(false);
+    console.error(err);
+    status('Could not load ' + entry.file + ' — ' + err.message, true);
+  }
+}
+
+/* ---------- framing ---------- */
+function frame(fit = 'ground'){
+  if (!root) return;
+  root.position.set(0, 0, 0);
+  root.updateMatrixWorld(true);
+
+  let box = new THREE.Box3().setFromObject(root);
+  const center = box.getCenter(new THREE.Vector3());
+  const size   = box.getSize(new THREE.Vector3());
+
+  // centre on X/Z; sit on the grid (ground) or centre on the origin
+  root.position.x -= center.x;
+  root.position.z -= center.z;
+  root.position.y -= (fit === 'center') ? center.y : box.min.y;
+  root.updateMatrixWorld(true);
+
+  box = new THREE.Box3().setFromObject(root);
+  const c2 = box.getCenter(new THREE.Vector3());
+  const radius = Math.max(size.length() * 0.5, 1e-4);
+  modelRadius = radius;
+
+  const dist = (radius / Math.sin(THREE.MathUtils.degToRad(FOV) * 0.5)) * FIT_MARGIN;
+  camera.near = Math.max(radius / 500, 0.001);
+  camera.far  = dist * 40;
+  camera.updateProjectionMatrix();
+
+  const dir = new THREE.Vector3(0.62, 0.42, 1).normalize();
+  camera.position.copy(c2).addScaledVector(dir, dist);
+  controls.target.copy(c2);
+  controls.minDistance = radius * 0.25;
+  controls.maxDistance = dist * 12;
+  controls.update();
+
+  // shadow + ground sized to the model so the map stays sharp
+  ground.scale.setScalar(Math.max(radius * 14, 1));
+  key.position.copy(c2).add(new THREE.Vector3(radius * 1.6, radius * 2.6, radius * 1.4));
+  key.target.position.copy(c2);
+  key.target.updateMatrixWorld();
+  const sc = key.shadow.camera;
+  sc.left = -radius * 2.2; sc.right = radius * 2.2;
+  sc.top  =  radius * 2.2; sc.bottom = -radius * 2.2;
+  sc.near = 0.01; sc.far = radius * 12;
+  sc.updateProjectionMatrix();
+
+  buildGrid(radius);
+}
+
+/* ---------- material application ---------- */
+function applyMaterial(){
+  const tint = new THREE.Color(state.tint);
+  meshes.forEach(m => {
+    const p = m.pbr;
+    if ('metalness' in p) p.metalness = state.metalness;
+    if ('roughness' in p) p.roughness = state.roughness;
+    if ('envMapIntensity' in p) p.envMapIntensity = state.envIntensity;
+    if (p.color) p.color.copy(tint);
+    p.wireframe = state.wireframe;
+    if (p.normalScale) p.normalScale.set(state.normalScale, state.normalScale);
+    if ('aoMapIntensity' in p) p.aoMapIntensity = state.aoIntensity;
+    if ('emissiveIntensity' in p) p.emissiveIntensity = state.emissiveIntensity;
+    if (p.emissive) p.emissive.set(state.emissive);
+
+    // manifest map wins over the one baked in the file; a toggle off means "no map at all"
+    SLOT_KEYS.forEach(k => {
+      const prop = SLOTS[k].prop;
+      const tex = (state.maps[k] ? (manifestTex[k] || m.fileMaps[k]) : null) || null;
+      if (p[prop] !== tex){ p[prop] = tex; p.needsUpdate = true; }
+    });
+
+    const wantVC = state.vertexColors && m.hasColor;
+    if (p.vertexColors !== wantVC){ p.vertexColors = wantVC; p.needsUpdate = true; }
+    if (m.unlitVC){ m.unlitVC.color.copy(tint); m.unlitVC.wireframe = state.wireframe; }
+  });
+  if (unlitMat){ unlitMat.color.copy(tint); unlitMat.wireframe = state.wireframe; }
+  if (normalMat) normalMat.wireframe = state.wireframe;
+}
+
+function setShading(mode){
+  state.shading = mode;
+  document.querySelectorAll('#shading button').forEach(b => b.classList.toggle('on', b.dataset.shade === mode));
+  if (!meshes.length) return;
+
+  if (mode === 'unlit' && !unlitMat)
+    unlitMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(state.tint), wireframe: state.wireframe });
+  if (unlitMat){
+    const alb = (state.maps.albedo ? (manifestTex.albedo || (meshes[0] && meshes[0].fileMaps.albedo)) : null) || null;
+    if (unlitMat.map !== alb){ unlitMat.map = alb; unlitMat.needsUpdate = true; }
+  }
+  if (mode === 'normal' && !normalMat)
+    normalMat = new THREE.MeshNormalMaterial({ wireframe: state.wireframe });
+
+  meshes.forEach(m => {
+    if (mode === 'pbr') m.mesh.material = m.pbr;
+    else if (mode === 'normal') m.mesh.material = normalMat;
+    else {
+      // unlit shares one material, so vertex colours have to be per-mesh:
+      // clone when the mesh carries COLOR_0, otherwise use the shared flat one.
+      if (m.hasColor && state.vertexColors){
+        if (!m.unlitVC) m.unlitVC = new THREE.MeshBasicMaterial({ vertexColors: true, color: new THREE.Color(state.tint) });
+        m.unlitVC.color.set(state.tint);
+        m.unlitVC.wireframe = state.wireframe;
+        m.mesh.material = m.unlitVC;
+      } else m.mesh.material = unlitMat;
+    }
+  });
+  applyMaterial();
+}
+
+/* ============================================================
+   UI WIRING
+   ============================================================ */
+const $ = id => document.getElementById(id);
+
+function setSlider(input, valEl, v){
+  input.value = v;
+  const pct = ((v - input.min) / (input.max - input.min)) * 100;
+  input.style.setProperty('--p', pct.toFixed(2) + '%');
+  valEl.textContent = (+v).toFixed(2);
+}
+function bindSlider(id, valId, onChange){
+  const input = $(id), valEl = $(valId);
+  const push = () => {
+    setSlider(input, valEl, input.value);
+    onChange(parseFloat(input.value));
+  };
+  input.addEventListener('input', push);
+  return { input, valEl, set: v => setSlider(input, valEl, v) };
+}
+
+const sMetal = bindSlider('s-metal','v-metal', v => { state.metalness = v; applyMaterial(); });
+const sRough = bindSlider('s-rough','v-rough', v => { state.roughness = v; applyMaterial(); });
+const sEnv   = bindSlider('s-env','v-env',     v => { state.envIntensity = v; applyMaterial(); });
+const sExp   = bindSlider('s-exp','v-exp',     v => { state.exposure = v; renderer.toneMappingExposure = v; });
+
+const sNrm = bindSlider('s-nrm','v-nrm', v => { state.normalScale = v; applyMaterial(); });
+const sAo  = bindSlider('s-ao','v-ao',   v => { state.aoIntensity = v; applyMaterial(); });
+const sEmi = bindSlider('s-emi','v-emi', v => { state.emissiveIntensity = v; applyMaterial(); });
+$('s-emc').addEventListener('input', e => { state.emissive = e.target.value; applyMaterial(); });
+
+$('s-tint').addEventListener('input', e => { state.tint = e.target.value; applyMaterial(); if (state.shading!=='pbr') setShading(state.shading); });
+
+const fileVal = k => meshes.length ? meshes[0].fileValues[k] : DEFAULTS.material[k];
+$('r-metal').onclick = () => { const v = fileVal('metalness'); sMetal.set(v); state.metalness = v; applyMaterial(); };
+$('r-rough').onclick = () => { const v = fileVal('roughness'); sRough.set(v); state.roughness = v; applyMaterial(); };
+$('r-tint').onclick  = () => { const v = fileVal('tint'); $('s-tint').value = v; state.tint = v; applyMaterial(); };
+$('btn-reset-mat').onclick = () => { $('r-metal').onclick(); $('r-rough').onclick(); $('r-tint').onclick(); };
+
+function toggle(id, get, set){
+  const b = $(id);
+  b.onclick = () => { set(!get()); b.classList.toggle('on', get()); };
+  b.classList.toggle('on', get());
+  return b;
+}
+toggle('t-vcol', () => state.vertexColors, v => { state.vertexColors = v; applyMaterial(); if (state.shading!=='pbr') setShading(state.shading); });
+toggle('t-wire', () => state.wireframe,    v => { state.wireframe = v; applyMaterial(); if (state.shading!=='pbr') setShading(state.shading); });
+toggle('t-shadow', () => state.shadow,     v => { state.shadow = v; ground.visible = v; key.castShadow = v; syncChecks(); });
+toggle('t-turn', () => state.turntable,    v => { state.turntable = v; controls.autoRotateSpeed = ORBIT_SPEED * (v ? 2 : 1); });
+
+$('btn-frame').onclick = () => frame(currentEntry ? currentEntry.view.fit : 'ground');
+
+document.querySelectorAll('#shading button').forEach(b => b.onclick = () => setShading(b.dataset.shade));
+
+$('btn-spin').onclick = () => { state.autoOrbit = !state.autoOrbit; controls.autoRotate = state.autoOrbit; syncChecks(); };
+$('btn-grid').onclick = () => { state.grid = !state.grid; if (grid) grid.visible = state.grid; syncChecks(); };
+
+function syncChecks(){
+  $('btn-spin').classList.toggle('on', state.autoOrbit);
+  $('btn-grid').classList.toggle('on', state.grid);
+  $('t-shadow').classList.toggle('on', state.shadow);
+  $('mi-orbit').classList.toggle('checked', state.autoOrbit);
+  $('mi-grid').classList.toggle('checked', state.grid);
+  $('mi-shadow').classList.toggle('checked', state.shadow);
+}
+
+/* ---------- maps panel ---------- */
+function slotTexture(k){
+  return manifestTex[k] || (meshes[0] ? meshes[0].fileMaps[k] : null);
+}
+function buildMapUI(){
+  const rows = [], tgls = [];
+  SLOT_KEYS.forEach(k => {
+    const tex = slotTexture(k);
+    if (!tex) return;
+    const fromJson = !!manifestTex[k];
+    const img = tex.image || {};
+    const src = fromJson ? (tex.userData.src || '') : 'embedded in .glb';
+    rows.push(`<div class="mrow" data-slot="${k}">
+        <span class="mk">${SLOTS[k].label}</span>
+        <span class="src ${fromJson ? 'json' : ''}">${fromJson ? 'json' : 'glb'}</span>
+        <span class="mv" title="${src}">${src.split('/').pop()}</span>
+        <span class="mz">${img.width || '?'}²</span>
+      </div>`);
+    tgls.push(`<button class="tgl sm ${state.maps[k] ? 'on' : ''}" data-map="${k}"><span class="bx"></span>${SLOTS[k].label}</button>`);
+  });
+
+  $('map-list').innerHTML = rows.length ? rows.join('')
+    : `<div class="note"><p>No textures on this model. Add a <code>textures</code> block to its entry in ${MANIFEST}, or export the .glb with them embedded.</p></div>`;
+  $('map-toggles').innerHTML = tgls.join('');
+  $('map-toggles').querySelectorAll('[data-map]').forEach(b => b.onclick = () => {
+    const k = b.dataset.map;
+    state.maps[k] = !state.maps[k];
+    b.classList.toggle('on', state.maps[k]);
+    const row = $('map-list').querySelector(`[data-slot="${k}"]`);
+    if (row) row.classList.toggle('off', !state.maps[k]);
+    applyMaterial();
+    if (state.shading !== 'pbr') setShading(state.shading);
+  });
+
+  // the sliders below only mean anything when the matching map is there
+  $('pnl-maps').classList.toggle('closed', !rows.length);
+  [['s-nrm', 'normal'], ['s-ao', 'ao'], ['s-emi', 'emissive'], ['s-emc', 'emissive']]
+    .forEach(([id, slot]) => { $(id).disabled = !slotTexture(slot); });
+}
+
+/* ---------- collapsible panels ---------- */
+document.querySelectorAll('.pnl .pt').forEach(pt => {
+  pt.onclick = () => pt.parentElement.classList.toggle('closed');
+});
+
+/* ---------- menus ---------- */
+document.querySelectorAll('#menu .mnu').forEach(m => {
+  m.querySelector('.mi').onclick = e => {
+    e.stopPropagation();
+    const open = m.classList.contains('open');
+    document.querySelectorAll('#menu .mnu').forEach(x => x.classList.remove('open'));
+    m.classList.toggle('open', !open);
+  };
+});
+addEventListener('click', () => document.querySelectorAll('#menu .mnu').forEach(m => m.classList.remove('open')));
+
+document.querySelectorAll('.di').forEach(b => b.onclick = () => {
+  const a = b.dataset.action;
+  if (a === 'open-local')  $('filepick').click();
+  if (a === 'reload')      boot(true);
+  if (a === 'copy-preset') copyPreset();
+  if (a === 'toggle-orbit'){ state.autoOrbit = !state.autoOrbit; controls.autoRotate = state.autoOrbit; syncChecks(); }
+  if (a === 'toggle-grid'){ state.grid = !state.grid; if (grid) grid.visible = state.grid; syncChecks(); }
+  if (a === 'toggle-shadow'){ $('t-shadow').click(); }
+  if (a === 'frame')       frame(currentEntry ? currentEntry.view.fit : 'ground');
+  if (a === 'fullscreen')  document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  if (a === 'save-image')  saveImage();
+});
+
+/* ---------- copy preset: the tweak → JSON loop ---------- */
+async function copyPreset(){
+  const e = currentEntry;
+  const preset = {
+    id: e ? e.id : 'model-id',
+    name: e ? e.name : 'Model name',
+    group: e ? e.group : 'Models',
+    file: e && !e.file.startsWith('data:') && !e.file.startsWith('blob:') ? e.file : 'models/your-model.glb',
+    tags: e ? e.tags : [],
+    material: {
+      metalness: +state.metalness.toFixed(2),
+      roughness: +state.roughness.toFixed(2),
+      tint: state.tint,
+      vertexColors: state.vertexColors,
+      envIntensity: +state.envIntensity.toFixed(2),
+      normalScale: +state.normalScale.toFixed(2),
+      aoIntensity: +state.aoIntensity.toFixed(2),
+      emissive: state.emissive,
+      emissiveIntensity: +state.emissiveIntensity.toFixed(2)
+    },
+    view: { autoOrbit: state.autoOrbit, exposure: +state.exposure.toFixed(2), fit: e ? e.view.fit : 'ground' }
+  };
+  if (e && e.textures) preset.textures = e.textures;
+  const text = JSON.stringify(preset, null, 2);
+  try {
+    await navigator.clipboard.writeText(text);
+    status('Material preset copied — paste it into ' + MANIFEST);
+  } catch {
+    console.log(text);
+    status('Clipboard blocked; preset written to the browser console', true);
+  }
+}
+
+function saveImage(){
+  renderer.render(scene, camera);            // draw once with the current sizes before reading pixels
+  const a = document.createElement('a');
+  a.download = (currentEntry ? currentEntry.id : 'viewport') + '.png';
+  a.href = cv.toDataURL('image/png');
+  a.click();
+  status('Viewport image saved');
+}
+
+/* ---------- local files: drag & drop + File > Open ---------- */
+function addLocal(files){
+  const list = [...files].filter(f => /\.(glb|gltf)$/i.test(f.name));
+  if (!list.length){ status('That file type is not a glTF model', true); return; }
+  list.forEach(f => {
+    const entry = normalize({
+      file: URL.createObjectURL(f),
+      name: f.name.replace(/\.(glb|gltf)$/i,''),
+      group: 'Dropped',
+      tags: [(f.size / 1024).toFixed(0) + ' KB'],
+      note: 'Loaded from your machine — not in ' + MANIFEST + '. Add an entry there to keep it.'
+    }, REGISTRY.length);
+    REGISTRY.push(entry);
+  });
+  buildOutliner();
+  select(REGISTRY[REGISTRY.length - 1].id);
+}
+$('filepick').onchange = e => addLocal(e.target.files);
+['dragenter','dragover'].forEach(ev => vp.addEventListener(ev, e => { e.preventDefault(); vp.classList.add('over'); }));
+['dragleave','drop'].forEach(ev => vp.addEventListener(ev, e => { e.preventDefault(); vp.classList.remove('over'); }));
+vp.addEventListener('drop', e => addLocal(e.dataTransfer.files));
+
+/* ---------- outliner ---------- */
+function buildOutliner(){
+  const groups = [];
+  REGISTRY.forEach(m => {
+    let g = groups.find(x => x.name === m.group);
+    if (!g) groups.push(g = { name: m.group, items: [] });
+    g.items.push(m);
+  });
+  $('tree').innerHTML = groups.map(g => `
+    <div class="grp" data-g="${g.name}">
+      <button class="gh"><span class="car">▼</span>${g.name}<span class="cnt">${g.items.length}</span></button>
+      <div class="kids">${g.items.map(m => `
+        <button class="ob" data-id="${m.id}">
+          <span class="ic" style="background:${m.material.tint}"></span>
+          <span class="nm">${m.name}</span>
+          <span class="tagx">GLB</span>
+        </button>`).join('')}</div>
+    </div>`).join('');
+  $('tree').querySelectorAll('.gh').forEach(h => h.onclick = () => h.parentElement.classList.toggle('closed'));
+  $('tree').querySelectorAll('.ob').forEach(b => b.onclick = () => select(b.dataset.id));
+  $('out-count').textContent = REGISTRY.length + (REGISTRY.length === 1 ? ' model' : ' models');
+}
+
+/* ---------- properties: object + notes ---------- */
+const fld = (l, v, cls = '') => `<div class="fld"><span class="fl">${l}</span><span class="fv ${cls}">${v}</span></div>`;
+
+function sourceLabel(entry){
+  if (entry.file.startsWith('data:')) return 'built-in sample (embedded)';
+  if (entry.file.startsWith('blob:')) return 'local file · not in ' + MANIFEST;
+  return entry.file;
+}
+
+function updateStats(entry){
+  const texCount = SLOT_KEYS.filter(k => slotTexture(k)).length;
+  let verts = 0, tris = 0;
+  const mats = new Set();
+  const hasColor = meshes.some(m => m.hasColor);
+  meshes.forEach(m => {
+    const g = m.mesh.geometry;
+    verts += g.attributes.position ? g.attributes.position.count : 0;
+    tris  += g.index ? g.index.count / 3 : (g.attributes.position ? g.attributes.position.count / 3 : 0);
+    mats.add(m.pbr.uuid);
+  });
+  tris = Math.round(tris);
+
+  $('s-verts').textContent = verts.toLocaleString();
+  $('s-tris').textContent  = tris.toLocaleString();
+  $('s-mats').textContent  = mats.size;
+  $('s-sel').textContent   = entry.name;
+  $('vp-obj').textContent  = entry.name;
+  $('vp-stats').innerHTML  =
+    `Verts <b>${verts.toLocaleString()}</b><br>Tris <b>${tris.toLocaleString()}</b><br>` +
+    `Shading <b>${state.shading === 'pbr' ? 'Material preview' : state.shading === 'unlit' ? 'Unlit' : 'Normals'}</b>`;
+
+  const size = root ? new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3()) : new THREE.Vector3();
+  $('pc-object').innerHTML =
+    fld('Name', entry.name) +
+    fld('Group', entry.group, 'a') +
+    fld('Source', sourceLabel(entry), 'mono') +
+    fld('Material', meshes.length ? (meshes[0].pbr.name || 'unnamed') : '—') +
+    fld('Meshes', meshes.length) +
+    fld('Textures', texCount || 'none', texCount ? 'a' : '') +
+    fld('Vertex colors', hasColor ? 'COLOR_0 present' : 'none in file', hasColor ? 'a' : '') +
+    fld('Dimensions', `${size.x.toFixed(2)} × ${size.y.toFixed(2)} × ${size.z.toFixed(2)} m`, 'mono') +
+    (entry.tags.length ? `<div class="chips" style="margin-top:8px">${entry.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div>` : '');
+
+  $('pc-notes').innerHTML = entry.note ? `<div class="note"><p>${entry.note}</p></div>`
+                                       : `<div class="note"><p>No notes on this model yet — add a <code>note</code> to its manifest entry.</p></div>`;
+  $('t-vcol').disabled = !hasColor;
+  $('t-vcol').title = hasColor ? '' : 'This file has no COLOR_0 attribute';
+}
+
+function applyEntryState(entry){
+  const m = entry.material, v = entry.view;
+  // a null in the manifest means "whatever the file says"
+  state.metalness    = m.metalness != null ? m.metalness : fileVal('metalness');
+  state.roughness    = m.roughness != null ? m.roughness : fileVal('roughness');
+  state.tint         = m.tint || '#ffffff';
+  state.vertexColors = m.vertexColors !== false;
+  state.envIntensity = m.envIntensity != null ? m.envIntensity : 1;
+  state.normalScale  = m.normalScale != null ? m.normalScale : 1;
+  state.aoIntensity  = m.aoIntensity != null ? m.aoIntensity : 1;
+  state.emissiveIntensity = m.emissiveIntensity != null ? m.emissiveIntensity : 1;
+  // an emissive map multiplied by the glTF default emissiveFactor of black shows nothing,
+  // so a manifest-supplied map with no colour of its own gets white
+  state.emissive = m.emissive || (manifestTex.emissive && fileVal('emissive') === '#000000'
+                                    ? '#ffffff' : fileVal('emissive') || '#000000');
+  SLOT_KEYS.forEach(k => { state.maps[k] = true; });
+  state.exposure     = v.exposure != null ? v.exposure : 1;
+  state.autoOrbit    = v.autoOrbit !== false;
+  state.grid         = v.grid !== false;
+  state.shadow       = v.shadow !== false;
+
+  sMetal.set(state.metalness); sRough.set(state.roughness);
+  sEnv.set(state.envIntensity); sExp.set(state.exposure);
+  sNrm.set(state.normalScale); sAo.set(state.aoIntensity); sEmi.set(state.emissiveIntensity);
+  $('s-tint').value = state.tint;
+  $('s-emc').value = state.emissive;
+  $('t-vcol').classList.toggle('on', state.vertexColors);
+  $('t-wire').classList.toggle('on', state.wireframe);
+  renderer.toneMappingExposure = state.exposure;
+  controls.autoRotate = state.autoOrbit;
+  ground.visible = state.shadow; key.castShadow = state.shadow;
+  if (grid) grid.visible = state.grid;
+  syncChecks();
+}
+
+function select(id){
+  const entry = REGISTRY.find(m => m.id === id);
+  if (!entry) return;
+  current = id; currentEntry = entry;
+  document.querySelectorAll('.ob').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  loadEntry(entry);
+}
+
+/* ---------- status / loading ---------- */
+function status(msg, warn = false){
+  $('s-msg').textContent = msg;
+  $('s-msg').classList.toggle('warn', warn);
+  $('s-dot').classList.toggle('warn', warn);
+}
+function setLoading(on, text){
+  $('vp-load').classList.toggle('show', on);
+  if (text) $('vp-load-t').textContent = text;
+}
+
+/* ---------- keyboard ---------- */
+addEventListener('keydown', e => {
+  if (e.target.matches('input')) return;
+  if (e.key === 'f' || e.key === 'F'){ frame(currentEntry ? currentEntry.view.fit : 'ground'); }
+  if (e.key === 'r' || e.key === 'R'){ boot(true); }
+  if (!REGISTRY.length) return;
+  const i = REGISTRY.findIndex(m => m.id === current);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); select(REGISTRY[(i + 1) % REGISTRY.length].id); }
+  if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft'){  e.preventDefault(); select(REGISTRY[(i - 1 + REGISTRY.length) % REGISTRY.length].id); }
+});
+
+/* ---------- resize + render loop ---------- */
+function resize(){
+  const r = vp.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(vp);
+resize();
+
+const gizmoEl = $('gizmo');
+const AXES = [
+  [new THREE.Vector3(1,0,0), '#e0574f', 'X'],
+  [new THREE.Vector3(0,1,0), '#5a8ecc', 'Z'],   // three is Y-up; labelled Blender-style
+  [new THREE.Vector3(0,0,1), '#8bcc5a', 'Y']
+];
+const _v = new THREE.Vector3(), _m = new THREE.Matrix4();
+function drawGizmo(){
+  _m.extractRotation(camera.matrixWorldInverse);
+  const arms = AXES.map(([v, c, l]) => {
+    _v.copy(v).applyMatrix4(_m);
+    return { x: 33 + _v.x * 21, y: 33 - _v.y * 21, z: _v.z, c, l };
+  }).sort((a, b) => a.z - b.z);
+  gizmoEl.innerHTML = arms.map(a =>
+    `<line x1="33" y1="33" x2="${a.x.toFixed(1)}" y2="${a.y.toFixed(1)}" stroke="${a.c}" stroke-width="1.4" opacity=".85"/>
+     <circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="5.4" fill="${a.c}" opacity=".9"/>
+     <text x="${a.x.toFixed(1)}" y="${(a.y + 2.6).toFixed(1)}" font-size="7" text-anchor="middle" fill="#12141a" font-family="IBM Plex Mono">${a.l}</text>`
+  ).join('');
+}
+
+let last = performance.now(), acc = 0, frames = 0, gizT = 0;
+function tick(now){
+  const dt = Math.min((now - last) / 1000, 0.1); last = now;
+  acc += 1 / Math.max(dt, 0.001); frames++;
+  if (frames >= 30){ $('fps').textContent = Math.round(acc / frames) + ' fps'; acc = 0; frames = 0; }
+
+  controls.update();
+  renderer.render(scene, camera);
+
+  gizT += dt;
+  if (gizT > 1 / 30){ drawGizmo(); gizT = 0; }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ---------- boot ---------- */
+async function boot(reload = false){
+  setLoading(true, 'Reading ' + MANIFEST + '…');
+  let list = null, warn = '';
+  try {
+    const res = await fetch(MANIFEST, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const raw = await res.json();
+    const arr = Array.isArray(raw) ? raw : raw.models;
+    if (!Array.isArray(arr) || !arr.length) throw new Error(MANIFEST + ' has no "models" array');
+    list = arr;
+  } catch (err){
+    warn = 'Using the built-in sample — ' + MANIFEST + ' not readable (' + err.message + '). Serve this folder over http to load your own models.';
+    list = BUILTIN;
+  }
+  REGISTRY = list.map(normalize);
+  $('scene-name').textContent = warn ? 'built-in' : 'models';
+  buildOutliner();
+  const keep = reload && REGISTRY.some(m => m.id === current) ? current : REGISTRY[0].id;
+  select(keep);
+  if (warn) status(warn, true);
+}
+boot();
+</script>
+</body>
+</html>

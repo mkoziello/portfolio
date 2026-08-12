@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>GAIA — Okolice Słońca</title>
+<style>
+:root{
+  --ink:#06070a;
+  --panel:rgba(11,12,17,.86);
+  --line:rgba(255,255,255,.09);
+  --line-2:rgba(255,255,255,.16);
+  --text:#e9e6df;
+  --muted:#7f8394;
+  --warm:#ffb066;
+  --cold:#9fc8ff;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--text);
+  font-family:var(--sans);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas#gl.dragging{cursor:grabbing}
+
+/* ── panel ───────────────────────────────────────────── */
+#panel{
+  position:fixed;z-index:10;background:var(--panel);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+  border-color:var(--line);transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+@media (orientation:landscape){
+  #panel{top:0;left:0;width:272px;height:100dvh;border-right:1px solid var(--line);
+    padding:22px 20px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:20px}
+  #panel.hidden{transform:translateX(-100%)}
+  #toggle{left:288px;top:16px}
+  #toggle.shifted{left:16px}
+}
+@media (orientation:portrait){
+  #panel{left:0;right:0;bottom:0;max-height:62dvh;overflow-y:auto;
+    border-top:1px solid var(--line-2);padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+    display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+  #panel.hidden{transform:translateY(100%)}
+  #panel .head,#panel .wide{grid-column:1/-1}
+  #toggle{right:14px;top:calc(14px + env(safe-area-inset-top))}
+}
+
+.head{display:flex;flex-direction:column;gap:9px}
+.title{font-size:12px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;margin:0}
+.sub{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.02em}
+.sub b{color:var(--text);font-weight:500}
+
+section{display:flex;flex-direction:column;gap:9px}
+h2{font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin:0;padding-bottom:7px;border-bottom:1px solid var(--line)}
+
+.row label{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:10.5px;letter-spacing:.06em;color:#c3c1bc;margin-bottom:3px}
+.row label b{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--text)}
+.row+.row{margin-top:9px}
+.row.warm label b{color:var(--warm)}
+.row.cold label b{color:var(--cold)}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:14px;
+  background:transparent;display:block;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;
+  background:linear-gradient(90deg,var(--acc,#fff) 0 calc(var(--p,0)*100%),rgba(255,255,255,.13) calc(var(--p,0)*100%))}
+input[type=range]::-moz-range-track{height:2px;
+  background:linear-gradient(90deg,var(--acc,#fff) 0 calc(var(--p,0)*100%),rgba(255,255,255,.13) calc(var(--p,0)*100%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:9px;height:9px;margin-top:-3.5px;
+  background:var(--ink);border:1.5px solid var(--acc,#fff);border-radius:0;transform:rotate(45deg)}
+input[type=range]::-moz-range-thumb{width:9px;height:9px;background:var(--ink);
+  border:1.5px solid var(--acc,#fff);border-radius:0}
+input[type=range]:focus-visible{outline:1px solid var(--acc,#fff);outline-offset:4px}
+.row.warm input[type=range]{--acc:var(--warm)}
+.row.cold input[type=range]{--acc:var(--cold)}
+
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font-family:var(--sans);font-size:9.5px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:#b9b7b2;background:transparent;border:1px solid var(--line-2);
+  padding:6px 9px;cursor:pointer;transition:.15s;border-radius:0}
+button:hover{color:var(--text);border-color:#565b6b}
+button[aria-pressed=true]{color:var(--ink);background:var(--text);border-color:var(--text)}
+button:focus-visible{outline:1px solid var(--warm);outline-offset:2px}
+
+#toggle{position:fixed;z-index:11;padding:7px 10px;background:rgba(11,12,17,.8);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:left .35s cubic-bezier(.4,0,.2,1)}
+
+/* ── readout ─────────────────────────────────────────── */
+#readout{position:fixed;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9;
+  font-family:var(--mono);font-size:10px;line-height:1.75;color:var(--muted);text-align:right;
+  letter-spacing:.04em;pointer-events:none;text-shadow:0 0 6px #000}
+#readout b{color:var(--text);font-weight:500}
+@media (orientation:portrait){#readout{display:none}}
+
+#hint{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:9;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;
+  pointer-events:none;transition:opacity .8s;text-shadow:0 0 6px #000;max-width:80vw;text-align:center}
+#hint.warn{color:var(--warm)}
+@media (orientation:landscape){#hint{left:calc(50% + 136px)}}
+#drop{position:fixed;inset:0;z-index:30;display:none;place-items:center;padding:24px;
+  background:rgba(6,7,10,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--text);text-align:center;
+  border:1px dashed var(--line-2);border-width:14px;pointer-events:none}
+#drop.on,#drop.idle{display:grid}
+#drop.idle{background:rgba(6,7,10,.6);pointer-events:auto;cursor:pointer}
+#drop.on .dz-pick{visibility:hidden}
+#drop b{color:var(--warm);font-weight:500}
+.dz-title{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:14px}
+.dz-files{line-height:2}
+.dz-pick{margin-top:16px;color:var(--muted);font-size:10.5px}
+#err{position:fixed;inset:0;display:none;place-items:center;padding:32px;text-align:center;
+  font-size:13px;line-height:1.6;color:var(--text);z-index:20}
+@media (prefers-reduced-motion:reduce){#panel,#toggle{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<button id="toggle" aria-expanded="true">Panel</button>
+
+<div id="panel">
+  <div class="head">
+    <h1 class="title">Gaia · Okolice Słońca</h1>
+    <div class="sub"><b id="nstars">—</b> gwiazd · układ heliocentryczny · odległości w pc</div>
+  </div>
+
+  <section>
+    <h2>Widok</h2>
+    <div class="btns">
+      <button id="reset">Reset widoku</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Skala gwiazd</h2>
+    <div class="row"><label>Globalna <b id="v_sizeGlobal"></b></label>
+      <input type="range" id="sizeGlobal" min="0.1" max="3" step="0.1" value="1.7"></div>
+    <div class="row warm"><label>Ciepłe <b id="v_sizeWarm"></b></label>
+      <input type="range" id="sizeWarm" min="0.1" max="6" step="0.1" value="1.9"></div>
+    <div class="row cold"><label>Zimne <b id="v_sizeCold"></b></label>
+      <input type="range" id="sizeCold" min="0.1" max="6" step="0.1" value="2.3"></div>
+  </section>
+
+  <section>
+    <h2>Jasność</h2>
+    <div class="row"><label>Globalna <b id="v_brightGlobal"></b></label>
+      <input type="range" id="brightGlobal" min="0" max="2" step="0.05" value="0.6"></div>
+    <div class="row warm"><label>Ciepłe <b id="v_brightWarm"></b></label>
+      <input type="range" id="brightWarm" min="0" max="4" step="0.05" value="0.85"></div>
+    <div class="row cold"><label>Zimne <b id="v_brightCold"></b></label>
+      <input type="range" id="brightCold" min="0" max="4" step="0.05" value="1.85"></div>
+  </section>
+
+  <section>
+    <h2>Ruch</h2>
+    <div class="row"><label>Oś czasu <b id="v_timeMult"></b></label>
+      <input type="range" id="timeMult" min="-10" max="10" step="0.1" value="0.2"></div>
+    <div class="btns" style="margin-top:9px"><button id="pause">Pauza</button></div>
+  </section>
+</div>
+
+<div id="readout">
+  <div>kamera <b id="r_dist">—</b> pc</div>
+  <div><b id="r_fps">—</b> fps</div>
+</div>
+
+<div id="hint">przeciągnij — obrót · kółko — zbliżenie · shift+przeciągnij — przesuw</div>
+<div id="drop">
+  <div>
+    <div class="dz-title">Mapa gwiazd Gaia</div>
+    <div class="dz-files">upuść obie tekstury<br><b>galaxy_pos_distance.exr</b> + <b>galaxy_col_lum.exr</b></div>
+    <div class="dz-pick">albo kliknij, aby je wskazać</div>
+  </div>
+</div>
+<input type="file" id="file" accept=".exr,image/x-exr" multiple hidden>
+<div id="err"></div>
+
+<script>
+"use strict";
+let N=0;                                     // liczba gwiazd w aktualnym zestawie
+
+/* half float → float, przez tablicę 64k (szybsze przy milionach próbek) */
+const HALF=(()=>{
+  const t=new Float32Array(65536);
+  for(let i=0;i<65536;i++){
+    const s=(i&0x8000)?-1:1, e=(i&0x7C00)>>10, f=i&0x03FF;
+    t[i]= e===0 ? s*Math.pow(2,-14)*(f/1024)
+        : e===31 ? (f?NaN:s*Infinity)
+        : s*Math.pow(2,e-15)*(1+f/1024);
+  }
+  return t;
+})();
+
+/* Indeks barwy 0…1 (czerwone → niebieskie), normalizowany do zakresu
+   wczytanego zestawu — steruje suwakami ciepłe/zimne. */
+function colorKey(r,g,b){ return (b-r)/(r+g+b+1e-6); }
+
+/* zestaw danych = { pos:[x,y,z,t] float32, col:[r,g,b,255] uint8, count, label } */
+
+/* ── czytnik OpenEXR (scanline, half/float, kompresja NONE/RLE/ZIPS/ZIP) ── */
+const LINES_PER_BLOCK={0:1,1:1,2:1,3:16};
+const CODEC={0:"NONE",1:"RLE",2:"ZIPS",3:"ZIP",4:"PIZ",5:"PXR24",6:"B44",7:"B44A",8:"DWAA",9:"DWAB"};
+
+async function inflate(bytes){
+  if(typeof DecompressionStream==="undefined")
+    throw new Error("przeglądarka nie ma DecompressionStream — zapiecz EXR bez kompresji");
+  const st=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+  return new Uint8Array(await new Response(st).arrayBuffer());
+}
+function unpredict(b){                       // predyktor + przeplot bajtów OpenEXR
+  for(let i=1;i<b.length;i++) b[i]=(b[i-1]+b[i]-128)&0xff;
+  const out=new Uint8Array(b.length);
+  let a=0, c=(b.length+1)>>1, o=0;
+  while(o<b.length){ out[o++]=b[a++]; if(o<b.length) out[o++]=b[c++]; }
+  return out;
+}
+function rleUncompress(src,need){
+  const out=new Uint8Array(need); let i=0,o=0;
+  while(i<src.length&&o<need){
+    let n=src[i++]; if(n>127) n-=256;
+    if(n<0){ for(let k=0;k<-n&&o<need;k++) out[o++]=src[i++]; }
+    else { const v=src[i++]; for(let k=0;k<=n&&o<need;k++) out[o++]=v; }
+  }
+  return out;
+}
+
+async function parseEXR(buf){
+  const dv=new DataView(buf), u8=new Uint8Array(buf);
+  if(dv.getUint32(0,true)!==20000630) throw new Error("to nie jest plik OpenEXR");
+  if(dv.getUint32(4,true)&0x200) throw new Error("EXR kafelkowy (tiled) — zapisz jako scanline");
+  let p=8;
+  const str=()=>{let o="";for(;;){const c=u8[p++];if(!c)break;o+=String.fromCharCode(c);}return o;};
+  let chans=null, comp=0, dw=null;
+  for(;;){
+    const name=str(); if(!name) break;
+    str();                                    // typ atrybutu
+    const size=dv.getUint32(p,true); p+=4; const end=p+size;
+    if(name==="channels"){
+      chans=[];
+      for(;;){ const cn=str(); if(!cn) break;
+        chans.push({name:cn,type:dv.getInt32(p,true)}); p+=16; }
+    }else if(name==="compression") comp=u8[p];
+    else if(name==="dataWindow") dw={x0:dv.getInt32(p,true),y0:dv.getInt32(p+4,true),
+                                     x1:dv.getInt32(p+8,true),y1:dv.getInt32(p+12,true)};
+    p=end;
+  }
+  if(!chans||!dw) throw new Error("uszkodzony nagłówek EXR");
+  const LPB=LINES_PER_BLOCK[comp];
+  if(!LPB) throw new Error("kompresja "+(CODEC[comp]||comp)+" nieobsługiwana — zapiecz z ZIP");
+
+  const W=dw.x1-dw.x0+1, H=dw.y1-dw.y0+1;
+  const bpp=chans.map(c=>c.type===1?2:4);
+  const lineBytes=chans.reduce((a,c,i)=>a+W*bpp[i],0);
+  const slot={R:0,G:1,B:2};
+  const out=new Float32Array(W*H*3);
+
+  const nBlocks=Math.ceil(H/LPB), offs=new Array(nBlocks);
+  for(let i=0;i<nBlocks;i++){ offs[i]=dv.getUint32(p,true)+dv.getUint32(p+4,true)*4294967296; p+=8; }
+
+  for(let bi=0;bi<nBlocks;bi++){
+    let q=offs[bi];
+    const y0=dv.getInt32(q,true), size=dv.getInt32(q+4,true); q+=8;
+    const lines=Math.min(LPB,dw.y1-y0+1), need=lines*lineBytes;
+    const src=new Uint8Array(buf,q,size);
+    let raw;
+    if(comp===0||size>=need) raw=src;                       // blok zapisany wprost
+    else if(comp===1) raw=unpredict(rleUncompress(src,need));
+    else raw=unpredict(await inflate(src));
+    const rdv=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);
+    let o=0;
+    for(let ln=0;ln<lines;ln++){
+      const y=y0-dw.y0+ln;
+      for(let ci=0;ci<chans.length;ci++){
+        const tgt=slot[chans[ci].name];
+        if(tgt===undefined){ o+=W*bpp[ci]; continue; }
+        const base=y*W*3+tgt;
+        if(chans[ci].type===1){ for(let x=0;x<W;x++){ out[base+x*3]=HALF[raw[o]|(raw[o+1]<<8)]; o+=2; } }
+        else { for(let x=0;x<W;x++){ out[base+x*3]=rdv.getFloat32(o,true); o+=4; } }
+      }
+    }
+  }
+  return {W,H,data:out};
+}
+
+/* Blender zapisuje piksele od dołu, więc czytamy wiersze od ostatniego. */
+function datasetFromEXR(posImg,colImg,label){
+  if(posImg.W!==colImg.W||posImg.H!==colImg.H)
+    throw new Error("tekstury mają różne rozmiary ("+posImg.W+"×"+posImg.H+" vs "+colImg.W+"×"+colImg.H+")");
+  const W=posImg.W, H=posImg.H, PX=posImg.data, CX=colImg.data;
+  const order=new Int32Array(W*H); let n=0;
+  for(let row=H-1;row>=0;row--) for(let x=0;x<W;x++){
+    const i=(row*W+x)*3;
+    if(PX[i]||PX[i+1]||PX[i+2]||CX[i]||CX[i+1]||CX[i+2]) order[n++]=i;   // reszta to wypełnienie
+  }
+  if(!n) throw new Error("tekstury nie zawierają danych");
+
+  const key=new Float32Array(n);
+  let kMin=Infinity,kMax=-Infinity;
+  for(let j=0;j<n;j++){
+    const i=order[j], k=colorKey(CX[i],CX[i+1],CX[i+2]);
+    key[j]=k; if(k<kMin)kMin=k; if(k>kMax)kMax=k;
+  }
+  const span=(kMax-kMin)||1;
+
+  const pos=new Float32Array(n*4), col=new Uint8Array(n*4);
+  for(let j=0;j<n;j++){
+    const i=order[j];
+    pos[j*4]=PX[i]; pos[j*4+1]=PX[i+1]; pos[j*4+2]=PX[i+2];
+    pos[j*4+3]=(key[j]-kMin)/span;
+    col[j*4  ]=Math.max(0,Math.min(255,CX[i  ]*255+0.5));
+    col[j*4+1]=Math.max(0,Math.min(255,CX[i+1]*255+0.5));
+    col[j*4+2]=Math.max(0,Math.min(255,CX[i+2]*255+0.5));
+    col[j*4+3]=255;
+  }
+  return {pos,col,count:n,label,res:W+"×"+H};
+}
+
+/* ── WebGL ──────────────────────────────────────────── */
+const canvas=document.getElementById("gl");
+const gl=canvas.getContext("webgl2",{antialias:false,alpha:false,depth:false,
+  premultipliedAlpha:false,powerPreference:"high-performance"});
+if(!gl){
+  document.getElementById("err").style.display="grid";
+  document.getElementById("err").textContent="Ta przeglądarka nie obsługuje WebGL2 — mapa gwiazd nie może zostać wyświetlona.";
+  throw new Error("no webgl2");
+}
+
+const VS=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPosition;
+layout(location=1) in float aTemp;
+layout(location=2) in vec3 aColor;
+
+uniform mat4 uViewProj;
+uniform float uTime;
+uniform vec3 uAxis;
+uniform float uSizeWarm, uSizeCold, uSizeGlobal, uDpr;
+
+out vec3 vColor;
+out float vTemp;
+
+vec3 rotateAroundAxis(vec3 p, vec3 axis, float a){
+  vec3 n=normalize(axis);
+  float s=sin(a), c=cos(a);
+  return p*c + cross(n,p)*s + n*dot(n,p)*(1.0-c);
+}
+
+void main(){
+  float t=clamp(aTemp,0.0,1.0);
+  vTemp=t;
+
+  vec3 axis=normalize(uAxis);
+  if(length(uAxis)<0.01) axis=vec3(0.0,0.0,1.0);
+
+  // odległość od Słońca zastępuje zapieczony atrybut dystansu
+  float dist=length(aPosition);
+  float baseSpeed=0.05*(1200.0/(dist+400.0));
+  vec3 pos=rotateAroundAxis(aPosition, axis, (uTime+60.0)*baseSpeed);
+
+  vColor=aColor;
+
+  gl_PointSize=mix(uSizeWarm,uSizeCold,t)*uSizeGlobal*uDpr;
+  gl_Position=uViewProj*vec4(pos,1.0);
+}`;
+
+const FS=`#version 300 es
+precision highp float;
+in vec3 vColor;
+in float vTemp;
+uniform float uBrightWarm, uBrightCold, uBrightGlobal;
+out vec4 fragColor;
+void main(){
+  float d=length(gl_PointCoord-vec2(0.5));
+  if(d>0.5) discard;
+  float a=pow(1.0-d*2.0,2.0);
+  float b=mix(uBrightWarm,uBrightCold,vTemp);
+  fragColor=vec4(vColor*b*uBrightGlobal*a*2.0, a);
+}`;
+
+function compile(type,src){
+  const s=gl.createShader(type);
+  gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog=gl.createProgram();
+gl.attachShader(prog,compile(gl.VERTEX_SHADER,VS));
+gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,FS));
+gl.linkProgram(prog);
+if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+
+const U={};
+for(const n of ["uViewProj","uTime","uAxis","uSizeWarm","uSizeCold","uSizeGlobal","uDpr",
+  "uBrightWarm","uBrightCold","uBrightGlobal"]) U[n]=gl.getUniformLocation(prog,n);
+
+const vao=gl.createVertexArray();
+gl.bindVertexArray(vao);
+const vboPos=gl.createBuffer(), vboCol=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,vboPos);
+gl.enableVertexAttribArray(0);
+gl.vertexAttribPointer(0,3,gl.FLOAT,false,16,0);      // x, y, z
+gl.enableVertexAttribArray(1);
+gl.vertexAttribPointer(1,1,gl.FLOAT,false,16,12);     // indeks barwy
+gl.bindBuffer(gl.ARRAY_BUFFER,vboCol);
+gl.enableVertexAttribArray(2);
+gl.vertexAttribPointer(2,3,gl.UNSIGNED_BYTE,true,4,0);// barwa gwiazdy
+
+gl.disable(gl.DEPTH_TEST);
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.ONE,gl.ONE);          // BLEND_ADDITIVE
+gl.clearColor(0.023,0.027,0.039,1);
+
+/* ── macierze ───────────────────────────────────────── */
+function perspective(out,fovy,aspect,near,far){
+  const f=1/Math.tan(fovy/2), nf=1/(near-far);
+  out.fill(0);
+  out[0]=f/aspect;out[5]=f;out[10]=(far+near)*nf;out[11]=-1;out[14]=2*far*near*nf;
+  return out;
+}
+function lookAt(out,eye,center,up){
+  let zx=eye[0]-center[0],zy=eye[1]-center[1],zz=eye[2]-center[2];
+  let l=1/Math.hypot(zx,zy,zz);zx*=l;zy*=l;zz*=l;
+  let xx=up[1]*zz-up[2]*zy, xy=up[2]*zx-up[0]*zz, xz=up[0]*zy-up[1]*zx;
+  l=Math.hypot(xx,xy,xz); if(l<1e-6){xx=1;xy=0;xz=0;} else {l=1/l;xx*=l;xy*=l;xz*=l;}
+  const yx=zy*xz-zz*xy, yy=zz*xx-zx*xz, yz=zx*xy-zy*xx;
+  out[0]=xx;out[1]=yx;out[2]=zx;out[3]=0;
+  out[4]=xy;out[5]=yy;out[6]=zy;out[7]=0;
+  out[8]=xz;out[9]=yz;out[10]=zz;out[11]=0;
+  out[12]=-(xx*eye[0]+xy*eye[1]+xz*eye[2]);
+  out[13]=-(yx*eye[0]+yy*eye[1]+yz*eye[2]);
+  out[14]=-(zx*eye[0]+zy*eye[1]+zz*eye[2]);
+  out[15]=1;
+  return out;
+}
+function mul(out,a,b){
+  for(let i=0;i<4;i++){
+    const b0=b[i*4],b1=b[i*4+1],b2=b[i*4+2],b3=b[i*4+3];
+    out[i*4  ]=b0*a[0]+b1*a[4]+b2*a[8] +b3*a[12];
+    out[i*4+1]=b0*a[1]+b1*a[5]+b2*a[9] +b3*a[13];
+    out[i*4+2]=b0*a[2]+b1*a[6]+b2*a[10]+b3*a[14];
+    out[i*4+3]=b0*a[3]+b1*a[7]+b2*a[11]+b3*a[15];
+  }
+  return out;
+}
+const proj=new Float32Array(16), view=new Float32Array(16), vp=new Float32Array(16);
+
+/* ── kamera orbitalna (Z w górę, jak w danych galaktycznych) ── */
+const DEF={azim:0.9, elev:0.42, dist:12000};
+const cam={azim:DEF.azim, elev:DEF.elev, dist:DEF.dist, tx:0,ty:0,tz:0,
+           azimT:DEF.azim, elevT:DEF.elev, distT:DEF.dist, txT:0,tyT:0,tzT:0};
+const eye=[0,0,0];
+const EL_MAX=1.4;
+
+function updateCamera(dt){
+  const k=1-Math.pow(0.0015,dt);
+  cam.azim+=(cam.azimT-cam.azim)*k;
+  cam.elev+=(cam.elevT-cam.elev)*k;
+  cam.dist+=(cam.distT-cam.dist)*k;
+  cam.tx+=(cam.txT-cam.tx)*k; cam.ty+=(cam.tyT-cam.ty)*k; cam.tz+=(cam.tzT-cam.tz)*k;
+  const ce=Math.cos(cam.elev), se=Math.sin(cam.elev);
+  eye[0]=cam.tx+cam.dist*ce*Math.cos(cam.azim);
+  eye[1]=cam.ty+cam.dist*ce*Math.sin(cam.azim);
+  eye[2]=cam.tz+cam.dist*se;
+  lookAt(view,eye,[cam.tx,cam.ty,cam.tz],[0,0,1]);
+}
+
+/* interakcja */
+let dragging=null, lastX=0, lastY=0, pinch=0;
+const pointers=new Map();
+canvas.addEventListener("pointerdown",e=>{
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  dragging=(e.button===2||e.button===1||e.shiftKey)?"pan":"orbit";
+  lastX=e.clientX;lastY=e.clientY;canvas.classList.add("dragging");
+  hideHint();
+});
+canvas.addEventListener("pointermove",e=>{
+  if(!pointers.has(e.pointerId))return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size>=2){                       // dwa palce: zbliżenie + przesuw
+    const p=[...pointers.values()];
+    const d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
+    const mx=(p[0].x+p[1].x)/2, my=(p[0].y+p[1].y)/2;
+    if(pinch){ zoom(Math.pow(pinch/d,1.6)); pan(mx-lastX,my-lastY); }
+    pinch=d; lastX=mx; lastY=my; return;
+  }
+  const dx=e.clientX-lastX, dy=e.clientY-lastY;
+  lastX=e.clientX;lastY=e.clientY;
+  if(dragging==="orbit"){
+    cam.azimT-=dx*0.005;
+    cam.elevT=Math.max(-EL_MAX,Math.min(EL_MAX,cam.elevT+dy*0.005));
+  }else if(dragging==="pan") pan(dx,dy);
+});
+function pan(dx,dy){
+  const s=cam.dist*0.0016;
+  const rx=-Math.sin(cam.azim), ry=Math.cos(cam.azim);
+  const ce=Math.cos(cam.elev), se=Math.sin(cam.elev);
+  const ux=-se*Math.cos(cam.azim), uy=-se*Math.sin(cam.azim), uz=ce;
+  cam.txT-=(rx*dx-ux*dy)*s; cam.tyT-=(ry*dx-uy*dy)*s; cam.tzT+=uz*dy*s;
+}
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size<2){
+    pinch=0;
+    const r=[...pointers.values()][0];        // bez skoku po puszczeniu palca
+    if(r){lastX=r.x;lastY=r.y;}
+  }
+  if(pointers.size===0){dragging=null;canvas.classList.remove("dragging");}
+}
+canvas.addEventListener("pointerup",endPointer);
+canvas.addEventListener("pointercancel",endPointer);
+canvas.addEventListener("contextmenu",e=>e.preventDefault());
+function zoom(f){cam.distT=Math.max(15,Math.min(60000,cam.distT*f));}
+canvas.addEventListener("wheel",e=>{e.preventDefault();zoom(Math.exp(e.deltaY*0.0011));hideHint();},{passive:false});
+canvas.addEventListener("dblclick",()=>resetView());
+
+function resetView(){
+  cam.azimT=DEF.azim;cam.elevT=DEF.elev;cam.distT=DEF.dist;
+  cam.txT=cam.tyT=cam.tzT=0;
+}
+
+/* ── UI ─────────────────────────────────────────────── */
+const AXIS=[0,0,1];                    // oś obrotu — normalna dysku galaktycznego
+const P={sizeGlobal:1.7,sizeWarm:1.9,sizeCold:2.3,brightGlobal:.6,brightWarm:.85,brightCold:1.85,
+         timeMult:.2};
+const dec={sizeGlobal:1,sizeWarm:1,sizeCold:1,brightGlobal:2,brightWarm:2,brightCold:2,
+           timeMult:1};
+function paint(el){
+  const p=(el.value-el.min)/(el.max-el.min);
+  el.style.setProperty("--p",p);
+}
+function bindSlider(id){
+  const el=document.getElementById(id), out=document.getElementById("v_"+id);
+  const show=()=>{out.textContent=(+el.value).toFixed(dec[id]);paint(el);};
+  el.value=P[id];show();
+  el.addEventListener("input",()=>{P[id]=+el.value;show();});
+  return el;
+}
+Object.keys(P).forEach(bindSlider);
+
+const panel=document.getElementById("panel"), toggle=document.getElementById("toggle");
+toggle.addEventListener("click",()=>{
+  const hid=panel.classList.toggle("hidden");
+  toggle.classList.toggle("shifted",hid);
+  toggle.setAttribute("aria-expanded",String(!hid));
+});
+
+document.getElementById("reset").addEventListener("click",resetView);
+
+let paused=false;
+const pauseBtn=document.getElementById("pause");
+pauseBtn.addEventListener("click",()=>{
+  paused=!paused;
+  pauseBtn.textContent=paused?"Wznów":"Pauza";
+  pauseBtn.setAttribute("aria-pressed",String(paused));
+});
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  if(e.key==="h"||e.key==="H")toggle.click();
+  if(e.key===" "){e.preventDefault();pauseBtn.click();}
+  if(e.key==="r"||e.key==="R")resetView();
+});
+
+const hintEl=document.getElementById("hint");
+let hintTimer=setTimeout(hideHint,9000);
+function hideHint(){hintEl.style.opacity=0;}
+function showHint(text,ms,warn){
+  clearTimeout(hintTimer);
+  hintEl.textContent=text;
+  hintEl.classList.toggle("warn",!!warn);
+  hintEl.style.opacity=1;
+  if(ms) hintTimer=setTimeout(hideHint,ms);
+}
+
+/* ── podmiana zestawu danych ─────────────────────────────── */
+const nStarsEl=document.getElementById("nstars"), dropEl=document.getElementById("drop");
+function applyDataset(ds){
+  gl.bindBuffer(gl.ARRAY_BUFFER,vboPos);
+  gl.bufferData(gl.ARRAY_BUFFER,ds.pos,gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER,vboCol);
+  gl.bufferData(gl.ARRAY_BUFFER,ds.col,gl.STATIC_DRAW);
+  N=ds.count;
+  nStarsEl.textContent=N.toLocaleString("pl-PL");
+  dropEl.classList.remove("idle");
+  showHint(ds.label+" · "+ds.res+" px · "+N.toLocaleString("pl-PL")+" gwiazd",6000);
+}
+function dataError(msg){
+  showHint("EXR: "+msg,12000,true);
+  if(!N) dropEl.classList.add("idle");        // wracamy do ekranu startowego
+}
+
+/* ── wczytywanie tekstur EXR (upuść pliki na okno) ───────── */
+const fileInput=document.getElementById("file");
+dropEl.addEventListener("click",()=>{ if(!N) fileInput.click(); });
+fileInput.addEventListener("change",()=>{ if(fileInput.files.length) loadFiles([...fileInput.files]); });
+
+let dragDepth=0;
+addEventListener("dragenter",e=>{e.preventDefault();dragDepth++;dropEl.classList.add("on");});
+addEventListener("dragover",e=>e.preventDefault());
+addEventListener("dragleave",e=>{e.preventDefault();if(--dragDepth<=0)dropEl.classList.remove("on");});
+addEventListener("drop",e=>{
+  e.preventDefault();dragDepth=0;dropEl.classList.remove("on");
+  if(e.dataTransfer.files.length) loadFiles([...e.dataTransfer.files]);
+});
+
+/* rozpoznanie po zawartości: tekstura pozycji ma wartości daleko poza 0…1 */
+function isPositions(img){
+  const d=img.data; let m=0;
+  for(let i=0;i<d.length;i+=Math.max(3,(d.length/30000|0)*3)) if(Math.abs(d[i])>m) m=Math.abs(d[i]);
+  return m>1.5;
+}
+async function loadImages(sources){          // [{name, buffer}, …]
+  const imgs=[];
+  for(const s of sources) imgs.push({name:s.name, img:await parseEXR(s.buffer)});
+  if(imgs.length!==2) throw new Error("wybierz obie tekstury: pozycje i barwy");
+  let a=imgs[0], b=imgs[1];
+  const hint=n=>/pos|dist/i.test(n)?1:/col|lum|barw/i.test(n)?-1:0;
+  const byName=hint(a.name)-hint(b.name);
+  if(byName<0){ const t=a; a=b; b=t; }                       // nazwy plików
+  else if(byName===0){                                       // albo zakres wartości
+    if(!isPositions(a.img)&&isPositions(b.img)){ const t=a; a=b; b=t; }
+    else if(isPositions(a.img)===isPositions(b.img))
+      throw new Error("nie rozpoznano, która tekstura zawiera pozycje");
+  }
+  return datasetFromEXR(a.img,b.img,a.name+" + "+b.name);
+}
+async function loadFiles(files){
+  files=files.filter(f=>/\.exr$/i.test(f.name)).slice(0,2);
+  showHint("wczytywanie…",0);
+  try{
+    const src=[];
+    for(const f of files) src.push({name:f.name, buffer:await f.arrayBuffer()});
+    applyDataset(await loadImages(src));
+  }catch(e){ dataError(String(e.message||e)); }
+}
+
+/* przy serwowaniu przez http(s) tekstury obok pliku html wczytają się same */
+async function autoLoad(){
+  if(!location.protocol.startsWith("http")) return;
+  const names=["galaxy_pos_distance.exr","galaxy_col_lum.exr"];
+  try{
+    const res=await Promise.all(names.map(n=>fetch(n)));
+    if(!res.every(r=>r.ok)) return;
+    const src=[];
+    for(let i=0;i<2;i++) src.push({name:names[i], buffer:await res[i].arrayBuffer()});
+    applyDataset(await loadImages(src));
+  }catch(e){ dataError(String(e.message||e)); }
+}
+
+dropEl.classList.add("idle");                 // bez danych czekamy na tekstury
+autoLoad();
+
+/* ── pętla ──────────────────────────────────────────── */
+let time=0, last=performance.now(), fps=0, fpsAcc=0, fpsN=0;
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(reduce){paused=true;pauseBtn.textContent="Wznów";pauseBtn.setAttribute("aria-pressed","true");}
+
+const r_dist=document.getElementById("r_dist"), r_fps=document.getElementById("r_fps");
+let dpr=1;
+function resize(){
+  dpr=Math.min(devicePixelRatio||1,2);
+  const w=Math.round(innerWidth*dpr), h=Math.round(innerHeight*dpr);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+}
+addEventListener("resize",resize);
+
+function frame(now){
+  const dt=Math.min((now-last)/1000,0.1); last=now;
+  if(!paused) time+=dt*P.timeMult;
+
+  resize();
+  updateCamera(dt);
+  gl.viewport(0,0,canvas.width,canvas.height);
+  perspective(proj,45*Math.PI/180,canvas.width/canvas.height,1,120000);
+  mul(vp,proj,view);
+
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.uniformMatrix4fv(U.uViewProj,false,vp);
+  gl.uniform1f(U.uTime,time);
+  gl.uniform3f(U.uAxis,AXIS[0],AXIS[1],AXIS[2]);
+  gl.uniform1f(U.uSizeWarm,P.sizeWarm);
+  gl.uniform1f(U.uSizeCold,P.sizeCold);
+  gl.uniform1f(U.uSizeGlobal,P.sizeGlobal);
+  gl.uniform1f(U.uBrightWarm,P.brightWarm);
+  gl.uniform1f(U.uBrightCold,P.brightCold);
+  gl.uniform1f(U.uBrightGlobal,P.brightGlobal);
+  gl.uniform1f(U.uDpr,dpr);
+  if(N) gl.drawArrays(gl.POINTS,0,N);
+
+  fpsAcc+=dt;fpsN++;
+  if(fpsAcc>0.5){
+    fps=fpsN/fpsAcc;fpsAcc=0;fpsN=0;
+    r_fps.textContent=fps.toFixed(0);
+    r_dist.textContent=Math.round(Math.hypot(eye[0],eye[1],eye[2])).toLocaleString("pl-PL");
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

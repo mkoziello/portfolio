@@ -1,0 +1,49 @@
+{
+  "models": [
+    {
+      "id": "vv-logo",
+      "name": "VertexVoodoo Logo",
+      "group": "Branding",
+      "file": "models/VV_logo_3d.glb",
+      "tags": ["Blender 4.5", "glTF 2.0", "Vertex colors"],
+      "note": "Studio mark, extruded from the 2D logotype and baked down to vertex colours so it carries no textures at all. 62 verts, 32 tris.",
+      "material": {
+        "metalness": 0.85,
+        "roughness": 0.28,
+        "tint": "#ffffff",
+        "vertexColors": true,
+        "envIntensity": 1.0
+      },
+      "view": { "autoOrbit": true, "exposure": 1.0, "grid": true, "shadow": true, "fit": "ground" }
+    },
+    {
+      "id": "panel-crate",
+      "name": "Panel Crate",
+      "group": "Props",
+      "file": "models/panel_crate.glb",
+      "tags": ["1024² maps", "6.9k tris", "Emissive strip"],
+      "note": "Texture test asset: rounded box, one UV set, five maps kept as loose files so they can be swapped without touching the mesh. The emissive strip is a separate map, not baked into albedo.",
+      "textures": {
+        "albedo": "textures/panel_albedo.png",
+        "normal": "textures/panel_normal.png",
+        "roughness": "textures/panel_roughness.png",
+        "ao": "textures/panel_ao.png",
+        "emissive": "textures/panel_emissive.png",
+        "flipY": false,
+        "repeat": [1, 1],
+        "anisotropy": 8
+      },
+      "material": {
+        "metalness": 0.85,
+        "roughness": 1.0,
+        "tint": "#ffffff",
+        "envIntensity": 1.0,
+        "normalScale": 1.0,
+        "aoIntensity": 1.0,
+        "emissive": "#ffffff",
+        "emissiveIntensity": 1.6
+      },
+      "view": { "autoOrbit": true, "exposure": 1.0, "grid": true, "shadow": true, "fit": "ground" }
+    }
+  ]
+}
