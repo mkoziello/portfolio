@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Orbital Harmony</title>
+<style>
+  :root {
+    --text-primary: #eef0fa;
+    --text-secondary: #9aa0c0;
+    --accent-gold: #f5c66b;
+    --panel-bg: rgba(14, 17, 36, 0.72);
+    --panel-border: rgba(255, 255, 255, 0.09);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #05060f;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-primary);
+    -webkit-user-select: none; user-select: none;
+  }
+  #game { position: fixed; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+  #ui { position: fixed; inset: 0; pointer-events: none; }
+  #ui * { pointer-events: auto; }
+  .hidden { display: none !important; }
+
+  button {
+    font-family: inherit; cursor: pointer; color: var(--text-primary);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    transition: background 0.18s ease, transform 0.12s ease, border-color 0.18s ease;
+  }
+  button:hover { background: rgba(255,255,255,0.12); }
+  button:active { transform: scale(0.96); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #f7d68a, #e8a94b);
+    color: #241505;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 6px 24px rgba(232, 169, 75, 0.35);
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, #ffe19c, #f2b559); }
+
+  #menu {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; text-align: center; gap: 28px;
+  }
+  #menu h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(38px, 7vw, 64px);
+    letter-spacing: 0.04em;
+    margin: 0;
+    background: linear-gradient(135deg, #fdf1d6, #f5c66b 45%, #8f7bd8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 60px rgba(245, 198, 107, 0.25);
+  }
+  #menu .tagline {
+    color: var(--text-secondary); font-size: 15px; letter-spacing: 0.02em; margin-top: -18px;
+    max-width: 440px; line-height: 1.5;
+  }
+  .menu-panel {
+    background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 24px;
+    padding: 32px 36px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  #start-btn { padding: 14px 46px; font-size: 17px; }
+  .menu-footnote { font-size: 12px; color: var(--text-secondary); max-width: 340px; line-height: 1.6; }
+
+  #hud-top-left { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 12px; }
+  #back-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  #level-label { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; padding: 8px 16px; backdrop-filter: blur(10px); }
+  #level-label .level-name { font-size: 13px; font-weight: 600; }
+  #level-label .level-hint { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  #hud-top-right { position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 10px; }
+  .round-btn {
+    width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  }
+  .round-btn.mute-on { color: var(--text-secondary); }
+  #play-btn svg { margin-left: 3px; }
+
+  #instruction-toast {
+    position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px;
+    padding: 10px 18px; font-size: 13px; color: var(--text-secondary);
+    backdrop-filter: blur(10px); transition: opacity 0.6s ease;
+  }
+
+  .overlay-panel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .overlay-card {
+    background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 24px;
+    padding: 40px 48px; text-align: center; backdrop-filter: blur(18px);
+    box-shadow: 0 20px 70px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    animation: pop-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+  }
+  @keyframes pop-in { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .overlay-card h2 { margin: 0; font-size: 26px; color: var(--accent-gold); text-shadow: 0 0 30px rgba(245,198,107,0.4); }
+  .overlay-card p { margin: 0; color: var(--text-secondary); font-size: 14px; max-width: 320px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="ui">
+
+  <div id="menu">
+    <h1>Orbital Harmony</h1>
+    <div class="tagline">Listen to the chord, then drag each orbiting orb onto a note of the scale until the whole system rings true.</div>
+    <div class="menu-panel">
+      <button id="start-btn" class="btn-primary">Start</button>
+      <div class="menu-footnote">Every orb snaps to the nearest natural note as you drag it. Any orb can take any note that's needed. Tap the play button anytime to hear the chord again.</div>
+    </div>
+  </div>
+
+  <div id="hud" class="hidden">
+    <div id="hud-top-left">
+      <button id="back-btn" title="Back to menu">&#8592;</button>
+      <div id="level-label">
+        <div class="level-name" id="level-name-text">Level 1</div>
+        <div class="level-hint" id="level-hint-text">Tune every orb to complete the chord</div>
+      </div>
+    </div>
+
+    <div id="hud-top-right">
+      <button id="mute-btn" class="round-btn" title="Mute">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+      </button>
+      <button id="play-btn" class="round-btn" title="Hear the chord">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+      </button>
+    </div>
+
+    <div id="instruction-toast">Drag an orb — it snaps to the nearest natural note</div>
+  </div>
+
+  <div id="level-complete-overlay" class="overlay-panel hidden">
+    <div class="overlay-card">
+      <h2>Chord locked</h2>
+      <p id="level-complete-text">The system rings in harmony.</p>
+    </div>
+  </div>
+
+  <div id="all-complete-overlay" class="overlay-panel hidden">
+    <div class="overlay-card">
+      <h2>All chords tuned</h2>
+      <p>You brought every orbit into harmony.</p>
+      <button id="restart-btn" class="btn-primary" style="margin-top:6px;">Play again</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   CONFIG / DATA
+   Only the natural notes (C D E F G A B) ever sound - no sharps
+   or flats anywhere in the note table below. Chords are generated
+   by stacking diatonic thirds on a random scale degree, then
+   voiced with a random inversion, so every run is different.
+   ========================================================= */
+
+const TONIC_FREQ = 261.63; // C4 - just an octave anchor, not a fixed "key"
+const NATURAL_SEMITONES = [0, 2, 4, 5, 7, 9, 11]; // C D E F G A B, semitones above C
+const NATURAL_LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
+
+// Chord shapes as scale-step stacks (each step = a diatonic third, i.e. +2 degrees).
+// 2 = fifth (no third), 3 = triad, 4 = 7th chord, 5 = 9th chord, 6 = 11th chord.
+const CHORD_SHAPES = {
+  2: [0, 4],
+  3: [0, 2, 4],
+  4: [0, 2, 4, 6],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 4, 6, 8, 10],
+};
+
+// 12 levels per run, ramping from a simple fifth up to an 11-chord (max 6 notes).
+const LEVEL_CHORD_SIZES = [2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6];
+
+const ORB_INSTRUMENT_CYCLE = ["flute", "violin", "oboe", "pad"];
+
+const PHYSICS = {
+  keplerConstant: 0.81,
+  pitchScale: 1256,
+  minRadiusUnits: 1.3,
+  maxRadiusUnits: 5.84,
+};
+
+const GRADIENT_STOPS = [
+  { t: 0.00, c: [217, 60, 43] },
+  { t: 0.25, c: [232, 138, 26] },
+  { t: 0.45, c: [232, 214, 51] },
+  { t: 0.60, c: [64, 199, 89] },
+  { t: 0.78, c: [51, 140, 224] },
+  { t: 1.00, c: [140, 51, 214] },
+];
+const GRADIENT_MIN_FREQ = 110;    // A2, matches PHYSICS.maxRadiusUnits
+const GRADIENT_MAX_FREQ = 1046.5; // C6, matches PHYSICS.minRadiusUnits
+
+const INSTRUMENTS = {
+  flute:  { label: "Flute",  wave: "sine",     voices: 1, filterFreq: 3200, filterQ: 0.6, vibratoRate: 5.2, vibratoDepth: 4, attack: 0.35, decay: 0.15, sustain: 0.75, release: 0.6 },
+  violin: { label: "Violin", wave: "sawtooth", voices: 2, filterFreq: 2200, filterQ: 1.1, vibratoRate: 6.0, vibratoDepth: 9, attack: 0.4,  decay: 0.2,  sustain: 0.7,  release: 0.7 },
+  oboe:   { label: "Oboe",   wave: "triangle", voices: 1, filterFreq: 1800, filterQ: 3.5, vibratoRate: 5.6, vibratoDepth: 6, attack: 0.12, decay: 0.15, sustain: 0.65, release: 0.5 },
+  pad:    { label: "Pad",    wave: "triangle", voices: 3, filterFreq: 2000, filterQ: 0.5, vibratoRate: 4.2, vibratoDepth: 5, attack: 0.9,  decay: 0.3,  sustain: 0.8,  release: 1.2 },
+  bell:   { label: "Bell",   wave: "sine",     voices: 1, filterFreq: 6000, filterQ: 0.4, vibratoRate: 0,   vibratoDepth: 0, attack: 0.005, decay: 1.3, sustain: 0.0, release: 0.6, partials: [1, 2.01, 3.98, 5.4] },
+};
+
+/* Natural-note snap grid: every C D E F G A B across ~5 octaves. */
+function buildNaturalNoteFrequencies() {
+  const freqs = [];
+  for (let octave = -2; octave <= 2; octave++) {
+    NATURAL_SEMITONES.forEach((s) => {
+      freqs.push(TONIC_FREQ * Math.pow(2, (octave * 12 + s) / 12));
+    });
+  }
+  freqs.sort((a, b) => a - b);
+  return freqs;
+}
+const NATURAL_NOTE_FREQS = buildNaturalNoteFrequencies();
+
+function noteLetterForSemitone(semitone) {
+  const mod = ((semitone % 12) + 12) % 12;
+  const idx = NATURAL_SEMITONES.indexOf(mod);
+  return idx >= 0 ? NATURAL_LETTERS[idx] : "?";
+}
+function noteLetterForFrequency(freq) {
+  const semitone = Math.round(12 * Math.log2(freq / TONIC_FREQ));
+  return noteLetterForSemitone(semitone);
+}
+
+/* =========================================================
+   CHORD GENERATION (randomized each run - root, size ramp, inversion)
+   ========================================================= */
+
+function buildChordSemitones(rootDegree, size) {
+  return CHORD_SHAPES[size].map((step) => {
+    const total = rootDegree + step;
+    const degree = total % 7;
+    const octaveShift = Math.floor(total / 7);
+    return octaveShift * 12 + NATURAL_SEMITONES[degree];
+  });
+}
+
+/** Moves the lowest `inversion` root-position notes up an octave. */
+function applyInversion(semitones, inversion) {
+  const arr = semitones.slice();
+  for (let i = 0; i < inversion; i++) arr[i] += 12;
+  arr.sort((a, b) => a - b);
+  return arr;
+}
+
+/** Shifts the whole chord by whole octaves so every note stays reachable. */
+function normalizeChordSemitones(semitones) {
+  const LOW = -13, HIGH = 22;
+  const minSemi = Math.min.apply(null, semitones);
+  const maxSemi = Math.max.apply(null, semitones);
+  let shiftOctaves = 0;
+  if (maxSemi > HIGH) shiftOctaves = -Math.ceil((maxSemi - HIGH) / 12);
+  else if (minSemi < LOW) shiftOctaves = Math.ceil((LOW - minSemi) / 12);
+  return semitones.map((s) => s + shiftOctaves * 12);
+}
+
+let RUN_LEVELS = [];
+
+function generateRun() {
+  RUN_LEVELS = LEVEL_CHORD_SIZES.map((size) => {
+    const rootDegree = Math.floor(Math.random() * 7);
+    const maxInversion = Math.min(size - 1, 3);
+    const inversion = Math.floor(Math.random() * (maxInversion + 1));
+
+    const rootPosition = buildChordSemitones(rootDegree, size);
+    const voiced = applyInversion(rootPosition, inversion);
+    const normalized = normalizeChordSemitones(voiced).sort((a, b) => a - b);
+    const targetFrequencies = normalized.map((s) => TONIC_FREQ * Math.pow(2, s / 12));
+    const instruments = Array.from({ length: size }, (_, i) => ORB_INSTRUMENT_CYCLE[i % ORB_INSTRUMENT_CYCLE.length]);
+
+    return { targetFrequencies, instruments };
+  });
+}
+
+/* =========================================================
+   AUDIO ENGINE
+   ========================================================= */
+
+const AUDIO = { ctx: null, bus: null, dry: null, wet: null, master: null };
+let isMuted = false;
+
+function ensureAudio() {
+  if (AUDIO.ctx) {
+    if (AUDIO.ctx.state === "suspended") AUDIO.ctx.resume();
+    return;
+  }
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new Ctx();
+  AUDIO.ctx = ctx;
+
+  AUDIO.master = ctx.createGain();
+  AUDIO.master.gain.value = isMuted ? 0 : 0.85;
+
+  const compressor = ctx.createDynamicsCompressor();
+  compressor.threshold.value = -18;
+  compressor.knee.value = 24;
+  compressor.ratio.value = 3.2;
+  compressor.attack.value = 0.006;
+  compressor.release.value = 0.25;
+  AUDIO.master.connect(compressor);
+  compressor.connect(ctx.destination);
+
+  AUDIO.dry = ctx.createGain();
+  AUDIO.dry.gain.value = 0.8;
+  AUDIO.dry.connect(AUDIO.master);
+
+  const convolver = ctx.createConvolver();
+  convolver.buffer = createImpulseResponse(ctx, 2.4, 2.3);
+  AUDIO.wet = ctx.createGain();
+  AUDIO.wet.gain.value = 0.28;
+  convolver.connect(AUDIO.wet);
+  AUDIO.wet.connect(AUDIO.master);
+
+  AUDIO.bus = ctx.createGain();
+  AUDIO.bus.gain.value = 1;
+  AUDIO.bus.connect(AUDIO.dry);
+  AUDIO.bus.connect(convolver);
+
+  startAmbientBed();
+}
+
+function createImpulseResponse(ctx, duration, decay) {
+  const rate = ctx.sampleRate;
+  const length = Math.max(1, Math.floor(rate * duration));
+  const impulse = ctx.createBuffer(2, length, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+    }
+  }
+  return impulse;
+}
+
+function startAmbientBed() {
+  const ctx = AUDIO.ctx;
+  const gain = ctx.createGain();
+  gain.gain.value = 0.028;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 340;
+  filter.connect(gain);
+  gain.connect(AUDIO.bus);
+
+  [55, 55.4, 82.6].forEach((freq) => {
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    osc.connect(filter);
+    osc.start();
+  });
+}
+
+/* Continuous per-orb tone. Note: the central star itself is never
+   wired to any voice - the "core" stays silent throughout. */
+function createSustainedVoice(instrumentKey, initialFreq) {
+  const ctx = AUDIO.ctx;
+  const preset = INSTRUMENTS[instrumentKey];
+  const now = ctx.currentTime;
+
+  const gain = ctx.createGain();
+  const peak = 0.14 * preset.sustain;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(peak, now + preset.attack);
+  gain.gain.linearRampToValueAtTime(peak * 0.85, now + preset.attack + preset.decay);
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = preset.filterFreq;
+  filter.Q.value = preset.filterQ;
+  filter.connect(gain);
+  gain.connect(AUDIO.bus);
+
+  const oscillators = [];
+  for (let i = 0; i < preset.voices; i++) {
+    const osc = ctx.createOscillator();
+    osc.type = preset.wave;
+    osc.frequency.value = initialFreq;
+    osc.detune.value = preset.voices > 1 ? (i - (preset.voices - 1) / 2) * 7 : 0;
+    osc.connect(filter);
+    osc.start(now);
+    oscillators.push(osc);
+  }
+
+  let vibratoLFO = null;
+  if (preset.vibratoDepth > 0) {
+    vibratoLFO = ctx.createOscillator();
+    vibratoLFO.frequency.value = preset.vibratoRate;
+    const vibratoGain = ctx.createGain();
+    vibratoGain.gain.value = preset.vibratoDepth;
+    vibratoLFO.connect(vibratoGain);
+    oscillators.forEach((o) => vibratoGain.connect(o.detune));
+    vibratoLFO.start(now);
+  }
+
+  return {
+    setFrequency(freq) {
+      const t = ctx.currentTime;
+      oscillators.forEach((o) => o.frequency.setTargetAtTime(freq, t, 0.06));
+    },
+    setLocked(locked) {
+      const t = ctx.currentTime;
+      filter.frequency.setTargetAtTime(locked ? preset.filterFreq * 1.4 : preset.filterFreq, t, 0.2);
+      gain.gain.setTargetAtTime(locked ? peak * 1.25 : peak, t, 0.15);
+    },
+    stop() {
+      const t = ctx.currentTime;
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setTargetAtTime(0, t, preset.release / 3);
+      const stopAt = t + preset.release + 0.15;
+      oscillators.forEach((o) => o.stop(stopAt));
+      if (vibratoLFO) vibratoLFO.stop(stopAt);
+    },
+  };
+}
+
+function playPluck(instrumentKey, frequency, delay, volume) {
+  if (!AUDIO.ctx) return;
+  const ctx = AUDIO.ctx;
+  const preset = INSTRUMENTS[instrumentKey] || INSTRUMENTS.bell;
+  const now = ctx.currentTime + Math.max(0, delay || 0);
+  const vol = volume == null ? 0.2 : volume;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(vol, now + Math.max(0.004, preset.attack * 0.3));
+  gain.gain.exponentialRampToValueAtTime(0.001, now + preset.decay + preset.attack);
+  gain.connect(AUDIO.bus);
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = preset.filterFreq * 1.4;
+  filter.connect(gain);
+
+  const partials = preset.partials || [1];
+  partials.forEach((mult, idx) => {
+    const osc = ctx.createOscillator();
+    osc.type = idx === 0 ? preset.wave : "sine";
+    osc.frequency.value = frequency * mult;
+    const partialGain = ctx.createGain();
+    partialGain.gain.value = 1 / (idx + 1);
+    osc.connect(partialGain);
+    partialGain.connect(filter);
+    osc.start(now);
+    osc.stop(now + preset.decay + preset.attack + 0.25);
+  });
+}
+
+function playLockChime(freq) {
+  playPluck("bell", freq, 0, 0.16);
+  playPluck("bell", freq * 2, 0.03, 0.07);
+}
+
+function playChordFrequencies(freqs, volume) {
+  freqs.forEach((freq, i) => playPluck("bell", freq, i * 0.08, volume == null ? 0.2 : volume));
+}
+
+function playLevelCompleteFanfare(freqs) {
+  freqs.forEach((freq, i) => playPluck("bell", freq, i * 0.1, 0.22));
+  const bloomDelay = freqs.length * 0.1 + 0.15;
+  freqs.forEach((freq) => playPluck("bell", freq * 2, bloomDelay, 0.08));
+}
+
+function previewCurrentChord() {
+  ensureAudio();
+  const level = RUN_LEVELS[currentLevelIndex];
+  if (!level) return;
+  playChordFrequencies(level.targetFrequencies);
+}
+
+/* =========================================================
+   MATH HELPERS
+   ========================================================= */
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function centsDifference(freqA, freqB) {
+  if (freqA <= 0 || freqB <= 0) return Infinity;
+  return 1200 * Math.log2(freqA / freqB);
+}
+function isInTune(current, target) {
+  return Math.abs(centsDifference(current, target)) < 1;
+}
+
+/** Snaps any raw frequency to the nearest natural note (C D E F G A B only). */
+function snapToScale(rawFreq) {
+  let best = NATURAL_NOTE_FREQS[0];
+  let bestDist = Infinity;
+  for (let i = 0; i < NATURAL_NOTE_FREQS.length; i++) {
+    const d = Math.abs(centsDifference(rawFreq, NATURAL_NOTE_FREQS[i]));
+    if (d < bestDist) { bestDist = d; best = NATURAL_NOTE_FREQS[i]; }
+  }
+  return best;
+}
+
+/** Converts a virtual orbit radius to the nearest natural-note radius. */
+function snapRadiusToScale(virtualRadiusUnits) {
+  const period = PHYSICS.keplerConstant * Math.pow(virtualRadiusUnits, 1.5);
+  const rawFreq = PHYSICS.pitchScale / period;
+  const snappedFreq = snapToScale(rawFreq);
+  const snappedPeriod = PHYSICS.pitchScale / snappedFreq;
+  const snappedVirtual = Math.pow(snappedPeriod / PHYSICS.keplerConstant, 1 / 1.5);
+  return clamp(snappedVirtual, PHYSICS.minRadiusUnits, PHYSICS.maxRadiusUnits);
+}
+
+function frequencyToColor(freq) {
+  const t = clamp((freq - GRADIENT_MIN_FREQ) / (GRADIENT_MAX_FREQ - GRADIENT_MIN_FREQ), 0, 1);
+  for (let i = 0; i < GRADIENT_STOPS.length - 1; i++) {
+    const a = GRADIENT_STOPS[i], b = GRADIENT_STOPS[i + 1];
+    if (t >= a.t && t <= b.t) {
+      const localT = (t - a.t) / (b.t - a.t || 1);
+      const r = Math.round(lerp(a.c[0], b.c[0], localT));
+      const g = Math.round(lerp(a.c[1], b.c[1], localT));
+      const bch = Math.round(lerp(a.c[2], b.c[2], localT));
+      return "rgb(" + r + ", " + g + ", " + bch + ")";
+    }
+  }
+  const last = GRADIENT_STOPS[GRADIENT_STOPS.length - 1].c;
+  return "rgb(" + last[0] + ", " + last[1] + ", " + last[2] + ")";
+}
+
+/* =========================================================
+   GAME STATE
+   ========================================================= */
+
+let state = "menu"; // menu | playing | levelComplete | allComplete
+let currentLevelIndex = 0;
+let orbs = [];
+let levelCompleteTriggered = false;
+let particles = [];
+let stars = [];
+let baseUnitPx = 60;
+let center = { x: 0, y: 0 };
+let lastTime = 0;
+let draggedOrb = null;
+
+/* =========================================================
+   LEVEL LIFECYCLE
+   ========================================================= */
+
+function loadLevel(index) {
+  stopAllVoices();
+  draggedOrb = null;
+  currentLevelIndex = index;
+  const level = RUN_LEVELS[index];
+  const targets = level.targetFrequencies;
+  const count = targets.length;
+
+  orbs = targets.map((_, i) => {
+    const instrumentKey = level.instruments[i % level.instruments.length];
+    const spread = count > 1
+      ? lerp(PHYSICS.minRadiusUnits, PHYSICS.maxRadiusUnits, i / (count - 1))
+      : (PHYSICS.minRadiusUnits + PHYSICS.maxRadiusUnits) / 2;
+    const angle = (Math.PI * 2 / count) * i + Math.random() * 0.4;
+
+    const orb = {
+      noteIndex: i,
+      instrumentKey,
+      radiusUnits: snapRadiusToScale(spread),
+      angle,
+      period: 1,
+      currentFreq: 0,
+      locked: false,
+      trail: [],
+      voice: null,
+      screenX: 0,
+      screenY: 0,
+    };
+    orb.voice = createSustainedVoice(instrumentKey, TONIC_FREQ);
+    recalcOrb(orb);
+    return orb;
+  });
+
+  updateLocks();
+  levelCompleteTriggered = false;
+  state = "playing";
+
+  document.getElementById("level-name-text").textContent = "Level " + (index + 1) + " / " + RUN_LEVELS.length;
+
+  // Play the target chord once the scene has settled, instead of spelling
+  // the chord out as text - listen for it rather than reading it.
+  const token = index;
+  setTimeout(() => {
+    if (currentLevelIndex === token && state === "playing") previewCurrentChord();
+  }, 550);
+}
+
+function recalcOrb(orb) {
+  orb.period = PHYSICS.keplerConstant * Math.pow(orb.radiusUnits, 1.5);
+  orb.currentFreq = PHYSICS.pitchScale / orb.period;
+  if (orb.voice) orb.voice.setFrequency(orb.currentFreq);
+}
+
+/** Any orb can satisfy any target note - this computes a fresh matching
+    between orbs and the chord's required frequencies every time something
+    changes, rather than pinning orb #i to target #i. */
+function updateLocks() {
+  const level = RUN_LEVELS[currentLevelIndex];
+  if (!level) return;
+  const targets = level.targetFrequencies;
+  const claimed = new Array(orbs.length).fill(false);
+
+  targets.forEach((targetFreq) => {
+    for (let i = 0; i < orbs.length; i++) {
+      if (!claimed[i] && isInTune(orbs[i].currentFreq, targetFreq)) {
+        claimed[i] = true;
+        break;
+      }
+    }
+  });
+
+  orbs.forEach((orb, i) => {
+    const wasLocked = orb.locked;
+    orb.locked = claimed[i];
+    if (orb.voice) orb.voice.setLocked(orb.locked);
+    if (orb.locked && !wasLocked && AUDIO.ctx) {
+      playLockChime(orb.currentFreq);
+      spawnSparkles(orb.screenX, orb.screenY, frequencyToColor(orb.currentFreq), 14);
+    }
+  });
+}
+
+function setOrbRadiusFromPixels(orb, pixelRadius) {
+  const virtual = clamp(pixelRadius / baseUnitPx, PHYSICS.minRadiusUnits, PHYSICS.maxRadiusUnits);
+  orb.radiusUnits = snapRadiusToScale(virtual);
+  recalcOrb(orb);
+  updateLocks();
+}
+
+function stopAllVoices() {
+  orbs.forEach((o) => { if (o.voice) o.voice.stop(); });
+}
+
+function allOrbsLocked() {
+  return orbs.length > 0 && orbs.every((o) => o.locked);
+}
+
+function triggerLevelComplete() {
+  state = "levelComplete";
+  levelCompleteTriggered = true;
+  draggedOrb = null; // stop any drag in progress the instant the chord locks
+
+  const level = RUN_LEVELS[currentLevelIndex];
+  playLevelCompleteFanfare(level.targetFrequencies);
+  spawnSparkles(center.x, center.y, "rgb(245, 198, 107)", 46);
+
+  document.getElementById("level-complete-text").textContent =
+    "Chord " + (currentLevelIndex + 1) + " of " + RUN_LEVELS.length + " complete";
+  document.getElementById("level-complete-overlay").classList.remove("hidden");
+
+  setTimeout(() => {
+    document.getElementById("level-complete-overlay").classList.add("hidden");
+    if (currentLevelIndex + 1 < RUN_LEVELS.length) {
+      loadLevel(currentLevelIndex + 1);
+    } else {
+      stopAllVoices();
+      state = "allComplete";
+      document.getElementById("all-complete-overlay").classList.remove("hidden");
+    }
+  }, 2200);
+}
+
+/* =========================================================
+   PARTICLES
+   ========================================================= */
+
+function spawnSparkles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 40 + Math.random() * 90;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.6 + Math.random() * 0.5,
+      maxLife: 0.6 + Math.random() * 0.5,
+      color,
+      size: 1.5 + Math.random() * 2,
+    });
+  }
+}
+
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vx *= 0.94;
+    p.vy *= 0.94;
+  }
+}
+
+function drawParticles(ctx) {
+  particles.forEach((p) => {
+    const alpha = clamp(p.life / p.maxLife, 0, 1);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* =========================================================
+   CANVAS / RENDERING
+   ========================================================= */
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+let dpr = Math.max(1, window.devicePixelRatio || 1);
+let bgGradient = null;
+
+function resize() {
+  dpr = Math.max(1, window.devicePixelRatio || 1);
+  const w = window.innerWidth, h = window.innerHeight;
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  center.x = w / 2;
+  center.y = h / 2;
+  baseUnitPx = Math.min(w, h) * 0.062;
+
+  bgGradient = ctx.createRadialGradient(w * 0.5, h * 0.4, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.75);
+  bgGradient.addColorStop(0, "#141230");
+  bgGradient.addColorStop(0.55, "#0b0e22");
+  bgGradient.addColorStop(1, "#05060f");
+
+  if (stars.length === 0) {
+    for (let i = 0; i < 150; i++) {
+      stars.push({
+        nx: Math.random(), ny: Math.random(),
+        r: 0.5 + Math.random() * 1.5,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.5 + Math.random() * 1.2,
+      });
+    }
+  }
+}
+window.addEventListener("resize", resize);
+
+function drawBackground(t) {
+  const w = window.innerWidth, h = window.innerHeight;
+  ctx.fillStyle = bgGradient;
+  ctx.fillRect(0, 0, w, h);
+
+  stars.forEach((s) => {
+    const alpha = 0.35 + 0.5 * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase));
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(s.nx * w, s.ny * h, s.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawOrbitRings() {
+  if (orbs.length === 0) return;
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 7]);
+  orbs.forEach((orb) => {
+    const r = orb.radiusUnits * baseUnitPx;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, r, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawCentralStar(t, locked) {
+  const pulse = 1 + Math.sin(t * (locked ? 3.4 : 1.6)) * (locked ? 0.14 : 0.07);
+  const baseR = baseUnitPx * (locked ? 0.62 : 0.5);
+  const r = baseR * pulse;
+
+  const coreColor = locked ? "245, 198, 107" : "255, 236, 200";
+  const glow = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, r * 3.2);
+  glow.addColorStop(0, "rgba(" + coreColor + ", 0.9)");
+  glow.addColorStop(0.35, "rgba(" + coreColor + ", 0.28)");
+  glow.addColorStop(1, "rgba(245, 198, 107, 0)");
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, r * 3.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = locked ? "#fff3d6" : "#fff9ec";
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawOrb(orb, t) {
+  const r = orb.radiusUnits * baseUnitPx;
+  const x = center.x + Math.cos(orb.angle) * r;
+  const y = center.y + Math.sin(orb.angle) * r;
+  orb.screenX = x;
+  orb.screenY = y;
+
+  orb.trail.push({ x, y });
+  if (orb.trail.length > 16) orb.trail.shift();
+  const trailColor = frequencyToColor(orb.currentFreq);
+  orb.trail.forEach((pt, i) => {
+    const a = (i / orb.trail.length) * 0.25;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = trailColor;
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  const freqT = clamp((orb.currentFreq - GRADIENT_MIN_FREQ) / (GRADIENT_MAX_FREQ - GRADIENT_MIN_FREQ), 0, 1);
+  const pulseSpeed = lerp(0.6, 4.2, freqT); // lower freq -> slower pulse
+  const pulse = 1 + Math.sin(t * pulseSpeed) * (orb.locked ? 0.22 : 0.12);
+  const color = trailColor;
+  const orbR = baseUnitPx * 0.2 * pulse;
+
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, orbR * (orb.locked ? 4.2 : 3));
+  glow.addColorStop(0, color.replace("rgb", "rgba").replace(")", ", 0.85)"));
+  glow.addColorStop(1, color.replace("rgb", "rgba").replace(")", ", 0)"));
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(x, y, orbR * (orb.locked ? 4.2 : 3), 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, orbR, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (orb.locked) {
+    ctx.strokeStyle = "rgba(245, 198, 107, 0.9)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, orbR + 6, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  const letter = noteLetterForFrequency(orb.currentFreq);
+  const labelY = y + orbR + 17;
+  ctx.font = "700 13px -apple-system, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(5,6,15,0.6)";
+  ctx.fillText(letter, x + 1, labelY + 1);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(letter, x, labelY);
+}
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+function pointerPos(evt) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+}
+
+canvas.addEventListener("pointerdown", (evt) => {
+  if (state !== "playing") return;
+  const p = pointerPos(evt);
+  let closest = null, closestDist = Infinity;
+  orbs.forEach((orb) => {
+    const dx = p.x - orb.screenX, dy = p.y - orb.screenY;
+    const dist = Math.hypot(dx, dy);
+    const grabRadius = Math.max(24, baseUnitPx * 0.2 * 1.6);
+    if (dist < grabRadius && dist < closestDist) { closest = orb; closestDist = dist; }
+  });
+  if (closest) {
+    draggedOrb = closest;
+    canvas.setPointerCapture(evt.pointerId);
+    hideInstructionToast();
+  }
+});
+
+canvas.addEventListener("pointermove", (evt) => {
+  if (!draggedOrb || state !== "playing") return;
+  const p = pointerPos(evt);
+  const dx = p.x - center.x, dy = p.y - center.y;
+  const pixelRadius = Math.hypot(dx, dy);
+  draggedOrb.angle = Math.atan2(dy, dx);
+  setOrbRadiusFromPixels(draggedOrb, pixelRadius);
+});
+
+function releaseDrag() { draggedOrb = null; }
+canvas.addEventListener("pointerup", releaseDrag);
+canvas.addEventListener("pointercancel", releaseDrag);
+
+function hideInstructionToast() {
+  const el = document.getElementById("instruction-toast");
+  if (el) el.style.opacity = "0";
+}
+
+/* =========================================================
+   GAME LOOP
+   ========================================================= */
+
+function update(dt, t) {
+  if (state === "playing") {
+    orbs.forEach((orb) => {
+      // Visual orbit speed only - decorative, independent of the pitch mapping,
+      // just slowed a little for a calmer feel.
+      const angularVelocity = orb.period > 0.0001 ? (Math.PI * 2 / orb.period) : 0;
+      orb.angle += angularVelocity * dt * 0.5;
+    });
+    if (allOrbsLocked() && !levelCompleteTriggered) {
+      triggerLevelComplete();
+    }
+  }
+  updateParticles(dt);
+}
+
+function render(t) {
+  drawBackground(t);
+  if (state === "playing" || state === "levelComplete") {
+    drawOrbitRings();
+    drawCentralStar(t, allOrbsLocked());
+    orbs.forEach((orb) => drawOrb(orb, t));
+  }
+  drawParticles(ctx);
+}
+
+function frame(timestampMs) {
+  const t = timestampMs / 1000;
+  const dt = lastTime ? Math.min(0.05, t - lastTime) : 0;
+  lastTime = t;
+  update(dt, t);
+  render(t);
+  requestAnimationFrame(frame);
+}
+
+/* =========================================================
+   UI WIRING
+   ========================================================= */
+
+document.getElementById("start-btn").addEventListener("click", () => {
+  ensureAudio();
+  generateRun();
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("hud").classList.remove("hidden");
+  document.getElementById("instruction-toast").style.opacity = "1";
+  loadLevel(0);
+});
+
+document.getElementById("back-btn").addEventListener("click", () => {
+  stopAllVoices();
+  state = "menu";
+  document.getElementById("hud").classList.add("hidden");
+  document.getElementById("level-complete-overlay").classList.add("hidden");
+  document.getElementById("all-complete-overlay").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+});
+
+document.getElementById("play-btn").addEventListener("click", previewCurrentChord);
+
+document.getElementById("mute-btn").addEventListener("click", () => {
+  isMuted = !isMuted;
+  if (AUDIO.master) AUDIO.master.gain.value = isMuted ? 0 : 0.85;
+  document.getElementById("mute-btn").classList.toggle("mute-on", isMuted);
+});
+
+document.getElementById("restart-btn").addEventListener("click", () => {
+  ensureAudio();
+  generateRun();
+  document.getElementById("all-complete-overlay").classList.add("hidden");
+  document.getElementById("hud").classList.remove("hidden");
+  loadLevel(0);
+});
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+
+resize();
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>
