@@ -85,6 +85,11 @@ button:focus-visible{outline:1px solid var(--warm);outline-offset:2px}
 
 #toggle{position:fixed;z-index:11;padding:7px 10px;background:rgba(11,12,17,.8);
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:left .35s cubic-bezier(.4,0,.2,1)}
+@media (max-width:820px),(orientation:portrait){
+  #toggle{padding:11px 16px;font-size:12px;border-radius:8px;
+    background:rgba(11,12,17,.92);border:1px solid rgba(255,255,255,.16)}
+  #panel{max-height:56dvh;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+}
 
 /* ── readout ─────────────────────────────────────────── */
 #readout{position:fixed;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9;
@@ -542,6 +547,16 @@ function bindSlider(id){
 Object.keys(P).forEach(bindSlider);
 
 const panel=document.getElementById("panel"), toggle=document.getElementById("toggle");
+
+/* Na małym ekranie (albo w oknie pulpitu) panel startuje zwinięty —
+   inaczej zjada połowę widoku. Na desktopie zostaje otwarty. */
+const SMALL = matchMedia("(max-width:820px), (orientation:portrait)").matches;
+if(SMALL){
+  panel.classList.add("hidden");
+  toggle.classList.add("shifted");
+  toggle.setAttribute("aria-expanded","false");
+}
+
 toggle.addEventListener("click",()=>{
   const hid=panel.classList.toggle("hidden");
   toggle.classList.toggle("shifted",hid);
@@ -661,7 +676,7 @@ if(reduce){paused=true;pauseBtn.textContent="Wznów";pauseBtn.setAttribute("aria
 const r_dist=document.getElementById("r_dist"), r_fps=document.getElementById("r_fps");
 let dpr=1;
 function resize(){
-  dpr=Math.min(devicePixelRatio||1,2);
+  dpr=Math.min(devicePixelRatio||1, SMALL?1.5:2);   // mniej pikseli do wypełnienia na telefonie
   const w=Math.round(innerWidth*dpr), h=Math.round(innerHeight*dpr);
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
 }

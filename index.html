@@ -335,27 +335,37 @@
   #hint kbd{font-family:"Noto Sans Mono",monospace;font-size:10.5px;background:rgba(255,255,255,.12);
     padding:1px 6px;border-radius:3px;color:#dfe3e6;}
 
-  @media (max-width:760px){
+  @media (max-width:900px){
     :root{--panel-h:56px;}
-    #desktop{padding:10px 6px;}
-    #widgets{inset:auto 0 0 0;display:flex;flex-direction:column;gap:8px;padding:0 6px 8px;
-      pointer-events:auto;max-height:72%;overflow-y:auto;}
+    /* one scrolling column: loose icons first, then the containers,
+       all of it clearing the panel at the bottom */
+    #desktop{display:block;overflow-y:auto;-webkit-overflow-scrolling:touch;
+      padding:12px 8px calc(var(--panel-h) + 14px);}
+    #desktop>.icon{display:inline-flex;vertical-align:top;}
+    #widgets{position:static;inset:auto;pointer-events:auto;display:flex;flex-direction:column;
+      gap:10px;margin-top:12px;max-height:none;overflow:visible;}
     .widget{position:relative;left:auto!important;top:auto!important;width:auto;flex:none;}
-    .wg-head{cursor:default;}
-    .wg-body{min-height:0;justify-content:center;max-width:none!important;}
-    .wg-body:empty::after{min-height:56px;}
+    .wg-head{cursor:default;padding:10px 13px 8px;}
+    .wg-body{min-height:0;max-width:none!important;display:grid;gap:4px;
+      grid-template-columns:repeat(3,minmax(0,1fr));justify-items:stretch;}
+    .wg-body:empty::after{min-height:56px;grid-column:1/-1;}
+    .wg-body .icon{width:100%;}
     .icon{width:82px;}
     .icon .tile{width:40px;height:40px;}
     .icon span{font-size:11px;}
     .window{left:0!important;top:0!important;width:100%!important;height:calc(100% - var(--panel-h))!important;
       min-width:0!important;max-width:none!important;max-height:none!important;border-radius:0;border:none;}
     .grip{display:none;}
-    .task span.lbl{display:none;}
-    .task{padding:0 10px;max-width:46px;}
     #kickoff{left:6px;right:6px;width:auto;}
     #hint{display:none;}
     .wbody{padding:16px 16px 24px;}
     #logo3d{width:180px;height:180px;}
+  }
+  @media (max-width:600px){
+    .task span.lbl{display:none;}
+    .task{padding:0 10px;max-width:46px;}
+    .icon{width:74px;}
+    .wbody{padding:14px 14px 22px;}
   }
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}
@@ -387,8 +397,7 @@
 
 <div id="hint">Press <kbd>Space</kbd> to search</div>
 
-<div id="desktop" class="dz"></div>
-<div id="widgets"></div>
+<div id="desktop" class="dz"><div id="widgets"></div></div>
 <div id="snap"></div>
 
 <div id="panel">
@@ -805,7 +814,8 @@ function build(){
     mode: s.mode || (s.href && !isExternal(s.href) ? 'window' : undefined)
   }));
 
-  const desktop=document.getElementById('desktop'); desktop.innerHTML='';
+  const desktop=document.getElementById('desktop');
+  desktop.querySelectorAll(':scope > .icon').forEach(i=>i.remove());  /* keep #widgets */
   const host=document.getElementById('widgets'); host.innerHTML='';
   const kick=document.getElementById('kick-apps'); kick.innerHTML='';
 
@@ -835,7 +845,7 @@ function build(){
     el.innerHTML=`<span class="tile">${ICONS[app.icon]}</span><span>${esc(app.name)}${app.href&&appMode(app)==='tab'?' ↗':''}</span>`;
     const wid=home.get(app.id);
     const body=wid && document.querySelector('#wg-'+wid+' .wg-body');
-    (body||desktop).appendChild(el);
+    if(body) body.appendChild(el); else desktop.insertBefore(el, host);
 
     const k=document.createElement('button');
     k.className='kapp'; k.dataset.app=app.id;
@@ -1022,7 +1032,7 @@ function launchItem(kind,id){
    WINDOW MANAGER
    ============================================================ */
 let z=20, opened=[], minimized=new Set(), active=null, cascade=0;
-const isMobile=()=>window.innerWidth<=760;
+const isMobile=()=>window.innerWidth<=900;
 const winEl=id=>document.getElementById('win-'+id);
 const appOf=id=>APPS.find(a=>a.id===id);
 const nameOf=id=>WINREG.get(id)?.name||id;
@@ -1292,7 +1302,10 @@ function wireIconDrag(el){
     if(dragEl!==el) return;
     if(moved){
       const t=dropZoneAt(e.clientX,e.clientY);
-      if(t && t!==el.parentElement) t.appendChild(el);
+      if(t && t!==el.parentElement){
+        const host=document.getElementById('widgets');
+        if(t.id==='desktop') t.insertBefore(el, host); else t.appendChild(el);
+      }
       if(ghost){ ghost.remove(); ghost=null; }
       el.classList.remove('dragging');
       document.querySelectorAll('.dz').forEach(z=>z.classList.remove('dz-over'));

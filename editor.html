@@ -183,18 +183,33 @@
 
   /* ---------- mobile ---------- */
   @media (max-width:900px){
-    #app{grid-template-columns:1fr;grid-template-rows:26px 128px 40vh 1fr 46px 20px;
+    html,body{overflow-x:hidden;}
+    /* minmax(0,1fr) + min-width:0 stop a wide child (the outliner strip,
+       a long property value) from forcing the whole grid off-screen */
+    #app{grid-template-columns:minmax(0,1fr);grid-template-rows:26px auto 38vh 1fr 44px 20px;
       grid-template-areas:"menu" "out" "vp" "props" "time" "stat";}
-    #out{max-height:128px;}
-    #tree{display:flex;overflow-x:auto;overflow-y:hidden;padding:5px;gap:5px;}
+    #app>*{min-width:0;max-width:100%;}
+    #out{max-height:none;}
+    #tree{display:flex;overflow-x:auto;overflow-y:hidden;padding:6px;gap:6px;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    #tree::-webkit-scrollbar{display:none;}
     .grp{margin:0;flex-shrink:0;}
     .grp.closed .kids{display:flex;}
-    .kids{display:flex;gap:4px;}
+    .kids{display:flex;gap:5px;}
     .gh{display:none;}
-    .ob{padding:5px 9px;width:auto;white-space:nowrap;border:1px solid #383838;border-radius:3px;}
+    .ob{padding:8px 11px;width:auto;white-space:nowrap;border:1px solid #383838;border-radius:4px;}
     .ob .lock{display:none;}
+    #props{overflow-y:auto;}
+    #pbody{overflow-x:hidden;}
+    .fld{flex-wrap:wrap;}
+    .fld .fl{width:auto;min-width:74px;}
+    .fld .fv{min-width:0;word-break:break-word;}
     .kf .lb{display:none;}
-    #time{min-height:46px;}
+    #time{min-height:44px;}
+    #track{margin:0 18px;}
+    #menu .mi{padding:6px 9px;}
+    #vp-hint{display:none;}
+    #stat{gap:10px;font-size:9.5px;}
   }
   @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;}}
 </style>
@@ -588,8 +603,10 @@ function select(id){
    VIEWPORT — point cloud that morphs between shapes
    ============================================================ */
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-const N=32000;
-let W=1,H=1,dpr=Math.min(devicePixelRatio||1,2);
+/* 32k points is a desktop budget — a phone paints a fraction of that */
+const SMALL_SCREEN=matchMedia('(max-width:900px)').matches;
+const N=SMALL_SCREEN?9000:32000;
+let W=1,H=1,dpr=Math.min(devicePixelRatio||1,SMALL_SCREEN?1.5:2);
 
 /* ============================================================
    CAMERA SETTINGS — every tunable number for the viewport camera
