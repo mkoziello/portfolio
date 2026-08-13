@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151515">
+<meta name="color-scheme" content="dark">
 <title>Michał Koziełło — VertexVoodoo Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +21,14 @@
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
     font-family:Inter,system-ui,sans-serif;font-size:12px;-webkit-font-smoothing:antialiased;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none;
+    -webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;}
+  /* 100% of <html> is the *large* viewport on mobile, so the status bar ends up
+     hidden behind the browser's address bar. dvh tracks the visible area. */
+  @supports (height:100dvh){html,body{height:100dvh;}}
+  /* Anything worth copying off a phone (email, links, error text) stays selectable. */
+  .fld .fv,.note,.bul li,#boot-msg{-webkit-user-select:text;user-select:text;}
   .mono{font-family:'IBM Plex Mono',monospace;}
   button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;}
   :focus-visible{outline:1px solid var(--acc);outline-offset:-1px;}
@@ -77,7 +86,7 @@
   .ph{background:var(--head);padding:5px 9px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
     text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:6px;flex-shrink:0;}
   .ph .k{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#666;margin-left:auto;}
-  #tree{flex:1;overflow-y:auto;padding:5px 0;}
+  #tree{flex:1;overflow-y:auto;padding:5px 0;overscroll-behavior:contain;}
   .grp{margin-bottom:2px;}
   .gh{display:flex;align-items:center;gap:6px;width:100%;padding:4px 9px;color:var(--dim);font-size:11.5px;text-align:left;}
   .gh:hover{background:#2a2a2a;}
@@ -95,7 +104,10 @@
   .ob.on .lock{color:#cddcf5;}
 
   /* ---------- viewport ---------- */
-  #vp{grid-area:vp;position:relative;overflow:hidden;background:var(--vp2);cursor:grab;}
+  /* touch-action:none is what makes orbiting work on a phone — without it the
+     browser claims the gesture as a scroll/zoom and fires pointercancel. */
+  #vp{grid-area:vp;position:relative;overflow:hidden;background:var(--vp2);cursor:grab;
+    touch-action:none;}
   #vp.drag{cursor:grabbing;}
   #vp canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
   .ov{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:10px;pointer-events:none;color:#9aa4b4;}
@@ -117,12 +129,13 @@
   #variants button.on{background:var(--acc);color:#1a1004;border-color:var(--acc);}
   #vp-stats{top:32px;left:10px;line-height:1.65;color:#7e8797;}
   #vp-stats b{color:#b9c2d0;font-weight:500;}
-  #vp-hint{bottom:10px;left:10px;color:#5e6674;}
+  #vp-hint{bottom:10px;left:10px;color:#5e6674;transition:opacity .8s ease;}
+  #vp-hint.faded{opacity:0;}
   #gizmo{position:absolute;top:32px;right:12px;width:66px;height:66px;pointer-events:none;}
 
   /* ---------- properties ---------- */
   #props{grid-area:props;background:var(--panel);display:flex;flex-direction:column;min-height:0;}
-  #pbody{flex:1;overflow-y:auto;}
+  #pbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
   .pnl{border-bottom:1px solid var(--edge);}
   .pnl .pt{display:flex;align-items:center;gap:6px;width:100%;padding:6px 10px;background:#292929;
     font-size:11px;font-weight:600;color:#bdbdbd;text-align:left;}
@@ -185,31 +198,131 @@
   @media (max-width:900px){
     html,body{overflow-x:hidden;}
     /* minmax(0,1fr) + min-width:0 stop a wide child (the outliner strip,
-       a long property value) from forcing the whole grid off-screen */
-    #app{grid-template-columns:minmax(0,1fr);grid-template-rows:26px auto 38vh 1fr 44px 20px;
-      grid-template-areas:"menu" "out" "vp" "props" "time" "stat";}
+       a long property value) from forcing the whole grid off-screen.
+       Rows are fr rather than vh so they divide the *actual* container
+       height — no drift when the address bar shows and hides. */
+    #app{grid-template-columns:minmax(0,1fr);
+      grid-template-rows:34px auto minmax(150px,1.9fr) minmax(0,2fr) 46px 20px;
+      grid-template-areas:"menu" "out" "vp" "props" "time" "stat";
+      padding-left:calc(2px + env(safe-area-inset-left,0px));
+      padding-right:calc(2px + env(safe-area-inset-right,0px));
+      padding-bottom:calc(2px + env(safe-area-inset-bottom,0px));}
     #app>*{min-width:0;max-width:100%;}
+
+    /* menu: taller row, tappable items, horizontal scroll on very narrow phones */
+    #menu{padding:0 4px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;}
+    #menu::-webkit-scrollbar{display:none;}
+    #menu>*{flex-shrink:0;}
+    #menu .mi{padding:9px 10px;font-size:12px;}
+    #menu .logo{padding-right:8px;gap:6px;}
+    #menu .sp{flex:1 0 8px;}
+    #menu .badge:not(#fps){display:none;}   /* scene name is decorative; fps stays */
+
+    /* dropdowns anchor to the viewport instead of the menu item, so the
+       right-hand menus (Render, Window) can't open off the edge of the screen */
+    .dd{position:fixed;top:calc(38px + env(safe-area-inset-top,0px));
+      left:calc(6px + env(safe-area-inset-left,0px));
+      right:calc(6px + env(safe-area-inset-right,0px));
+      min-width:0;max-height:60vh;overflow-y:auto;overscroll-behavior:contain;}
+    .di{padding:11px 12px;font-size:13px;}
+    .di .kx{font-size:11px;}
+
+    /* outliner becomes a horizontal chip strip, group labels kept as separators */
     #out{max-height:none;}
-    #tree{display:flex;overflow-x:auto;overflow-y:hidden;padding:6px;gap:6px;
-      -webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    #out .ph{padding:4px 8px;font-size:9.5px;}
+    #tree{display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;padding:6px 8px;gap:8px;
+      -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;
+      -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);
+      mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);}
     #tree::-webkit-scrollbar{display:none;}
-    .grp{margin:0;flex-shrink:0;}
+    .grp{margin:0;flex-shrink:0;display:flex;align-items:center;gap:6px;}
     .grp.closed .kids{display:flex;}
-    .kids{display:flex;gap:5px;}
-    .gh{display:none;}
-    .ob{padding:8px 11px;width:auto;white-space:nowrap;border:1px solid #383838;border-radius:4px;}
+    .kids{display:flex;gap:6px;}
+    .gh{display:flex;width:auto;padding:0;color:#6f6f6f;font-size:9px;letter-spacing:.07em;
+      text-transform:uppercase;white-space:nowrap;pointer-events:none;}
+    .gh .car,.gh .cnt{display:none;}
+    .ob{padding:0 12px;min-height:38px;width:auto;white-space:nowrap;
+      border:1px solid #383838;border-radius:4px;font-size:12px;}
     .ob .lock{display:none;}
-    #props{overflow-y:auto;}
+
+    /* properties: bigger type, labels above values when the value is long */
     #pbody{overflow-x:hidden;}
-    .fld{flex-wrap:wrap;}
-    .fld .fl{width:auto;min-width:74px;}
-    .fld .fv{min-width:0;word-break:break-word;}
+    .pnl .pt{padding:10px 12px;font-size:12px;}
+    .pc{padding:10px 12px 14px;}
+    .fld{flex-wrap:wrap;margin-bottom:7px;}
+    .fld .fl{width:auto;min-width:74px;font-size:12px;}
+    .fld .fv{min-width:0;word-break:break-word;font-size:13px;min-height:26px;}
+    .fld a{display:inline-block;padding:2px 0;}
+    .note{font-size:13px;}
+    .bul li{font-size:13px;padding:7px 0 7px 15px;}
+    .bul li::before{top:13px;}
+    .chip{padding:6px 10px;font-size:12px;}
+    .cta{padding:12px;font-size:13px;margin-top:10px;}
+
+    /* viewport overlay: touch-sized controls */
+    #vp-head{height:34px;padding:0 6px;gap:6px;}
+    #vp-head .path{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+    #vp-head button{padding:8px 9px;font-size:11px;}
+    #variants button{width:28px;height:28px;font-size:11px;}
+    #vp-stats{top:42px;left:9px;}
+    #gizmo{top:40px;right:8px;width:54px;height:54px;}
+    #vp-hint{bottom:8px;left:9px;}
+
+    /* timeline: keyframes get a finger-sized hit area without growing visually */
+    #time{min-height:46px;}
+    #time .ph{padding:4px 8px;font-size:9.5px;}
+    #track{margin:0 22px;}
     .kf .lb{display:none;}
-    #time{min-height:44px;}
-    #track{margin:0 18px;}
-    #menu .mi{padding:6px 9px;}
-    #vp-hint{display:none;}
+    .kf::after{content:'';position:absolute;inset:-13px;}
+
     #stat{gap:10px;font-size:9.5px;}
+  }
+
+  /* Portrait phones: the canvas is the whole point of that panel, and the
+     status bar already carries the same two counts. */
+  @media (max-width:640px) and (orientation:portrait){
+    #vp-stats{display:none;}
+  }
+
+  /* Phones held sideways have no vertical room to stack six rows — go back to
+     columns and drop the timeline, which the outliner already duplicates. */
+  @media (max-width:900px) and (max-height:520px){
+    #app{grid-template-columns:minmax(0,1fr) minmax(0,270px);
+      grid-template-rows:34px auto minmax(0,1fr) 20px;
+      grid-template-areas:"menu menu" "out out" "vp props" "stat stat";}
+    #time{display:none;}
+  }
+
+  /* Very narrow phones: shed the labels that repeat something else on screen. */
+  @media (max-width:400px){
+    #menu .logo b{display:none;}
+    #menu .logo{padding-right:6px;margin-right:2px;}
+    #vp-head .mode{display:none;}
+    #stat #s-sel{display:none;}
+  }
+
+  /* On touch, :hover sticks to the last thing tapped. Kill the states that
+     would otherwise leave a stray highlight behind, and use :active instead. */
+  @media (hover:none){
+    .ob:hover{background:none;}
+    .ob.on:hover{background:var(--sel);}
+    .gh:hover{background:none;}
+    .pnl .pt:hover{background:#292929;}
+    .kf:hover{background:#4a4a4a;transform:translate(-50%,-50%) rotate(45deg);}
+    .kf.on:hover{background:var(--acc);transform:translate(-50%,-50%) rotate(45deg) scale(1.3);}
+    #menu .mi:hover{background:none;color:var(--dim);}
+    #menu .mnu.open .mi{background:#3d3d3d;color:var(--txt);}
+    .chip:hover{border-color:#444;color:#c8c8c8;}
+    #vp-head button:hover{background:none;color:#7e8797;}
+    #vp-head button.on{color:var(--acc);}
+    #variants button:hover{background:rgba(255,255,255,.07);color:#8b95a5;}
+    #variants button.on{background:var(--acc);color:#1a1004;}
+    .ob:active{background:#2c2c2c;}
+    .ob.on:active{background:var(--sel);}
+    .chip:active{border-color:var(--acc);color:var(--acc);}
+    #menu .mi:active{background:#3d3d3d;color:var(--txt);}
+    .di:active{background:var(--sel);color:#fff;}
+    .cta:active{filter:brightness(1.12);}
   }
   @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;}}
 </style>
@@ -579,6 +692,12 @@ function select(id){
   if(kfEl){kfEl.classList.add('on');play.style.left=pct(k.year)+'%';}
   const p=propsFor(id);
   pbody.innerHTML=p.html;
+  pbody.scrollTop=0; // new object, start at the top of its properties
+  // the mobile outliner is a horizontal strip: keep the active chip on screen
+  // when selection comes from the timeline, the Window menu or the keyboard
+  const chip=tree.querySelector(`.ob[data-id="${id}"]`);
+  if(chip)chip.scrollIntoView({block:'nearest',inline:'center',
+    behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
   document.getElementById('prop-type').textContent=p.type;
   document.getElementById('vp-obj').textContent=FLAT[id].name;
   document.getElementById('s-sel').textContent=FLAT[id].name;
@@ -613,8 +732,12 @@ let W=1,H=1,dpr=Math.min(devicePixelRatio||1,SMALL_SCREEN?1.5:2);
    lives here. Nothing below this block should need touching to
    change how the camera looks or behaves.
    ============================================================ */
-let yaw=Math.PI/4,pitch=-15*Math.PI/180,dist=3.1,spin=true,showGrid=true;
-const DEFAULT_VIEW={yaw:Math.PI/4,pitch:65*Math.PI/180,dist:3.1}; // View > Frame Selected resets here
+/* A phone canvas is a third the height of the desktop one, and the projection
+   scales to the *short* side — so the same distance reads as a much smaller
+   model. Start closer there. */
+const START_DIST=SMALL_SCREEN?2.7:3.1;
+let yaw=Math.PI/4,pitch=-15*Math.PI/180,dist=START_DIST,spin=true,showGrid=true;
+const DEFAULT_VIEW={yaw:Math.PI/4,pitch:65*Math.PI/180,dist:START_DIST}; // View > Frame Selected resets here
 
 const FOCAL=0.862;
 // "Lens" width. Bigger number = narrower FOV, more zoomed-in/telephoto,
@@ -646,7 +769,31 @@ const POINT_MIN_SIZE=0.9, POINT_SIZE_SCALE=1.6, POINT_DEPTH_REF=2.4;
 // the reference distance points are compared against to compute that
 // near/far falloff.
 
+/* ---------- draw buckets ----------
+   Both the alpha and the size of a point come from one number: its depth.
+   So instead of setting fillStyle per point (N string builds + N style
+   parses per frame — the thing that pins a phone below 30fps), depth is
+   quantised into DEPTH_BUCKETS bands, each with a fixed colour and size.
+   The frame is then one fillStyle change per band. The quantisation is
+   sub-pixel in size and ~2% in alpha, i.e. invisible. */
 let cloudColor="#e87d0d";
+const DEPTH_BUCKETS=14;
+const DEPTH_LO=0.15, DEPTH_SPAN=1-DEPTH_LO;
+const BUCKET_SCALE=DEPTH_BUCKETS/DEPTH_SPAN;
+const bX=[],bY=[],bAlpha=[],bSize=[];
+const bCount=new Int32Array(DEPTH_BUCKETS), bStyle=new Array(DEPTH_BUCKETS);
+for(let b=0;b<DEPTH_BUCKETS;b++){
+  bX.push(new Float32Array(N)); bY.push(new Float32Array(N));
+  const d=DEPTH_LO+(b+.5)/DEPTH_BUCKETS*DEPTH_SPAN;   // band centre
+  bAlpha.push((.22+d*.62).toFixed(3));
+  bSize.push(Math.max(POINT_MIN_SIZE,d*POINT_SIZE_SCALE));
+}
+let styleColor="";
+function refreshStyles(){
+  const [R,G,B]=hexRGB(cloudColor);
+  for(let b=0;b<DEPTH_BUCKETS;b++) bStyle[b]=`rgba(${R},${G},${B},${bAlpha[b]})`;
+  styleColor=cloudColor;
+}
 
 function rand(){return Math.random();}
 function shapePoints(kind){
@@ -766,9 +913,12 @@ variantsEl.addEventListener('click',e=>{
 
 function fitToN(arr){
   if(arr.length===N) return arr.map(p=>p.slice());
-  if(arr.length>N) return arr.slice(0,N).map(p=>p.slice());
-  const out=arr.map(p=>p.slice());
-  while(out.length<N) out.push(arr[out.length % arr.length].slice());
+  // Even stride, not a head slice. Point files are written in order, so
+  // trimming a 10k-point model to the 9k phone budget used to discard the
+  // tail of the file — whatever the exporter happened to write last.
+  // Striding keeps the whole shape and just thins it.
+  const out=new Array(N);
+  for(let i=0;i<N;i++) out[i]=arr[Math.floor(i*arr.length/N)].slice();
   return out;
 }
 
@@ -783,8 +933,11 @@ function morphTo(id,kind,color,variant=1){
 
 function resize(){
   const r=cv.parentElement.getBoundingClientRect();
+  // Mobile browsers fire resize constantly as the address bar slides;
+  // reallocating the backing store each time is a visible hitch.
+  if(Math.abs(r.width-W)<1&&Math.abs(r.height-H)<1)return;
   W=r.width;H=r.height;
-  cv.width=W*dpr;cv.height=H*dpr;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 new ResizeObserver(resize).observe(document.getElementById('vp'));
@@ -798,7 +951,9 @@ function render(now){
   fpsAcc+=1/Math.max(dt,.001); fpsN++;
   if(fpsN>=30){document.getElementById('fps').textContent=Math.round(fpsAcc/fpsN)+' fps';fpsAcc=0;fpsN=0;}
 
-  if(mix<1){mix=Math.min(1,mix+dt*1.6);}
+  // settle exactly once: the old code re-cloned every point on every frame
+  // after the morph had finished, which is ~2N throwaway arrays a frame
+  if(mix<1){mix=Math.min(1,mix+dt*1.6); if(mix>=1)cur=tgt;}
   if(spin&&!dragging)yaw+=dt*AUTO_ORBIT_SPEED;
 
   const bgG=ctx.createLinearGradient(0,0,0,H);
@@ -826,18 +981,32 @@ function render(now){
   }
 
   const e=mix<1?(mix*mix*(3-2*mix)):1;
-  const [R,G,B]=hexRGB(cloudColor);
+  if(cloudColor!==styleColor)refreshStyles();
+
+  // pass 1: project into depth buckets (projection inlined — proj() returns a
+  // fresh array per call, which is N throwaway objects a frame on a phone)
+  bCount.fill(0);
   for(let i=0;i<N;i++){
     const a=cur[i],b=tgt[i];
     const x=a[0]+(b[0]-a[0])*e, y=a[1]+(b[1]-a[1])*e, z=a[2]+(b[2]-a[2])*e;
-    const p=proj(x,y,z);
-    if(!p)continue;
-    const depth=Math.max(.15,Math.min(1,POINT_DEPTH_REF/p[2]));
-    const s=Math.max(POINT_MIN_SIZE,depth*POINT_SIZE_SCALE);
-    ctx.fillStyle=`rgba(${R},${G},${B},${.22+depth*.62})`;
-    ctx.fillRect(p[0],p[1],s,s);
+    let X=x*cy-z*sy, Z=x*sy+z*cy;
+    let Y=y*cp-Z*sp; Z=y*sp+Z*cp;
+    const d=Z+dist;
+    if(d<=.05)continue;
+    const depth=Math.max(DEPTH_LO,Math.min(1,POINT_DEPTH_REF/d));
+    let k=(depth-DEPTH_LO)*BUCKET_SCALE|0;
+    if(k>=DEPTH_BUCKETS)k=DEPTH_BUCKETS-1;
+    const n=bCount[k]++;
+    bX[k][n]=cxp+X*f/d;
+    bY[k][n]=cyp-Y*f/d;
   }
-  if(mix>=1)cur=tgt.map(p=>p.slice());
+  // pass 2: one fillStyle per bucket, far bands first so near points land on top
+  for(let k=0;k<DEPTH_BUCKETS;k++){
+    const n=bCount[k]; if(!n)continue;
+    ctx.fillStyle=bStyle[k];
+    const s=bSize[k],xs=bX[k],ys=bY[k];
+    for(let i=0;i<n;i++)ctx.fillRect(xs[i],ys[i],s,s);
+  }
 
   drawGizmo(cy,sy,cp,sp);
   requestAnimationFrame(render);
@@ -863,23 +1032,65 @@ function drawGizmo(cy,sy,cp,sp){
   giz.innerHTML=out;
 }
 
-/* ---------- viewport interaction ---------- */
+/* ---------- viewport interaction ----------
+   One pointer orbits, two pinch to zoom. Pointers are tracked in a map so a
+   second finger landing mid-drag switches cleanly to pinch, and lifting it
+   hands control back to the finger still on screen instead of jumping. */
 const vp=document.getElementById('vp');
-let dragging=false,px=0,py=0;
+const clampDist=d=>Math.max(DIST_MIN,Math.min(DIST_MAX,d));
+const live=new Map();
+let dragging=false,px=0,py=0,pinchD=0;
+
+const spread=()=>{
+  const it=live.values(), a=it.next().value, b=it.next().value;
+  return (a&&b) ? Math.hypot(a.x-b.x,a.y-b.y) : 0;
+};
+
+/* the touch hint retires itself once it's been read, or once it's moot */
+const hintEl=document.getElementById('vp-hint');
+const COARSE=matchMedia('(pointer:coarse)').matches;
+let hintTimer=null;
+function hideHint(){if(!COARSE)return;clearTimeout(hintTimer);hintEl.classList.add('faded');}
+if(COARSE){
+  hintEl.textContent='Drag to orbit · pinch to zoom';
+  hintTimer=setTimeout(hideHint,7000);
+}
+
 vp.addEventListener('pointerdown',e=>{
   if(e.target.closest('#vp-head'))return;
-  dragging=true;px=e.clientX;py=e.clientY;vp.classList.add('drag');vp.setPointerCapture(e.pointerId);
+  live.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  vp.setPointerCapture(e.pointerId);
+  if(live.size===1){dragging=true;px=e.clientX;py=e.clientY;vp.classList.add('drag');}
+  else{dragging=false;vp.classList.remove('drag');pinchD=spread();}
+  hideHint();
 });
 vp.addEventListener('pointermove',e=>{
+  if(!live.has(e.pointerId))return;
+  live.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(live.size>1){
+    const d=spread();
+    if(pinchD>0&&d>0)dist=clampDist(dist*(pinchD/d));
+    pinchD=d;
+    return;
+  }
   if(!dragging)return;
   yaw+=(e.clientX-px)*ORBIT_SENSITIVITY_X;
   pitch=Math.max(PITCH_MIN,Math.min(PITCH_MAX,pitch+(e.clientY-py)*ORBIT_SENSITIVITY_Y));
   px=e.clientX;py=e.clientY;
 });
-const endDrag=()=>{dragging=false;vp.classList.remove('drag');};
+const endDrag=e=>{
+  live.delete(e.pointerId);
+  pinchD=0;
+  if(live.size===1){
+    const p=live.values().next().value;
+    px=p.x;py=p.y;dragging=true;vp.classList.add('drag');
+  }else if(live.size===0){
+    dragging=false;vp.classList.remove('drag');
+  }
+};
 vp.addEventListener('pointerup',endDrag);
 vp.addEventListener('pointercancel',endDrag);
-vp.addEventListener('wheel',e=>{e.preventDefault();dist=Math.max(DIST_MIN,Math.min(DIST_MAX,dist+e.deltaY*ZOOM_SPEED));},{passive:false});
+vp.addEventListener('wheel',e=>{e.preventDefault();dist=clampDist(dist+e.deltaY*ZOOM_SPEED);},{passive:false});
 
 document.getElementById('btn-spin').onclick=e=>{spin=!spin;e.currentTarget.classList.toggle('on',spin);syncViewChecks();};
 document.getElementById('btn-wire').onclick=e=>{showGrid=!showGrid;e.currentTarget.classList.toggle('on',showGrid);syncViewChecks();};
