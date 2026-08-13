@@ -1092,6 +1092,7 @@ function openApp(id){
   const w=winEl(id); if(!w) return;
   const first=!opened.includes(id);
   w.classList.add('open');
+  startEmbed(w);            /* reload a page that was unloaded on close */
   if(first){
     opened.push(id); addTask(id);
     if(!isMobile()){
@@ -1106,12 +1107,26 @@ function openApp(id){
   focusApp(id);
   closeKickoff(); closeRunner();
 }
+/* An iframe keeps running while hidden — a game closed with display:none
+   carries on playing its audio. Closing a window has to unload the page. */
+function stopEmbed(w){
+  const f=w.querySelector('iframe'); if(!f) return;
+  if(!f.dataset.src) f.dataset.src=f.getAttribute('src');
+  f.setAttribute('src','about:blank');
+}
+function startEmbed(w){
+  const f=w.querySelector('iframe'); if(!f) return;
+  const src=f.dataset.src;
+  if(src && f.getAttribute('src')!==src) f.setAttribute('src',src);
+}
+
 function closeApp(id){
   const w=winEl(id); if(!w) return;
   w.classList.remove('open');
+  stopEmbed(w);
   opened=opened.filter(x=>x!==id); minimized.delete(id);
   const t=document.getElementById('task-'+id); if(t) t.remove();
-  if(id.startsWith('item-')){ w.remove(); WINREG.delete(id); }
+  if(id.startsWith('item-') || id.startsWith('embed-')){ w.remove(); WINREG.delete(id); }
   if(active===id){ active=null; const last=opened.filter(x=>!minimized.has(x)).pop(); if(last) focusApp(last); }
   syncTasks();
 }
