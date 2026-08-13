@@ -514,7 +514,7 @@ const EXTRA_LINKS = {
   "copa city":      [{label:"Steam", url:"https://store.steampowered.com/app/2210520/COPA_CITY/"}],
   "above the snow": [{label:"Steam", url:"https://store.steampowered.com/app/2423760/Above_the_Snow/"}],
   "harmony":        [{label:"Play",  url:"harmony.html", play:true}],
-  "gaia 3d galaxy": [{label:"Play",  url:"https://playcanvas.com/project/1523304/overview/floatingpoints", play:true}]
+  "gaia 3d galaxy": [{label:"Play",  url:"gaia_galaxy.html", play:true}]
 };
 
 const isExternal = u => /^(https?:)?\/\//i.test(u||'');
@@ -913,7 +913,7 @@ function content(id){
       <h2>Statistics</h2>
       ${st.years!=null?`<div class="kv"><div class="k">Years</div><div class="v">${esc(st.years)}</div></div>`:''}
       ${st.shipped!=null?`<div class="kv"><div class="k">Shipped</div><div class="v">${esc(st.shipped)}</div></div>`:''}
-      ${st.nda!=null?`<div class="kv"><div class="k">Under NDA</div><div class="v">${esc(st.nda)}</div></div>`:''}
+      ${st.nda!=null?`<div class="kv"><div class="k">Working At</div><div class="v">${esc(st.nda)}</div></div>`:''}
       <div class="btn-row">
         <button class="btn pri" data-open="shipped">Shipped titles</button>
         <button class="btn" data-open="editor">Open the 3D editor ${extMark}</button>
@@ -933,7 +933,7 @@ function content(id){
       ${TOOLCHAIN.skills.map(g=>`
         <h2>${esc(g.group)}</h2>
         <div class="chips">${(g.items||[]).map(i=>`<span class="chip">${esc(i)}</span>`).join('')}</div>`).join('')}
-      ${TOOLCHAIN.software.length?`<h2>Daily drivers</h2>
+      ${TOOLCHAIN.software.length?`<h2>Daily toolkit</h2>
         ${TOOLCHAIN.software.map(s=>`<div class="kv glow"><div class="k">${esc(s.name)}</div><div class="v">${esc(s.use)}</div></div>`).join('')}`:''}`;
     case 'contact': {
       const mail=p.email?`mailto:${esc(p.email)}?subject=${encodeURIComponent('Project enquiry')}`:'';
