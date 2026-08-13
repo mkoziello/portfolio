@@ -110,7 +110,7 @@
       "id": "sierrano3",
       "name": "Sierra No. 3",
       "group": "Studies",
-      "file": "models/sierrano3.glb",
+      "file": "models/SierraNo3.glb",
       "tags": ["glTF 2.0", "PBR", "Full map set"],
       "note": "Textured with a complete PBR set — base colour, metallic, roughness, ambient occlusion and normal.",
       "textures": {
