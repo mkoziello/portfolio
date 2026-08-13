@@ -1,0 +1,685 @@
+{
+  "generated": "2026-08-13T21:40:31Z",
+  "root": {
+    "name": "Gallery",
+    "path": "",
+    "files": [],
+    "folders": [
+      {
+        "name": "Models",
+        "path": "Models",
+        "files": [],
+        "folders": [
+          {
+            "name": "autoportet",
+            "path": "Models/autoportet",
+            "files": [
+              {
+                "name": "autoportet - albedo.png",
+                "path": "Models/autoportet/autoportet - albedo.png",
+                "type": "image",
+                "size": 390383
+              },
+              {
+                "name": "autoportet - material.png",
+                "path": "Models/autoportet/autoportet - material.png",
+                "type": "image",
+                "size": 461310
+              },
+              {
+                "name": "autoportet - metallic.png",
+                "path": "Models/autoportet/autoportet - metallic.png",
+                "type": "image",
+                "size": 455298
+              },
+              {
+                "name": "autoportet - normal.png",
+                "path": "Models/autoportet/autoportet - normal.png",
+                "type": "image",
+                "size": 420486
+              },
+              {
+                "name": "autoportet - roughness.png",
+                "path": "Models/autoportet/autoportet - roughness.png",
+                "type": "image",
+                "size": 359886
+              }
+            ],
+            "folders": [],
+            "total": 5
+          },
+          {
+            "name": "les paul",
+            "path": "Models/les paul",
+            "files": [
+              {
+                "name": "les paul - albedo - metallic.png",
+                "path": "Models/les paul/les paul - albedo - metallic.png",
+                "type": "image",
+                "size": 110280
+              },
+              {
+                "name": "les paul - albedo.png",
+                "path": "Models/les paul/les paul - albedo.png",
+                "type": "image",
+                "size": 194902
+              },
+              {
+                "name": "les paul - ambient occlusion.png",
+                "path": "Models/les paul/les paul - ambient occlusion.png",
+                "type": "image",
+                "size": 178607
+              },
+              {
+                "name": "les paul - ID.png",
+                "path": "Models/les paul/les paul - ID.png",
+                "type": "image",
+                "size": 123608
+              },
+              {
+                "name": "les paul - material black.jpg",
+                "path": "Models/les paul/les paul - material black.jpg",
+                "type": "image",
+                "size": 61782
+              },
+              {
+                "name": "les paul - material red.jpg",
+                "path": "Models/les paul/les paul - material red.jpg",
+                "type": "image",
+                "size": 104102
+              },
+              {
+                "name": "les paul - normal.png",
+                "path": "Models/les paul/les paul - normal.png",
+                "type": "image",
+                "size": 180854
+              },
+              {
+                "name": "les paul - roughness.png",
+                "path": "Models/les paul/les paul - roughness.png",
+                "type": "image",
+                "size": 136866
+              }
+            ],
+            "folders": [],
+            "total": 8
+          },
+          {
+            "name": "sierra no3",
+            "path": "Models/sierra no3",
+            "files": [
+              {
+                "name": "sierraNo3 - albedo.png",
+                "path": "Models/sierra no3/sierraNo3 - albedo.png",
+                "type": "image",
+                "size": 471371
+              },
+              {
+                "name": "sierraNo3 - ID.png",
+                "path": "Models/sierra no3/sierraNo3 - ID.png",
+                "type": "image",
+                "size": 234473
+              },
+              {
+                "name": "sierraNo3 - material.png",
+                "path": "Models/sierra no3/sierraNo3 - material.png",
+                "type": "image",
+                "size": 497155
+              },
+              {
+                "name": "sierraNo3 - metallic.png",
+                "path": "Models/sierra no3/sierraNo3 - metallic.png",
+                "type": "image",
+                "size": 361429
+              },
+              {
+                "name": "sierraNo3 - normal.png",
+                "path": "Models/sierra no3/sierraNo3 - normal.png",
+                "type": "image",
+                "size": 501883
+              },
+              {
+                "name": "sierraNo3 - roughness.png",
+                "path": "Models/sierra no3/sierraNo3 - roughness.png",
+                "type": "image",
+                "size": 422430
+              },
+              {
+                "name": "sierraNo3 - world space normal.png",
+                "path": "Models/sierra no3/sierraNo3 - world space normal.png",
+                "type": "image",
+                "size": 501775
+              }
+            ],
+            "folders": [],
+            "total": 7
+          },
+          {
+            "name": "Violin",
+            "path": "Models/Violin",
+            "files": [
+              {
+                "name": "violin - albedo.png",
+                "path": "Models/Violin/violin - albedo.png",
+                "type": "image",
+                "size": 244135
+              },
+              {
+                "name": "violin - ambient occlusion.png",
+                "path": "Models/Violin/violin - ambient occlusion.png",
+                "type": "image",
+                "size": 170508
+              },
+              {
+                "name": "violin - ID.png",
+                "path": "Models/Violin/violin - ID.png",
+                "type": "image",
+                "size": 116484
+              },
+              {
+                "name": "violin - material.jpg",
+                "path": "Models/Violin/violin - material.jpg",
+                "type": "image",
+                "size": 74250
+              },
+              {
+                "name": "violin - normal.png",
+                "path": "Models/Violin/violin - normal.png",
+                "type": "image",
+                "size": 215369
+              },
+              {
+                "name": "violin - roughness.png",
+                "path": "Models/Violin/violin - roughness.png",
+                "type": "image",
+                "size": 199050
+              }
+            ],
+            "folders": [],
+            "total": 6
+          }
+        ],
+        "total": 26
+      },
+      {
+        "name": "Projects",
+        "path": "Projects",
+        "files": [],
+        "folders": [
+          {
+            "name": "Copa City",
+            "path": "Projects/Copa City",
+            "files": [
+              {
+                "name": "cc0001.png",
+                "path": "Projects/Copa City/cc0001.png",
+                "type": "image",
+                "size": 4549932
+              },
+              {
+                "name": "cc0002.png",
+                "path": "Projects/Copa City/cc0002.png",
+                "type": "image",
+                "size": 1827699
+              },
+              {
+                "name": "cc5.png",
+                "path": "Projects/Copa City/cc5.png",
+                "type": "image",
+                "size": 696536
+              },
+              {
+                "name": "cc10.png",
+                "path": "Projects/Copa City/cc10.png",
+                "type": "image",
+                "size": 193400
+              },
+              {
+                "name": "cc13.png",
+                "path": "Projects/Copa City/cc13.png",
+                "type": "image",
+                "size": 148389
+              },
+              {
+                "name": "cc15.png",
+                "path": "Projects/Copa City/cc15.png",
+                "type": "image",
+                "size": 3058804
+              },
+              {
+                "name": "cc20.png",
+                "path": "Projects/Copa City/cc20.png",
+                "type": "image",
+                "size": 1848728
+              },
+              {
+                "name": "cc0030.png",
+                "path": "Projects/Copa City/cc0030.png",
+                "type": "image",
+                "size": 424943
+              },
+              {
+                "name": "cc0031.png",
+                "path": "Projects/Copa City/cc0031.png",
+                "type": "image",
+                "size": 516182
+              },
+              {
+                "name": "cc40.png",
+                "path": "Projects/Copa City/cc40.png",
+                "type": "image",
+                "size": 1232470
+              },
+              {
+                "name": "cc41.png",
+                "path": "Projects/Copa City/cc41.png",
+                "type": "image",
+                "size": 6193843
+              },
+              {
+                "name": "ccb03.png",
+                "path": "Projects/Copa City/ccb03.png",
+                "type": "image",
+                "size": 586181
+              },
+              {
+                "name": "ccb04.png",
+                "path": "Projects/Copa City/ccb04.png",
+                "type": "image",
+                "size": 1400006
+              },
+              {
+                "name": "ccb05.png",
+                "path": "Projects/Copa City/ccb05.png",
+                "type": "image",
+                "size": 418985
+              },
+              {
+                "name": "ccb09.png",
+                "path": "Projects/Copa City/ccb09.png",
+                "type": "image",
+                "size": 719686
+              },
+              {
+                "name": "ccb0010.png",
+                "path": "Projects/Copa City/ccb0010.png",
+                "type": "image",
+                "size": 320496
+              },
+              {
+                "name": "ccb0011.png",
+                "path": "Projects/Copa City/ccb0011.png",
+                "type": "image",
+                "size": 3246127
+              },
+              {
+                "name": "ccb0012.png",
+                "path": "Projects/Copa City/ccb0012.png",
+                "type": "image",
+                "size": 4280301
+              },
+              {
+                "name": "ccb31.png",
+                "path": "Projects/Copa City/ccb31.png",
+                "type": "image",
+                "size": 194530
+              },
+              {
+                "name": "ccb32.png",
+                "path": "Projects/Copa City/ccb32.png",
+                "type": "image",
+                "size": 1293144
+              },
+              {
+                "name": "ccb33.png",
+                "path": "Projects/Copa City/ccb33.png",
+                "type": "image",
+                "size": 1183532
+              },
+              {
+                "name": "ccb34.png",
+                "path": "Projects/Copa City/ccb34.png",
+                "type": "image",
+                "size": 3972402
+              },
+              {
+                "name": "ccb35.png",
+                "path": "Projects/Copa City/ccb35.png",
+                "type": "image",
+                "size": 5133392
+              },
+              {
+                "name": "ccf1.png",
+                "path": "Projects/Copa City/ccf1.png",
+                "type": "image",
+                "size": 5421698
+              },
+              {
+                "name": "ccf2.png",
+                "path": "Projects/Copa City/ccf2.png",
+                "type": "image",
+                "size": 4492543
+              },
+              {
+                "name": "ccf3.png",
+                "path": "Projects/Copa City/ccf3.png",
+                "type": "image",
+                "size": 4352117
+              },
+              {
+                "name": "ccf4.png",
+                "path": "Projects/Copa City/ccf4.png",
+                "type": "image",
+                "size": 845073
+              },
+              {
+                "name": "ccg1.png",
+                "path": "Projects/Copa City/ccg1.png",
+                "type": "image",
+                "size": 1331179
+              },
+              {
+                "name": "ccg2.png",
+                "path": "Projects/Copa City/ccg2.png",
+                "type": "image",
+                "size": 3448607
+              },
+              {
+                "name": "ccg3.png",
+                "path": "Projects/Copa City/ccg3.png",
+                "type": "image",
+                "size": 1278264
+              },
+              {
+                "name": "ccg4.png",
+                "path": "Projects/Copa City/ccg4.png",
+                "type": "image",
+                "size": 1176885
+              },
+              {
+                "name": "ccg5.png",
+                "path": "Projects/Copa City/ccg5.png",
+                "type": "image",
+                "size": 821943
+              },
+              {
+                "name": "ccg6-ref.png",
+                "path": "Projects/Copa City/ccg6-ref.png",
+                "type": "image",
+                "size": 326898
+              },
+              {
+                "name": "ccm0041.png",
+                "path": "Projects/Copa City/ccm0041.png",
+                "type": "image",
+                "size": 911857
+              },
+              {
+                "name": "ccm0042.png",
+                "path": "Projects/Copa City/ccm0042.png",
+                "type": "image",
+                "size": 3188407
+              },
+              {
+                "name": "ccm0043.png",
+                "path": "Projects/Copa City/ccm0043.png",
+                "type": "image",
+                "size": 461465
+              },
+              {
+                "name": "ccm0050.png",
+                "path": "Projects/Copa City/ccm0050.png",
+                "type": "image",
+                "size": 1156841
+              },
+              {
+                "name": "ccp01.png",
+                "path": "Projects/Copa City/ccp01.png",
+                "type": "image",
+                "size": 2446489
+              },
+              {
+                "name": "ccp02.png",
+                "path": "Projects/Copa City/ccp02.png",
+                "type": "image",
+                "size": 1362667
+              },
+              {
+                "name": "ccx1.png",
+                "path": "Projects/Copa City/ccx1.png",
+                "type": "image",
+                "size": 631526
+              },
+              {
+                "name": "ccx2.png",
+                "path": "Projects/Copa City/ccx2.png",
+                "type": "image",
+                "size": 182046
+              },
+              {
+                "name": "ccx3.png",
+                "path": "Projects/Copa City/ccx3.png",
+                "type": "image",
+                "size": 275264
+              },
+              {
+                "name": "ccx4.png",
+                "path": "Projects/Copa City/ccx4.png",
+                "type": "image",
+                "size": 4038748
+              }
+            ],
+            "folders": [],
+            "total": 43
+          },
+          {
+            "name": "Sea of Clouds",
+            "path": "Projects/Sea of Clouds",
+            "files": [
+              {
+                "name": "SoC_1.png",
+                "path": "Projects/Sea of Clouds/SoC_1.png",
+                "type": "image",
+                "size": 547889
+              },
+              {
+                "name": "SoC_2.png",
+                "path": "Projects/Sea of Clouds/SoC_2.png",
+                "type": "image",
+                "size": 505450
+              },
+              {
+                "name": "Soc_3.png",
+                "path": "Projects/Sea of Clouds/Soc_3.png",
+                "type": "image",
+                "size": 1646191
+              },
+              {
+                "name": "Soc_4.png",
+                "path": "Projects/Sea of Clouds/Soc_4.png",
+                "type": "image",
+                "size": 471216
+              },
+              {
+                "name": "Soc_6.png",
+                "path": "Projects/Sea of Clouds/Soc_6.png",
+                "type": "image",
+                "size": 1058918
+              },
+              {
+                "name": "Untitled2.mp4",
+                "path": "Projects/Sea of Clouds/Untitled2.mp4",
+                "type": "video",
+                "size": 19835076
+              },
+              {
+                "name": "z2.png",
+                "path": "Projects/Sea of Clouds/z2.png",
+                "type": "image",
+                "size": 950752
+              },
+              {
+                "name": "z3.png",
+                "path": "Projects/Sea of Clouds/z3.png",
+                "type": "image",
+                "size": 535941
+              }
+            ],
+            "folders": [],
+            "total": 8
+          },
+          {
+            "name": "War Hospital",
+            "path": "Projects/War Hospital",
+            "files": [
+              {
+                "name": "london_palace.png",
+                "path": "Projects/War Hospital/london_palace.png",
+                "type": "image",
+                "size": 2563162
+              },
+              {
+                "name": "london_palace_2.png",
+                "path": "Projects/War Hospital/london_palace_2.png",
+                "type": "image",
+                "size": 3187464
+              },
+              {
+                "name": "london_palace_3.png",
+                "path": "Projects/War Hospital/london_palace_3.png",
+                "type": "image",
+                "size": 2433201
+              },
+              {
+                "name": "london_palace_4.png",
+                "path": "Projects/War Hospital/london_palace_4.png",
+                "type": "image",
+                "size": 3126814
+              },
+              {
+                "name": "unknown-37.jpg",
+                "path": "Projects/War Hospital/unknown-37.jpg",
+                "type": "image",
+                "size": 207111
+              },
+              {
+                "name": "unknown-41.jpg",
+                "path": "Projects/War Hospital/unknown-41.jpg",
+                "type": "image",
+                "size": 69127
+              },
+              {
+                "name": "unknown-44.jpg",
+                "path": "Projects/War Hospital/unknown-44.jpg",
+                "type": "image",
+                "size": 57042
+              },
+              {
+                "name": "WH_3.jpg",
+                "path": "Projects/War Hospital/WH_3.jpg",
+                "type": "image",
+                "size": 295753
+              },
+              {
+                "name": "WH_4.jpg",
+                "path": "Projects/War Hospital/WH_4.jpg",
+                "type": "image",
+                "size": 123618
+              },
+              {
+                "name": "wh_building_2.avif",
+                "path": "Projects/War Hospital/wh_building_2.avif",
+                "type": "image",
+                "size": 263374
+              },
+              {
+                "name": "wh_zeppelin_1.avif",
+                "path": "Projects/War Hospital/wh_zeppelin_1.avif",
+                "type": "image",
+                "size": 89994
+              },
+              {
+                "name": "wh_zeppelin_2.avif",
+                "path": "Projects/War Hospital/wh_zeppelin_2.avif",
+                "type": "image",
+                "size": 73560
+              },
+              {
+                "name": "wh_zeppelin_3.avif",
+                "path": "Projects/War Hospital/wh_zeppelin_3.avif",
+                "type": "image",
+                "size": 483918
+              },
+              {
+                "name": "wh_zeppelin_4.avif",
+                "path": "Projects/War Hospital/wh_zeppelin_4.avif",
+                "type": "image",
+                "size": 541928
+              },
+              {
+                "name": "Zrzut ekranu 2023-06-05 180902.png",
+                "path": "Projects/War Hospital/Zrzut ekranu 2023-06-05 180902.png",
+                "type": "image",
+                "size": 205337
+              },
+              {
+                "name": "Zrzut ekranu 2026-05-22 031757.png",
+                "path": "Projects/War Hospital/Zrzut ekranu 2026-05-22 031757.png",
+                "type": "image",
+                "size": 598781
+              },
+              {
+                "name": "Zrzut ekranu 2026-05-22 031838.png",
+                "path": "Projects/War Hospital/Zrzut ekranu 2026-05-22 031838.png",
+                "type": "image",
+                "size": 577166
+              },
+              {
+                "name": "Zrzut ekranu 2026-05-22 032004.png",
+                "path": "Projects/War Hospital/Zrzut ekranu 2026-05-22 032004.png",
+                "type": "image",
+                "size": 211598
+              }
+            ],
+            "folders": [],
+            "total": 18
+          }
+        ],
+        "total": 69
+      },
+      {
+        "name": "Substance Designer",
+        "path": "Substance Designer",
+        "files": [
+          {
+            "name": "8.png",
+            "path": "Substance Designer/8.png",
+            "type": "image",
+            "size": 3263078
+          },
+          {
+            "name": "9.png",
+            "path": "Substance Designer/9.png",
+            "type": "image",
+            "size": 5346641
+          },
+          {
+            "name": "10.png",
+            "path": "Substance Designer/10.png",
+            "type": "image",
+            "size": 4851345
+          },
+          {
+            "name": "11.png",
+            "path": "Substance Designer/11.png",
+            "type": "image",
+            "size": 4418762
+          }
+        ],
+        "folders": [],
+        "total": 4
+      }
+    ],
+    "total": 99
+  }
+}

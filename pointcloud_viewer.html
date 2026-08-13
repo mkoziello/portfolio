@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Point cloud viewer</title>
+<style>
+  :root {
+    --ink:        #e2e8ef;
+    --ink-dim:    #7d8b9c;
+    --rule:       #29323d;
+    --panel:      rgba(15, 19, 24, 0.86);
+    --sand:       #d8b26a;
+    --void:       #0b0e12;
+    --mono: "Cascadia Code", "JetBrains Mono", ui-monospace, SFMono-Regular,
+            Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--void);
+    font-family: var(--mono);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  canvas { display: block; }
+
+  /* ---------- instrument panel ---------- */
+
+  #panel {
+    position: fixed; top: 16px; left: 16px; width: 292px;
+    background: var(--panel);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--rule);
+    font-size: 11px; line-height: 1.5;
+    user-select: none;
+  }
+
+  #panel header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 11px 14px 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  #panel h1 {
+    margin: 0; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+
+  #fps { color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+
+  .block { padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+  .block:last-child { border-bottom: 0; }
+
+  .readout { display: flex; justify-content: space-between; gap: 12px; }
+  .readout + .readout { margin-top: 3px; }
+  .readout dt { color: var(--ink-dim); letter-spacing: 0.06em; }
+  .readout dd {
+    margin: 0; font-variant-numeric: tabular-nums;
+    text-align: right; overflow: hidden; text-overflow: ellipsis;
+  }
+  dl { margin: 0; }
+
+  .label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    color: var(--ink-dim); letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 10px; margin-bottom: 9px;
+  }
+  .label b {
+    color: var(--ink); font-weight: 500; letter-spacing: 0;
+    text-transform: none; font-variant-numeric: tabular-nums;
+  }
+
+  /* the size slider, with a tick marking estimated point spacing */
+  .track { position: relative; padding-bottom: 15px; }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 15px; margin: 0; background: transparent;
+    display: block; cursor: ew-resize;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 1px; background: var(--rule);
+  }
+  input[type=range]::-moz-range-track { height: 1px; background: var(--rule); }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 3px; height: 15px; margin-top: -7px;
+    background: var(--sand); border: 0; border-radius: 0;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 3px; height: 15px; background: var(--sand);
+    border: 0; border-radius: 0;
+  }
+  input[type=range]:focus-visible { outline: 1px solid var(--sand); outline-offset: 3px; }
+
+  #tick {
+    position: absolute; bottom: 0; width: 1px; height: 11px;
+    background: var(--ink-dim); pointer-events: none;
+  }
+  #tick::after {
+    content: "spacing"; position: absolute; bottom: -2px; left: 5px;
+    font-size: 9px; color: var(--ink-dim); letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toggles label {
+    flex: 1 1 auto; text-align: center;
+    padding: 6px 8px; border: 1px solid var(--rule);
+    color: var(--ink-dim); cursor: pointer;
+    letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px;
+    white-space: nowrap;
+  }
+  .toggles input { position: absolute; opacity: 0; pointer-events: none; }
+  .toggles label:hover { color: var(--ink); }
+  .toggles input:checked + span { color: var(--void); }
+  .toggles label:has(input:checked) {
+    background: var(--sand); border-color: var(--sand); color: var(--void);
+  }
+  .toggles label:has(input:focus-visible) { outline: 1px solid var(--sand); outline-offset: 2px; }
+
+  .clouds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .clouds button { flex: none; text-transform: none; letter-spacing: 0.04em;
+                   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clouds button.on { color: var(--void); background: var(--sand); border-color: var(--sand); }
+  .clouds button[disabled] { opacity: .45; cursor: progress; }
+  .actions { display: flex; gap: 6px; }
+  button {
+    flex: 1; font: inherit; font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 7px 8px; cursor: pointer;
+    background: transparent; color: var(--ink-dim);
+    border: 1px solid var(--rule);
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-dim); }
+  button:focus-visible { outline: 1px solid var(--sand); outline-offset: 2px; }
+
+  /* ---------- drop / status ---------- */
+
+  #status {
+    position: fixed; inset: 0; display: grid; place-content: center;
+    text-align: center; gap: 10px; padding: 24px;
+    background: var(--void); font-size: 12px; letter-spacing: 0.04em;
+  }
+  #status.hidden { display: none; }
+  #status strong {
+    display: block; font-weight: 600; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  #status span { color: var(--ink-dim); max-width: 46ch; line-height: 1.7; }
+  #status .err { color: var(--sand); }
+
+  body.dragging #status { outline: 1px dashed var(--sand); outline-offset: -14px; }
+
+  @media (max-width: 560px) {
+    #panel { left: 8px; right: 8px; top: 8px; width: auto; }
+    .clouds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<div id="status">
+  <strong>Point cloud viewer</strong>
+  <span id="status-msg">Loading…</span>
+  <div id="status-clouds" class="clouds" style="max-width:340px"></div>
+  <span><button id="pick" style="flex:0">Choose a .pcld file</button></span>
+</div>
+
+<div id="panel" hidden>
+  <header>
+    <h1>Point cloud</h1>
+    <span id="fps">— fps</span>
+  </header>
+
+  <div class="block">
+    <dl>
+      <div class="readout"><dt>Points</dt><dd id="r-count">—</dd></div>
+      <div class="readout"><dt>Extent</dt><dd id="r-extent">—</dd></div>
+      <div class="readout"><dt>Spacing</dt><dd id="r-spacing">—</dd></div>
+    </dl>
+  </div>
+
+  <div class="block">
+    <div class="label">Cloud</div>
+    <div id="clouds" class="clouds"></div>
+  </div>
+
+  <div class="block">
+    <div class="label">Point size <b id="v-size">—</b></div>
+    <div class="track">
+      <input id="size" type="range" min="0" max="1000" value="500"
+             aria-label="Point size">
+      <div id="tick"></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="label">Brightness <b id="v-bright">1.00</b></div>
+    <input id="bright" type="range" min="20" max="300" value="100"
+           aria-label="Brightness">
+  </div>
+
+  <div class="block toggles">
+    <label><input type="checkbox" id="atten" checked><span>Perspective</span></label>
+    <label><input type="checkbox" id="shade" checked><span>Round</span></label>
+    <label><input type="checkbox" id="light"><span>Light bg</span></label>
+  </div>
+
+  <div class="block actions">
+    <button id="reset">Reset view</button>
+    <button id="open">Open file</button>
+  </div>
+</div>
+
+<input id="file" type="file" accept=".pcld,.bin" hidden>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const $ = id => document.getElementById(id);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ------------------------------------------------------------------ *
+ * Parse the .pcld container written by export_pointcloud.py
+ * ------------------------------------------------------------------ */
+
+function parsePCLD(buffer) {
+  const dv = new DataView(buffer);
+  const magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1),
+                                    dv.getUint8(2), dv.getUint8(3));
+  if (magic !== 'PCLD') throw new Error('Not a .pcld file (bad signature).');
+
+  const version = dv.getUint32(4, true);
+  if (version !== 1) throw new Error(`Unsupported .pcld version ${version}.`);
+
+  const count = dv.getUint32(8, true);
+  const flags = dv.getUint32(12, true);
+  const quantised = (flags & 1) !== 0;
+  const hasColor  = (flags & 2) !== 0;
+
+  const f3 = o => [dv.getFloat32(o, true), dv.getFloat32(o + 4, true),
+                   dv.getFloat32(o + 8, true)];
+  const center = f3(16), scale = f3(28), half = f3(40);
+
+  let off = 52;
+  let positions;
+
+  if (quantised) {
+    const q = new Int16Array(buffer, off, count * 3);
+    off += count * 6;
+    positions = new Float32Array(count * 3);
+    for (let i = 0; i < count * 3; i += 3) {
+      positions[i]     = q[i]     * scale[0];
+      positions[i + 1] = q[i + 1] * scale[1];
+      positions[i + 2] = q[i + 2] * scale[2];
+    }
+  } else {
+    positions = new Float32Array(buffer.slice(off, off + count * 12));
+    off += count * 12;
+  }
+
+  let colors = null;
+  if (hasColor) colors = new Uint8Array(buffer.slice(off, off + count * 3));
+
+  return { count, positions, colors, center, half };
+}
+
+/* ------------------------------------------------------------------ *
+ * Scene
+ * ------------------------------------------------------------------ */
+
+const renderer = new THREE.WebGLRenderer({ antialias: false });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0e12);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 1000);
+camera.up.set(0, 0, 1);   // Blender is Z-up; keep orbiting intuitive
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = !reduceMotion;
+controls.dampingFactor = 0.08;
+controls.zoomToCursor = true;
+
+const uniforms = {
+  uSize:       { value: 0.02 },   // world-space diameter
+  uFocal:      { value: 500 },    // pixels per unit at one unit distance
+  uAttenuate:  { value: 1 },
+  uFrozenDist: { value: 10 },     // stand-in distance when perspective is off
+  uBrightness: { value: 1 },
+  uShade:      { value: 1 },
+};
+
+const material = new THREE.ShaderMaterial({
+  uniforms,
+  vertexShader: /* glsl */`
+    attribute vec3 color;
+    uniform float uSize, uFocal, uAttenuate, uFrozenDist;
+    varying vec3 vColor;
+    void main() {
+      vColor = color;
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      float dist = mix(uFrozenDist, -mv.z, uAttenuate);
+      gl_PointSize = clamp(uSize * uFocal / max(dist, 1e-4), 1.0, 128.0);
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: /* glsl */`
+    uniform float uBrightness, uShade;
+    varying vec3 vColor;
+    vec3 srgbToLinear(vec3 c) {
+      return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)),
+                 step(vec3(0.04045), c));
+    }
+    void main() {
+      vec2 pc = gl_PointCoord * 2.0 - 1.0;
+      float r2 = dot(pc, pc);
+      if (r2 > 1.0) discard;
+      float dome = 0.45 + 0.55 * sqrt(max(1.0 - r2, 0.0));
+      vec3 c = srgbToLinear(vColor) * uBrightness * mix(1.0, dome, uShade);
+      gl_FragColor = vec4(c, 1.0);
+      #include <colorspace_fragment>
+    }`,
+});
+
+let cloud = null;
+let spacing = 1, diagonal = 1;
+
+function updateFocal() {
+  // gl_PointSize is in device pixels, so measure against the draw buffer.
+  const h = renderer.domElement.height;
+  uniforms.uFocal.value = h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+}
+
+function build(data) {
+  if (cloud) {
+    cloud.geometry.dispose();
+    scene.remove(cloud);
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(data.positions, 3));
+  geometry.setAttribute('color',
+    new THREE.BufferAttribute(data.colors ?? new Uint8Array(data.count * 3).fill(200), 3, true));
+
+  const [hx, hy, hz] = data.half;
+  geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(),
+    Math.hypot(hx, hy, hz));   // positions are pre-centred, so skip the scan
+
+  cloud = new THREE.Points(geometry, material);
+  cloud.frustumCulled = false;
+  scene.add(cloud);
+
+  // Estimated point spacing: LiDAR sits on surfaces, so treat the two
+  // largest extents as an area and divide it between the points.
+  const ext = [hx * 2, hy * 2, hz * 2].sort((a, b) => b - a);
+  spacing = Math.sqrt((ext[0] * ext[1]) / data.count);
+  diagonal = Math.hypot(hx, hy, hz) * 2;
+
+  camera.near = diagonal / 5000;
+  camera.far  = diagonal * 20;
+  resetView();
+
+  $('r-count').textContent   = data.count.toLocaleString();
+  $('r-extent').textContent  = ext.map(fmt).join(' × ');
+  $('r-spacing').textContent = fmt(spacing);
+
+  $('size').value = String(sizeToSlider(spacing * 1.4));
+  applySize();
+  $('tick').style.left = `${sizeToSlider(spacing) / 10}%`;
+
+  $('panel').hidden = false;
+  $('status').classList.add('hidden');
+}
+
+function resetView() {
+  const d = diagonal * 0.85;
+  camera.position.set(d * 0.55, -d * 0.8, d * 0.45);
+  camera.updateProjectionMatrix();
+  controls.target.set(0, 0, 0);
+  controls.update();
+  uniforms.uFrozenDist.value = camera.position.length();
+}
+
+/* ------------------------------------------------------------------ *
+ * Controls
+ * ------------------------------------------------------------------ */
+
+// Slider runs from 1/10 to 12× the estimated spacing, logarithmically,
+// so the useful range sits in the middle of the travel.
+const LO = Math.log(0.1), HI = Math.log(12);
+const sliderToSize = t => spacing * Math.exp(LO + (HI - LO) * (t / 1000));
+const sizeToSlider = s => 1000 * (Math.log(s / spacing) - LO) / (HI - LO);
+
+function fmt(v) {
+  if (!isFinite(v)) return '—';
+  const abs = Math.abs(v);
+  const dp = abs >= 100 ? 0 : abs >= 10 ? 1 : abs >= 1 ? 2 : abs >= 0.1 ? 3 : 4;
+  return v.toFixed(dp);
+}
+
+function applySize() {
+  const size = sliderToSize(+$('size').value);
+  uniforms.uSize.value = size;
+  $('v-size').textContent = `${fmt(size)} u · ${(size / spacing).toFixed(2)}× sp`;
+}
+
+$('size').addEventListener('input', applySize);
+
+$('bright').addEventListener('input', e => {
+  uniforms.uBrightness.value = e.target.value / 100;
+  $('v-bright').textContent = (e.target.value / 100).toFixed(2);
+});
+
+$('atten').addEventListener('change', e => {
+  // Freeze the current viewing distance so sizes don't jump on toggle.
+  if (!e.target.checked) {
+    uniforms.uFrozenDist.value = camera.position.distanceTo(controls.target);
+  }
+  uniforms.uAttenuate.value = e.target.checked ? 1 : 0;
+});
+
+$('shade').addEventListener('change', e => uniforms.uShade.value = e.target.checked ? 1 : 0);
+$('light').addEventListener('change', e => scene.background.set(e.target.checked ? 0xe8e6e1 : 0x0b0e12));
+$('reset').addEventListener('click', resetView);
+$('open').addEventListener('click', () => $('file').click());
+$('pick').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', e => e.target.files[0] && loadBlob(e.target.files[0]));
+
+addEventListener('keydown', e => {
+  if (e.key === 'r' || e.key === 'R') resetView();
+});
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  updateFocal();
+});
+
+/* ------------------------------------------------------------------ *
+ * Loading
+ * ------------------------------------------------------------------ */
+
+function fail(msg) {
+  $('status').classList.remove('hidden');
+  const el = $('status-msg');
+  el.className = 'err';
+  el.textContent = msg;
+}
+
+let loadBlob = async function (file) {
+  try {
+    build(parsePCLD(await file.arrayBuffer()));
+    $('status').classList.add('hidden');
+  } catch (err) {
+    fail(err.message);
+  }
+};
+
+['dragenter', 'dragover'].forEach(t => addEventListener(t, e => {
+  e.preventDefault();
+  document.body.classList.add('dragging');
+}));
+['dragleave', 'drop'].forEach(t => addEventListener(t, e => {
+  e.preventDefault();
+  if (t === 'drop' || e.target === document.documentElement) {
+    document.body.classList.remove('dragging');
+  }
+}));
+addEventListener('drop', e => e.dataTransfer.files[0] && loadBlob(e.dataTransfer.files[0]));
+
+/* ------------------------------------------------------------------ *
+ * Cloud library
+ * ------------------------------------------------------------------
+ * Files live in CLOUD_DIR next to this page. Add a line to CLOUDS and
+ * the button appears; the first entry is the one loaded on open.
+ * ------------------------------------------------------------------ */
+
+const CLOUD_DIR = 'pointcloud';
+const CLOUDS = [
+  { file: 'giewont.pcld', name: 'Giewont' },
+  { file: 'cloud1.pcld',  name: 'Cloud 1' },
+  { file: 'cloud2.pcld',  name: 'Cloud 2' },
+  { file: 'cloud3.pcld',  name: 'Cloud 3' }
+];
+
+const cloudBars = [$('clouds'), $('status-clouds')];
+let loading = false;
+
+function renderClouds(activeFile) {
+  cloudBars.forEach(bar => {
+    if (!bar) return;
+    bar.innerHTML = '';
+    CLOUDS.forEach(c => {
+      const b = document.createElement('button');
+      b.textContent = c.name;
+      b.title = `${CLOUD_DIR}/${c.file}`;
+      b.classList.toggle('on', c.file === activeFile);
+      b.disabled = loading;
+      b.addEventListener('click', () => loadCloud(c));
+      bar.appendChild(b);
+    });
+  });
+}
+
+function setTitle(text) { $('panel').querySelector('h1').textContent = text; }
+
+async function loadCloud(cloud) {
+  if (loading) return;
+  loading = true;
+  renderClouds(cloud.file);
+  const path = `${CLOUD_DIR}/${cloud.file}`;
+  try {
+    const res = await fetch(path, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`${path} — HTTP ${res.status}`);
+    build(parsePCLD(await res.arrayBuffer()));
+    setTitle(cloud.name);
+    $('status').classList.add('hidden');
+  } catch (err) {
+    fail(
+      `Couldn't load ${path}. ` +
+      (location.protocol === 'file:'
+        ? 'Serve this folder over http — browsers block file reads on file:// pages.'
+        : err.message)
+    );
+  } finally {
+    loading = false;
+    renderClouds(cloud.file);
+  }
+}
+
+/* a dropped or hand-picked file wins over the library */
+const _loadBlob = loadBlob;
+loadBlob = async function (file) {
+  await _loadBlob(file);
+  setTitle(file.name.replace(/\.pcld$/i, ''));
+  renderClouds(null);
+};
+
+renderClouds(CLOUDS[0] && CLOUDS[0].file);
+if (CLOUDS.length) loadCloud(CLOUDS[0]);
+else $('status-msg').textContent = 'Drop a .pcld file anywhere on this page.';
+
+/* ------------------------------------------------------------------ *
+ * Render loop
+ * ------------------------------------------------------------------ */
+
+updateFocal();
+
+let frames = 0, last = performance.now();
+renderer.setAnimationLoop(now => {
+  controls.update();
+  renderer.render(scene, camera);
+
+  if (++frames >= 20) {
+    $('fps').textContent = `${Math.round(frames * 1000 / (now - last))} fps`;
+    frames = 0; last = now;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,4 +1,13 @@
 {
+  "_comment": [
+    "Model manifest for 3Dviewer.html. One .glb in models/ + one entry here.",
+    "Texture naming: <name>_A base colour, _M metallic, _R roughness,",
+    "_AO ambient occlusion, _N normal. The JSON keys below are the viewer's",
+    "material slots and don't change; only the filenames follow the suffixes.",
+    "With _M and _R maps supplied, keep material.metalness and .roughness at",
+    "1.0 — three.js multiplies the map by the scalar, so anything lower",
+    "darkens the whole map."
+  ],
   "models": [
     {
       "id": "vv-logo",
@@ -17,31 +26,110 @@
       "view": { "autoOrbit": true, "exposure": 1.0, "grid": true, "shadow": true, "fit": "ground" }
     },
     {
-      "id": "panel-crate",
-      "name": "Panel Crate",
-      "group": "Props",
-      "file": "models/panel_crate.glb",
-      "tags": ["1024² maps", "6.9k tris", "Emissive strip"],
-      "note": "Texture test asset: rounded box, one UV set, five maps kept as loose files so they can be swapped without touching the mesh. The emissive strip is a separate map, not baked into albedo.",
+      "id": "violin",
+      "name": "Violin",
+      "group": "Instruments",
+      "file": "models/violin.glb",
+      "tags": ["glTF 2.0", "PBR", "Full map set"],
+      "note": "Textured with a complete PBR set — base colour, metallic, roughness, ambient occlusion and normal.",
       "textures": {
-        "albedo": "textures/panel_albedo.png",
-        "normal": "textures/panel_normal.png",
-        "roughness": "textures/panel_roughness.png",
-        "ao": "textures/panel_ao.png",
-        "emissive": "textures/panel_emissive.png",
+        "albedo": "textures/violin_A.png",
+        "metalness": "textures/violin_M.png",
+        "roughness": "textures/violin_R.png",
+        "ao": "textures/violin_AO.png",
+        "normal": "textures/violin_N.png",
         "flipY": false,
-        "repeat": [1, 1],
         "anisotropy": 8
       },
       "material": {
-        "metalness": 0.85,
+        "metalness": 1.0,
         "roughness": 1.0,
         "tint": "#ffffff",
+        "vertexColors": false,
         "envIntensity": 1.0,
         "normalScale": 1.0,
-        "aoIntensity": 1.0,
-        "emissive": "#ffffff",
-        "emissiveIntensity": 1.6
+        "aoIntensity": 1.0
+      },
+      "view": { "autoOrbit": true, "exposure": 1.0, "grid": true, "shadow": true, "fit": "ground" }
+    },
+    {
+      "id": "lespaul",
+      "name": "Les Paul",
+      "group": "Instruments",
+      "file": "models/lespaul.glb",
+      "tags": ["glTF 2.0", "PBR", "Full map set"],
+      "note": "Textured with a complete PBR set — base colour, metallic, roughness, ambient occlusion and normal.",
+      "textures": {
+        "albedo": "textures/lespaul_A.png",
+        "metalness": "textures/lespaul_M.png",
+        "roughness": "textures/lespaul_R.png",
+        "ao": "textures/lespaul_AO.png",
+        "normal": "textures/lespaul_N.png",
+        "flipY": false,
+        "anisotropy": 8
+      },
+      "material": {
+        "metalness": 1.0,
+        "roughness": 1.0,
+        "tint": "#ffffff",
+        "vertexColors": false,
+        "envIntensity": 1.0,
+        "normalScale": 1.0,
+        "aoIntensity": 1.0
+      },
+      "view": { "autoOrbit": true, "exposure": 1.0, "grid": true, "shadow": true, "fit": "ground" }
+    },
+    {
+      "id": "autoportet",
+      "name": "Autoportet",
+      "group": "Studies",
+      "file": "models/autoportet.glb",
+      "tags": ["glTF 2.0", "PBR", "Full map set"],
+      "note": "Textured with a complete PBR set — base colour, metallic, roughness, ambient occlusion and normal.",
+      "textures": {
+        "albedo": "textures/autoportet_A.png",
+        "metalness": "textures/autoportet_M.png",
+        "roughness": "textures/autoportet_R.png",
+        "ao": "textures/autoportet_AO.png",
+        "normal": "textures/autoportet_N.png",
+        "flipY": false,
+        "anisotropy": 8
+      },
+      "material": {
+        "metalness": 1.0,
+        "roughness": 1.0,
+        "tint": "#ffffff",
+        "vertexColors": false,
+        "envIntensity": 1.0,
+        "normalScale": 1.0,
+        "aoIntensity": 1.0
+      },
+      "view": { "autoOrbit": true, "exposure": 1.0, "grid": true, "shadow": true, "fit": "ground" }
+    },
+    {
+      "id": "sierrano3",
+      "name": "Sierra No. 3",
+      "group": "Studies",
+      "file": "models/sierrano3.glb",
+      "tags": ["glTF 2.0", "PBR", "Full map set"],
+      "note": "Textured with a complete PBR set — base colour, metallic, roughness, ambient occlusion and normal.",
+      "textures": {
+        "albedo": "textures/sierrano3_A.png",
+        "metalness": "textures/sierrano3_M.png",
+        "roughness": "textures/sierrano3_R.png",
+        "ao": "textures/sierrano3_AO.png",
+        "normal": "textures/sierrano3_N.png",
+        "flipY": false,
+        "anisotropy": 8
+      },
+      "material": {
+        "metalness": 1.0,
+        "roughness": 1.0,
+        "tint": "#ffffff",
+        "vertexColors": false,
+        "envIntensity": 1.0,
+        "normalScale": 1.0,
+        "aoIntensity": 1.0
       },
       "view": { "autoOrbit": true, "exposure": 1.0, "grid": true, "shadow": true, "fit": "ground" }
     }
