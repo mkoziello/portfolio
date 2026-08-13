@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Michał Koziełło — VertexVoodoo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-20 0 120 120'%3E%3Crect x='-20' y='0' width='120' height='120' rx='26' fill='%23191512'/%3E%3Cpath d='M8 48 L40 116 L72 48 H54 L40 78 L26 48 Z' fill='%23E4DCC9'/%3E%3Cpath d='M40 6 L52 28 L40 44 L28 28 Z' fill='%23C1272D'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#191512">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -514,7 +516,7 @@ const EXTRA_LINKS = {
   "copa city":      [{label:"Steam", url:"https://store.steampowered.com/app/2210520/COPA_CITY/"}],
   "above the snow": [{label:"Steam", url:"https://store.steampowered.com/app/2423760/Above_the_Snow/"}],
   "harmony":        [{label:"Play",  url:"harmony.html", play:true}],
-  "gaia 3d galaxy": [{label:"Play",  url:"gaia_galaxy.html", play:true}]
+  "gaia 3d galaxy": [{label:"Play",  url:CONFIG.GAIA_URL, play:true}]
 };
 
 const isExternal = u => /^(https?:)?\/\//i.test(u||'');
@@ -545,20 +547,22 @@ const DESKTOP_WIDGETS = [
   { id:'main', title:'Portfolio',   place:'center', cols:3,
     apps:['profile','shipped','personal','toolchain','contact','cv'] },
   { id:'live', title:'Live builds', place:'center', cols:3,
-    apps:['editor','viewer','gaia'] },
+    apps:['editor','viewer','live1'] },
   { id:'lab',  title:'Experiments', place:'center', cols:3,
     apps:['lab1','lab2','lab3'] }
 ];
 
-/* Placeholders for the Experiments container. Give one an `href`
-   and it turns into a real launcher — same rules as everything
-   else: your own pages open in a window, http(s) opens a tab.
-   Until then, clicking one explains how to fill it in. */
-const EXPERIMENT_SLOTS = [
-  { id:'lab1', name:'Orbital Harmony', sub:'Tune the orbits into chords',
+/* Simple launcher icons: an id, a label and a page to open. Give one
+   an `href` and it launches; leave it empty and clicking it explains
+   how to fill it in, so an unfinished slot never looks broken.
+   Every id here must also appear in a container's `apps` above. */
+const SLOTS = [
+  { id:'lab1',  name:'Gaia Galaxy', sub:'Two million real stars',
+    href:CONFIG.GAIA_URL, icon:'gaia', size:'max' },
+  { id:'lab2',  name:'Orbital Harmony', sub:'Tune the orbits into chords',
     href:'harmony.html', icon:'orbit' },
-  { id:'lab2', name:'Slot 02', sub:'Unassigned', href:'' },
-  { id:'lab3', name:'Slot 03', sub:'Unassigned', href:'' }
+  { id:'lab3',  name:'Slot 03', sub:'Unassigned', href:'' },
+  { id:'live1', name:'Slot 04', sub:'Unassigned', href:'' }
 ];
 
 const DEFAULT_TRASH = [
@@ -788,15 +792,14 @@ function build(){
     {id:'contact',  name:'Contact',   sub:'Email, site, socials',                    icon:'contact'},
     {id:'editor',   name:'3D Editor', sub:'The viewport portfolio', icon:'editor', href:CONFIG.EDITOR_URL},
     {id:'viewer',   name:'Model Viewer', sub:'Turntable for the models', icon:'viewer', href:CONFIG.VIEWER_URL},
-    {id:'gaia',     name:'Gaia Galaxy',  sub:'Two million real stars',   icon:'gaia',   href:CONFIG.GAIA_URL},
     {id:'cv',       name:'CV',        sub:'Full curriculum vitae',  icon:'cv',     href:CONFIG.CV_URL, mode:'window'},
     {id:'trash',    name:'Trash',     sub:'Habits I deleted',                        icon:'trash'}
   ].filter(Boolean);
 
-  EXPERIMENT_SLOTS.forEach(s=>APPS.push({
-    id:s.id, name:s.name, sub:s.sub||(s.href?'Experiment':'Unassigned'),
+  SLOTS.forEach(s=>APPS.push({
+    id:s.id, name:s.name, sub:s.sub||(s.href?'Launcher':'Unassigned'),
     icon:s.icon || (s.href?'personal':'slot'),
-    href:s.href||'', slot:true,
+    href:s.href||'', slot:true, size:s.size,
     /* a slot pointing at one of your own pages runs inside the desktop;
        an http(s) address opens in a tab */
     mode: s.mode || (s.href && !isExternal(s.href) ? 'window' : undefined)
@@ -889,22 +892,26 @@ function makeWindow(id,name,icon,html,flush){
    ============================================================ */
 function content(id){
   const p=PROFILE||{};
-  const slot=EXPERIMENT_SLOTS.find(s=>s.id===id);
-  if(slot) return `
+  const slot=SLOTS.find(s=>s.id===id);
+  if(slot){
+    const box=DESKTOP_WIDGETS.find(w=>w.apps.includes(slot.id));
+    return `
       <h1>${esc(slot.name)}</h1>
-      <p class="sub">Empty slot in the Experiments container</p>
+      <p class="sub">Empty slot${box?' in '+esc(box.title):''}</p>
       <p class="lead">Nothing is assigned here yet. Point this slot at a page and the icon becomes a real launcher — a game, a demo, a shader toy, anything you can serve from the repo.</p>
       <h2>Fill it in</h2>
-      <p>Open <b>index.html</b>, find <b>EXPERIMENT_SLOTS</b> near the top of the script, and edit this entry:</p>
+      <p>Open <b>index.html</b>, find <b>SLOTS</b> near the top of the script, and edit this entry:</p>
       <div class="code">{ id:'${esc(slot.id)}', name:'Starfall', sub:'Twin-stick shooter',
   href:'games/starfall/' }</div>
       <div class="kv"><div class="k">href</div><div class="v">A path in the repo, or a full https:// address</div></div>
       <div class="kv"><div class="k">Opens in</div><div class="v">Your own pages run in a desktop window; external sites open in a new tab</div></div>
       <div class="kv"><div class="k">Not needed?</div><div class="v">Delete the entry — the slot disappears</div></div>
       <p class="note-sm" style="margin-top:14px;">A project with a description, tags and its own window belongs in <b>data/personal.json</b> instead. See ADDING_PROJECTS.md.</p>`;
+  }
   switch(id){
     case 'profile': {
       const st=p.stats||{};
+      const latest=SHIPPED.filter(s=>s.year).sort((a,b)=>b.year-a.year)[0];
       return `
       <h1>${esc(p.fullName)}</h1>
       <p class="sub">${esc(p.title)}${p.location?' · '+esc(p.location):''}</p>
@@ -913,7 +920,8 @@ function content(id){
       <h2>Statistics</h2>
       ${st.years!=null?`<div class="kv"><div class="k">Years</div><div class="v">${esc(st.years)}</div></div>`:''}
       ${st.shipped!=null?`<div class="kv"><div class="k">Shipped</div><div class="v">${esc(st.shipped)}</div></div>`:''}
-      ${st.nda!=null?`<div class="kv"><div class="k">Working At</div><div class="v">${esc(st.nda)}</div></div>`:''}
+      ${latest?`<div class="kv"><div class="k">Most recent</div><div class="v">${esc(latest.name)}${latest.year?' · '+esc(latest.year):''}</div></div>`:''}
+      ${PERSONAL.length?`<div class="kv"><div class="k">Off the clock</div><div class="v">${PERSONAL.length} personal project${PERSONAL.length===1?'':'s'}</div></div>`:''}
       <div class="btn-row">
         <button class="btn pri" data-open="shipped">Shipped titles</button>
         <button class="btn" data-open="editor">Open the 3D editor ${extMark}</button>
@@ -933,7 +941,7 @@ function content(id){
       ${TOOLCHAIN.skills.map(g=>`
         <h2>${esc(g.group)}</h2>
         <div class="chips">${(g.items||[]).map(i=>`<span class="chip">${esc(i)}</span>`).join('')}</div>`).join('')}
-      ${TOOLCHAIN.software.length?`<h2>Daily toolkit</h2>
+      ${TOOLCHAIN.software.length?`<h2>Daily drivers</h2>
         ${TOOLCHAIN.software.map(s=>`<div class="kv glow"><div class="k">${esc(s.name)}</div><div class="v">${esc(s.use)}</div></div>`).join('')}`:''}`;
     case 'contact': {
       const mail=p.email?`mailto:${esc(p.email)}?subject=${encodeURIComponent('Project enquiry')}`:'';
@@ -1030,11 +1038,13 @@ function unclamp(w){ w.style.maxWidth='none'; w.style.maxHeight='none'; w.style.
 function fitWindow(w){
   if(isMobile()) return;
   const body=w.querySelector('.wbody');
+  const app=appOf(w.id.slice(4));
   const maxW=Math.min(680, window.innerWidth-40);
   const maxH=window.innerHeight-panelH()-40;
   if(body.classList.contains('flush')){          // embedded pages get a generous frame
-    w.style.width =Math.min(1000, window.innerWidth-60)+'px';
-    w.style.height=Math.min(780, maxH)+'px';
+    const big=app && app.size==='max';           // 'max' fills the desktop
+    w.style.width =(big ? window.innerWidth-48 : Math.min(1000, window.innerWidth-60))+'px';
+    w.style.height=(big ? window.innerHeight-panelH()-28 : Math.min(780, maxH))+'px';
     return;
   }
   w.style.maxWidth=maxW+'px'; w.style.maxHeight=maxH+'px';
@@ -1182,7 +1192,7 @@ function wireWindow(w,id){
 /* ============================================================
    DESKTOP WIDGETS — placement, dragging, drop targets
    ============================================================ */
-const LS_KEY='vv.desktop.layout.v3';   /* bump when the default arrangement changes */
+const LS_KEY='vv.desktop.layout.v5';   /* bump when the default arrangement changes */
 function loadLayout(){
   try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}')||{}; }catch(e){ return {}; }
 }
@@ -1333,6 +1343,10 @@ document.addEventListener('click',e=>{
 
 /* a page (a game, a demo, another html file) running in its own window */
 function openEmbedded(url,title){
+  /* if a launcher already owns this page, use its window rather than
+     opening a second copy of the same thing */
+  const owner=APPS.find(a=>a.href===url && appMode(a)==='window');
+  if(owner){ openApp(owner.id); return; }
   const winId='embed-'+url.replace(/[^a-z0-9]+/gi,'-').toLowerCase();
   if(!document.getElementById('win-'+winId)){
     makeWindow(winId, title, ICONS.personal, iframeBody(url,title), true);
