@@ -270,6 +270,7 @@
         <button data-shade="pbr" class="on">PBR</button>
         <button data-shade="unlit">Unlit</button>
         <button data-shade="normal">Nrm</button>
+        <button data-shade="wire">Wire</button>
       </div>
       <button id="btn-spin" class="on">Auto-orbit</button>
       <button id="btn-grid" class="on">Grid</button>
@@ -311,7 +312,6 @@
           </div>
           <div class="row">
             <button class="tgl on" id="t-vcol"><span class="bx"></span>Vertex colors</button>
-            <button class="tgl" id="t-wire"><span class="bx"></span>Wireframe</button>
           </div>
           <div class="sld">
             <span class="fl">Env intensity</span>
@@ -367,6 +367,14 @@
           <div class="row">
             <button class="tgl on" id="t-shadow"><span class="bx"></span>Ground shadow</button>
             <button class="tgl" id="t-turn"><span class="bx"></span>Turntable ×2</button>
+          </div>
+          <div class="row">
+            <button class="tgl" id="t-wire"><span class="bx"></span>Wire overlay</button>
+          </div>
+          <div class="clr">
+            <span class="fl">Wire color</span>
+            <input type="color" id="s-wirec" value="#7fb4ff">
+            <button class="rst" id="r-wirec" title="Reset to default">⟲</button>
           </div>
           <button class="btn" id="btn-frame">Frame selected</button>
         </div>
@@ -430,6 +438,7 @@ const CDN           = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/l
 const FOV           = 38;
 const FIT_MARGIN    = 1.45;   // >1 leaves air around the framed model
 const ORBIT_SPEED   = 1.1;    // auto-orbit, degrees-ish per frame tick
+const WIRE_COLOR    = '#7fb4ff';
 const MIN_PITCH     = 0.05;   // radians above the ground plane
 const MAX_PITCH     = Math.PI * 0.52;
 
@@ -629,14 +638,30 @@ const state = {
   metalness: 1, roughness: 1, tint: '#ffffff', vertexColors: true,
   normalScale: 1, aoIntensity: 1, emissive: '#ffffff', emissiveIntensity: 1,
   maps: { albedo: true, normal: true, roughness: true, metalness: true, ao: true, emissive: true },
-  envIntensity: 1, wireframe: false, exposure: 1,
+  envIntensity: 1, wire: false, wireColor: WIRE_COLOR, exposure: 1,
   grid: true, shadow: true, autoOrbit: true, turntable: false,
   shading: 'pbr'
 };
 
 let root = null;            // currently loaded gltf scene
-let meshes = [];            // { mesh, pbr, fileValues, hasColor }
+let meshes = [];            // { mesh, pbr, fileValues, hasColor, wire }
 let unlitMat = null, normalMat = null;
+
+/* Wireframe is drawn as real LineSegments rather than material.wireframe, so it can carry its own
+   colour independent of the surface, and so Wire shading can keep a depth-only fill — which is
+   what hides the edges on the far side of the model. */
+const wireMat = new THREE.LineBasicMaterial({ color: new THREE.Color(WIRE_COLOR), transparent: true, opacity: 0.92 });
+const depthMat = new THREE.MeshBasicMaterial({ colorWrite: false, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+
+function buildWire(){
+  meshes.forEach(m => {
+    const seg = new THREE.LineSegments(new THREE.WireframeGeometry(m.mesh.geometry), wireMat);
+    seg.frustumCulled = false;
+    seg.renderOrder = 1;
+    m.mesh.add(seg);            // child, so it inherits every transform for free
+    m.wire = seg;
+  });
+}
 let modelRadius = 1;
 
 function disposeCurrent(){
@@ -652,7 +677,10 @@ function disposeCurrent(){
       m.dispose();
     });
   });
-  meshes.forEach(m => { if (m.unlitVC) m.unlitVC.dispose(); });
+  meshes.forEach(m => {
+    if (m.unlitVC) m.unlitVC.dispose();
+    if (m.wire){ m.mesh.remove(m.wire); m.wire.geometry.dispose(); }   // LineSegments is not isMesh, so traverse missed it
+  });
   scene.remove(root);
   root = null; meshes = [];
   if (unlitMat){ unlitMat.dispose(); unlitMat = null; }
@@ -692,6 +720,7 @@ async function loadEntry(entry){
       });
     });
 
+    buildWire();
     scene.add(root);
     frame(entry.view.fit);
     applyEntryState(entry);
@@ -758,13 +787,20 @@ function frame(fit = 'ground'){
 /* ---------- material application ---------- */
 function applyMaterial(){
   const tint = new THREE.Color(state.tint);
+  const wireMode = state.shading === 'wire';
+  wireMat.color.set(state.wireColor);
+  wireMat.opacity = wireMode ? 1 : 0.92;
   meshes.forEach(m => {
+    if (m.wire) m.wire.visible = wireMode || state.wire;
     const p = m.pbr;
+    // push the fill back a hair so the overlay doesn't z-fight with the surface it sits on
+    p.polygonOffset = state.wire || wireMode;
+    p.polygonOffsetFactor = 1;
+    p.polygonOffsetUnits = 1;
     if ('metalness' in p) p.metalness = state.metalness;
     if ('roughness' in p) p.roughness = state.roughness;
     if ('envMapIntensity' in p) p.envMapIntensity = state.envIntensity;
     if (p.color) p.color.copy(tint);
-    p.wireframe = state.wireframe;
     if (p.normalScale) p.normalScale.set(state.normalScale, state.normalScale);
     if ('aoMapIntensity' in p) p.aoMapIntensity = state.aoIntensity;
     if ('emissiveIntensity' in p) p.emissiveIntensity = state.emissiveIntensity;
@@ -779,10 +815,9 @@ function applyMaterial(){
 
     const wantVC = state.vertexColors && m.hasColor;
     if (p.vertexColors !== wantVC){ p.vertexColors = wantVC; p.needsUpdate = true; }
-    if (m.unlitVC){ m.unlitVC.color.copy(tint); m.unlitVC.wireframe = state.wireframe; }
+    if (m.unlitVC) m.unlitVC.color.copy(tint);
   });
-  if (unlitMat){ unlitMat.color.copy(tint); unlitMat.wireframe = state.wireframe; }
-  if (normalMat) normalMat.wireframe = state.wireframe;
+  if (unlitMat) unlitMat.color.copy(tint);
 }
 
 function setShading(mode){
@@ -791,16 +826,17 @@ function setShading(mode){
   if (!meshes.length) return;
 
   if (mode === 'unlit' && !unlitMat)
-    unlitMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(state.tint), wireframe: state.wireframe });
+    unlitMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(state.tint) });
   if (unlitMat){
     const alb = (state.maps.albedo ? (manifestTex.albedo || (meshes[0] && meshes[0].fileMaps.albedo)) : null) || null;
     if (unlitMat.map !== alb){ unlitMat.map = alb; unlitMat.needsUpdate = true; }
   }
   if (mode === 'normal' && !normalMat)
-    normalMat = new THREE.MeshNormalMaterial({ wireframe: state.wireframe });
+    normalMat = new THREE.MeshNormalMaterial();
 
   meshes.forEach(m => {
     if (mode === 'pbr') m.mesh.material = m.pbr;
+    else if (mode === 'wire') m.mesh.material = depthMat;   // writes depth only: far edges stay hidden
     else if (mode === 'normal') m.mesh.material = normalMat;
     else {
       // unlit shares one material, so vertex colours have to be per-mesh:
@@ -808,7 +844,6 @@ function setShading(mode){
       if (m.hasColor && state.vertexColors){
         if (!m.unlitVC) m.unlitVC = new THREE.MeshBasicMaterial({ vertexColors: true, color: new THREE.Color(state.tint) });
         m.unlitVC.color.set(state.tint);
-        m.unlitVC.wireframe = state.wireframe;
         m.mesh.material = m.unlitVC;
       } else m.mesh.material = unlitMat;
     }
@@ -862,13 +897,19 @@ function toggle(id, get, set){
   return b;
 }
 toggle('t-vcol', () => state.vertexColors, v => { state.vertexColors = v; applyMaterial(); if (state.shading!=='pbr') setShading(state.shading); });
-toggle('t-wire', () => state.wireframe,    v => { state.wireframe = v; applyMaterial(); if (state.shading!=='pbr') setShading(state.shading); });
+toggle('t-wire', () => state.wire,         v => { state.wire = v; applyMaterial(); });
 toggle('t-shadow', () => state.shadow,     v => { state.shadow = v; ground.visible = v; key.castShadow = v; syncChecks(); });
 toggle('t-turn', () => state.turntable,    v => { state.turntable = v; controls.autoRotateSpeed = ORBIT_SPEED * (v ? 2 : 1); });
 
+$('s-wirec').addEventListener('input', e => { state.wireColor = e.target.value; applyMaterial(); });
+$('r-wirec').onclick = () => { state.wireColor = WIRE_COLOR; $('s-wirec').value = WIRE_COLOR; applyMaterial(); };
+
 $('btn-frame').onclick = () => frame(currentEntry ? currentEntry.view.fit : 'ground');
 
-document.querySelectorAll('#shading button').forEach(b => b.onclick = () => setShading(b.dataset.shade));
+document.querySelectorAll('#shading button').forEach(b => b.onclick = () => {
+  setShading(b.dataset.shade);
+  if (currentEntry) updateStats(currentEntry);
+});
 
 $('btn-spin').onclick = () => { state.autoOrbit = !state.autoOrbit; controls.autoRotate = state.autoOrbit; syncChecks(); };
 $('btn-grid').onclick = () => { state.grid = !state.grid; if (grid) grid.visible = state.grid; syncChecks(); };
@@ -971,7 +1012,8 @@ async function copyPreset(){
       emissive: state.emissive,
       emissiveIntensity: +state.emissiveIntensity.toFixed(2)
     },
-    view: { autoOrbit: state.autoOrbit, exposure: +state.exposure.toFixed(2), fit: e ? e.view.fit : 'ground' }
+    view: { autoOrbit: state.autoOrbit, exposure: +state.exposure.toFixed(2), fit: e ? e.view.fit : 'ground',
+            wire: state.wire, wireColor: state.wireColor }
   };
   if (e && e.textures) preset.textures = e.textures;
   const text = JSON.stringify(preset, null, 2);
@@ -1041,6 +1083,8 @@ function buildOutliner(){
 /* ---------- properties: object + notes ---------- */
 const fld = (l, v, cls = '') => `<div class="fld"><span class="fl">${l}</span><span class="fv ${cls}">${v}</span></div>`;
 
+const SHADE_LABEL = { pbr: 'Material preview', unlit: 'Unlit', normal: 'Normals', wire: 'Wireframe' };
+
 function sourceLabel(entry){
   if (entry.file.startsWith('data:')) return 'built-in sample (embedded)';
   if (entry.file.startsWith('blob:')) return 'local file · not in ' + MANIFEST;
@@ -1067,7 +1111,7 @@ function updateStats(entry){
   $('vp-obj').textContent  = entry.name;
   $('vp-stats').innerHTML  =
     `Verts <b>${verts.toLocaleString()}</b><br>Tris <b>${tris.toLocaleString()}</b><br>` +
-    `Shading <b>${state.shading === 'pbr' ? 'Material preview' : state.shading === 'unlit' ? 'Unlit' : 'Normals'}</b>`;
+    `Shading <b>${SHADE_LABEL[state.shading]}</b>`;
 
   const size = root ? new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3()) : new THREE.Vector3();
   $('pc-object').innerHTML =
@@ -1113,8 +1157,11 @@ function applyEntryState(entry){
   sNrm.set(state.normalScale); sAo.set(state.aoIntensity); sEmi.set(state.emissiveIntensity);
   $('s-tint').value = state.tint;
   $('s-emc').value = state.emissive;
+  state.wire = v.wire === true;
+  state.wireColor = v.wireColor || WIRE_COLOR;
   $('t-vcol').classList.toggle('on', state.vertexColors);
-  $('t-wire').classList.toggle('on', state.wireframe);
+  $('t-wire').classList.toggle('on', state.wire);
+  $('s-wirec').value = state.wireColor;
   renderer.toneMappingExposure = state.exposure;
   controls.autoRotate = state.autoOrbit;
   ground.visible = state.shadow; key.castShadow = state.shadow;
