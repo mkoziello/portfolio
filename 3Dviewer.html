@@ -59,7 +59,14 @@
   .di:hover .kx{color:#dfe4ec;}
   .ddsep{height:1px;background:var(--line);margin:4px 3px;}
 
-  /* ---------- outliner ---------- */
+  /* ---------- environment picker ---------- */
+function buildEnvSelect(){
+  $('s-envsel').innerHTML = ENVS.map(e =>
+    `<option value="${e.id}">${e.name}${e.file && e.file.startsWith('blob:') ? ' (local)' : ''}</option>`).join('');
+  if (activeEnv) $('s-envsel').value = activeEnv.id;
+}
+
+/* ---------- outliner ---------- */
   #out{grid-area:out;background:var(--panel);display:flex;flex-direction:column;min-height:0;}
   .ph{background:var(--head);padding:5px 9px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
     text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:6px;flex-shrink:0;}
@@ -86,7 +93,7 @@
     background:linear-gradient(180deg,var(--vp1) 0%,var(--vp2) 100%);cursor:grab;}
   #vp.drag{cursor:grabbing;}
   #vp canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-  #vp.over::after{content:'Drop .glb / .gltf to preview';position:absolute;inset:6px;z-index:5;
+  #vp.over::after{content:'Drop .glb / .gltf / .hdr to preview';position:absolute;inset:6px;z-index:5;
     border:1px dashed var(--acc);border-radius:3px;display:grid;place-items:center;
     background:rgba(232,125,13,.07);color:var(--acc);font-family:'IBM Plex Mono',monospace;font-size:11px;}
   .ov{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:10px;pointer-events:none;color:#9aa4b4;}
@@ -173,6 +180,9 @@
   .tgl[disabled]{opacity:.4;cursor:not-allowed;}
   .clr{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
   .clr .fl{width:78px;flex-shrink:0;color:var(--dim);font-size:11px;}
+  select{flex:1;min-width:0;background:#1b1b1b;border:1px solid #383838;border-radius:3px;
+    color:#e0e0e0;font:inherit;font-size:11px;padding:3px 5px;height:22px;cursor:pointer;}
+  select:hover{border-color:#4a4a4a;}
   input[type=color]{-webkit-appearance:none;appearance:none;flex:1;height:20px;padding:0;
     background:none;border:1px solid #383838;border-radius:3px;cursor:pointer;}
   input[type=color]::-webkit-color-swatch-wrapper{padding:2px;}
@@ -276,7 +286,7 @@
       <button id="btn-grid" class="on">Grid</button>
     </div>
     <div class="ov" id="vp-stats"></div>
-    <div class="ov" id="vp-hint">Drag to orbit · scroll to zoom · drop a .glb to preview</div>
+    <div class="ov" id="vp-hint">Drag to orbit · scroll to zoom · drop a .glb or .hdr to preview</div>
     <svg class="ov" id="gizmo" viewBox="0 0 66 66"></svg>
     <div class="ov" id="vp-load"><span><span class="dot"></span><span id="vp-load-t">Loading…</span></span></div>
   </section>
@@ -355,6 +365,53 @@
         </div>
       </div>
 
+      <div class="pnl" id="pnl-world">
+        <button class="pt"><span class="car">▼</span>World</button>
+        <div class="pc">
+          <div class="clr">
+            <span class="fl">Environment</span>
+            <select id="s-envsel"></select>
+          </div>
+          <div class="row" id="bg-modes">
+            <button class="tgl sm" data-bg="gradient"><span class="bx"></span>Gradient</button>
+            <button class="tgl sm" data-bg="sky"><span class="bx"></span>Skybox</button>
+            <button class="tgl sm" data-bg="color"><span class="bx"></span>Solid</button>
+          </div>
+          <div class="sld">
+            <span class="fl">Sky opacity</span>
+            <input class="rng" type="range" id="s-op" min="0" max="1" step="0.01" value="1">
+            <span class="val" id="v-op">1.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="sld">
+            <span class="fl">Sky blur</span>
+            <input class="rng" type="range" id="s-blur" min="0" max="1" step="0.01" value="0">
+            <span class="val" id="v-blur">0.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="sld">
+            <span class="fl">Sky exposure</span>
+            <input class="rng" type="range" id="s-sky" min="0" max="3" step="0.01" value="1">
+            <span class="val" id="v-sky">1.00</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="sld">
+            <span class="fl">Rotation</span>
+            <input class="rng" type="range" id="s-rot" min="0" max="360" step="1" value="0">
+            <span class="val" id="v-rot">0</span>
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="clr">
+            <span class="fl">Solid color</span>
+            <input type="color" id="s-bgc" value="#15171c">
+            <button class="rst hide">⟲</button>
+          </div>
+          <div class="note" style="margin-top:8px;color:#8a8a8a;font-size:10.5px">
+            Drop an <code>.hdr</code> or <code>.exr</code> on the viewport to try it without editing the manifest.
+          </div>
+        </div>
+      </div>
+
       <div class="pnl" id="pnl-vp">
         <button class="pt"><span class="car">▼</span>Viewport</button>
         <div class="pc">
@@ -429,6 +486,8 @@ import { DRACOLoader }      from 'three/addons/loaders/DRACOLoader.js';
 import { KTX2Loader }       from 'three/addons/loaders/KTX2Loader.js';
 import { MeshoptDecoder }   from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment }  from 'three/addons/environments/RoomEnvironment.js';
+import { RGBELoader }       from 'three/addons/loaders/RGBELoader.js';
+import { EXRLoader }        from 'three/addons/loaders/EXRLoader.js';
 
 /* ============================================================
    SITE CONFIG — the few things that aren't content
@@ -437,7 +496,7 @@ const MANIFEST      = 'data/models.json'; // the model registry, fetched at load
 const CDN           = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/libs/';
 const FOV           = 38;
 const FIT_MARGIN    = 1.45;   // >1 leaves air around the framed model
-const ORBIT_SPEED   = 1.1;    // auto-orbit, degrees-ish per frame tick
+const ORBIT_SPEED   = 0.55;   // auto-orbit; the Turntable x2 toggle doubles it
 const WIRE_COLOR    = '#7fb4ff';
 const MIN_PITCH     = 0.05;   // radians above the ground plane
 const MAX_PITCH     = Math.PI * 0.52;
@@ -474,10 +533,102 @@ const BUILTIN = [{
   view: { autoOrbit: true, exposure: 1.0 }
 }];
 
+/* Environments are registered once for the whole site, then referenced by id per model:
+
+     "environments": [ { "id": "sunset", "name": "Sunset Field", "file": "hdri/sunset_field.hdr" } ]
+     "env": { "id": "sunset", "background": "sky", "blur": 0.2, "rotation": 40 }
+
+   `builtin` entries need no file: "room" is three's procedural studio, "none" kills IBL entirely
+   and leaves only the key and fill lights. */
+const BUILTIN_ENVS = [
+  { id: 'room',         name: 'Studio (built-in)', builtin: 'room' },
+  { id: 'proc-dusk',    name: 'Dusk (procedural)',     builtin: 'proc' },
+  { id: 'proc-overcast',name: 'Overcast (procedural)', builtin: 'proc' },
+  { id: 'proc-night',   name: 'Night (procedural)',    builtin: 'proc' },
+  { id: 'proc-neon',    name: 'Neon (procedural)',     builtin: 'proc' },
+  { id: 'none',         name: 'No environment',    builtin: 'none' }
+];
+
+/* ---------- procedural equirectangular skies ----------
+   Written straight into a float DataTexture, no file and no fetch. Row 0 is the nadir and the
+   last row is the zenith, which is what three's equirectUv() expects with flipY off — building
+   them this way sidesteps any flip convention entirely. */
+const SKY_W = 512, SKY_H = 256;
+
+function proceduralSky(id){
+  const data = new Float32Array(SKY_W * SKY_H * 4);
+  const hash = (x, y) => { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); };
+
+  for (let j = 0; j < SKY_H; j++){
+    const theta = Math.PI * (1 - (j + 0.5) / SKY_H);            // 0 = up
+    const dy = Math.cos(theta), st = Math.sin(theta);
+    for (let i = 0; i < SKY_W; i++){
+      const phi = ((i + 0.5) / SKY_W - 0.5) * Math.PI * 2;
+      const dx = -Math.cos(phi) * st, dz = Math.sin(phi) * st;
+      const up = Math.max(dy, 0), down = Math.max(-dy, 0);
+      let r = 0, g = 0, b = 0;
+
+      if (id === 'proc-dusk'){
+        const t = Math.pow(up, 0.5);
+        r = 0.05 + (1 - t) * 0.95; g = 0.07 + (1 - t) * 0.34; b = 0.18 + (1 - t) * 0.06;
+        const sun = Math.max(0, dx * -0.55 + dy * 0.10 + dz * -0.83);
+        r += Math.pow(sun, 900) * 260 + Math.pow(sun, 26) * 1.6;
+        g += Math.pow(sun, 900) * 150 + Math.pow(sun, 26) * 0.72;
+        b += Math.pow(sun, 900) * 70  + Math.pow(sun, 26) * 0.26;
+        const f = Math.min(1, down * 6);
+        r = r * (1 - f) + 0.055 * f; g = g * (1 - f) + 0.048 * f; b = b * (1 - f) + 0.040 * f;
+
+      } else if (id === 'proc-overcast'){
+        const t = Math.pow(up, 0.7);
+        r = 0.30 + t * 1.55; g = 0.32 + t * 1.60; b = 0.35 + t * 1.68;
+        const f = Math.min(1, down * 5);
+        r = r * (1 - f) + 0.11 * f; g = g * (1 - f) + 0.11 * f; b = b * (1 - f) + 0.12 * f;
+
+      } else if (id === 'proc-night'){
+        const t = Math.pow(up, 0.8);
+        r = 0.012 + t * 0.020; g = 0.016 + t * 0.030; b = 0.040 + t * 0.075;
+        if (dy > -0.02 && hash(i * 1.7, j * 2.3) > 0.9975){        // sparse stars
+          const m = 0.6 + hash(j * 5.1, i * 3.3) * 3.2;
+          r += m * 0.8; g += m * 0.85; b += m;
+        }
+        const moon = Math.max(0, dx * 0.42 + dy * 0.62 + dz * 0.66);
+        r += Math.pow(moon, 1400) * 90 + Math.pow(moon, 34) * 0.30;
+        g += Math.pow(moon, 1400) * 95 + Math.pow(moon, 34) * 0.34;
+        b += Math.pow(moon, 1400) * 105 + Math.pow(moon, 34) * 0.44;
+        const f = Math.min(1, down * 7);
+        r = r * (1 - f) + 0.008 * f; g = g * (1 - f) + 0.009 * f; b = b * (1 - f) + 0.013 * f;
+
+      } else {  // proc-neon
+        r = 0.020 + up * 0.030; g = 0.022 + up * 0.034; b = 0.032 + up * 0.050;
+        const a = Math.max(0, dx * -0.80 + dy * 0.30 + dz * 0.52);   // magenta key
+        const c = Math.max(0, dx * 0.86 + dy * 0.22 + dz * -0.46);   // cyan rim
+        r += Math.pow(a, 14) * 9.0; g += Math.pow(a, 14) * 0.9; b += Math.pow(a, 14) * 6.4;
+        r += Math.pow(c, 16) * 0.5; g += Math.pow(c, 16) * 5.4; b += Math.pow(c, 16) * 7.2;
+        const f = Math.min(1, down * 4);
+        r = r * (1 - f) + 0.016 * f; g = g * (1 - f) + 0.018 * f; b = b * (1 - f) + 0.026 * f;
+      }
+
+      const o = (j * SKY_W + i) * 4;
+      data[o] = r; data[o+1] = g; data[o+2] = b; data[o+3] = 1;
+    }
+  }
+
+  const tex = new THREE.DataTexture(data, SKY_W, SKY_H, THREE.RGBAFormat, THREE.FloatType);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.LinearSRGBColorSpace;
+  tex.minFilter = tex.magFilter = THREE.LinearFilter;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.flipY = false;
+  tex.needsUpdate = true;
+  return tex;
+}
+
 const DEFAULTS = {
   material: { metalness: null, roughness: null, tint: '#ffffff', vertexColors: true, envIntensity: 1.0,
               normalScale: 1.0, aoIntensity: 1.0, emissive: null, emissiveIntensity: 1.0 },
-  view:     { autoOrbit: true, exposure: 1.0, grid: true, shadow: true, fit: 'ground' }
+  view:     { autoOrbit: true, exposure: 1.0, grid: true, shadow: true, fit: 'ground' },
+  env:      { id: null, background: 'gradient', blur: 0.0, intensity: 1.0, opacity: 1.0,
+              rotation: 0, color: '#15171c' }
 };
 
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -494,11 +645,27 @@ function normalize(raw, i){
     note:  raw.note || '',
     material: Object.assign({}, DEFAULTS.material, raw.material || {}),
     textures: raw.textures || null,
+    env:      Object.assign({}, DEFAULTS.env, raw.env || {}),
     view:     Object.assign({}, DEFAULTS.view,     raw.view     || {})
   };
 }
 
 let REGISTRY = [], current = null, currentEntry = null;
+let ENVS = [];
+
+/* An environment can be declared as a bare path — "hdri/sunset_field.hdr" — and the id and
+   display name come off the filename. Drop the file in hdri/, add the one line, done. */
+function normalizeEnv(raw){
+  if (typeof raw === 'string') raw = { file: raw };
+  const base = (raw.file || '').split('/').pop().replace(/\.(hdr|exr|pic)$/i, '');
+  const pretty = base.replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+  return {
+    id: raw.id || slug(raw.name || base),
+    name: raw.name || pretty || raw.id,
+    file: raw.file,
+    builtin: raw.builtin
+  };
+}
 
 /* ============================================================
    RENDERER / SCENE
@@ -529,11 +696,84 @@ controls.maxPolarAngle = MAX_PITCH;
 controls.addEventListener('start', () => vp.classList.add('drag'));
 controls.addEventListener('end',   () => vp.classList.remove('drag'));
 
-// image-based lighting: soft studio box, no external HDR to host
+/* ---------- image-based lighting ----------
+   Each environment is prepared once and kept: `ibl` is the PMREM-filtered map the materials
+   light from, `sky` is the raw equirectangular texture used when the background is a skybox.
+   Built-in room light has no sky, so skybox mode is unavailable for it. */
 const pmrem = new THREE.PMREMGenerator(renderer);
 pmrem.compileEquirectangularShader();
-const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
-scene.environment = envRT.texture;
+const envCache = new Map();       // id -> { ibl, sky }
+let activeEnv = null;
+
+async function prepareEnv(def){
+  if (envCache.has(def.id)) return envCache.get(def.id);
+  let made;
+  if (def.builtin === 'none'){
+    made = { ibl: null, sky: null };
+  } else if (def.builtin === 'room'){
+    made = { ibl: pmrem.fromScene(new RoomEnvironment(), 0.04).texture, sky: null };
+  } else if (def.builtin === 'proc'){
+    const tex = proceduralSky(def.id);
+    made = { ibl: pmrem.fromEquirectangular(tex).texture, sky: tex };
+  } else {
+    const Loader = /\.exr(\?|$)/i.test(def.file) ? EXRLoader : RGBELoader;
+    const tex = await new Loader().loadAsync(def.file);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    made = { ibl: pmrem.fromEquirectangular(tex).texture, sky: tex };
+  }
+  envCache.set(def.id, made);
+  return made;
+}
+
+async function useEnv(id){
+  const def = ENVS.find(e => e.id === id) || ENVS[0];
+  if (!def) return;
+  try {
+    setLoading(true, 'Loading environment: ' + def.name + '…');
+    const made = await prepareEnv(def);
+    activeEnv = def;
+    scene.environment = made.ibl;
+    if ($('s-envsel').value !== def.id) $('s-envsel').value = def.id;
+    applyWorld();
+  } catch (err){
+    console.error(err);
+    status('Could not load environment ' + (def.file || def.id) + ' — ' + err.message, true);
+    activeEnv = ENVS[0];
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* Background is deliberately separate from lighting: a model can be lit by an HDRI while still
+   sitting on the flat viewport gradient, which is usually what reads best in a portfolio grid. */
+function applyWorld(){
+  const made = activeEnv ? envCache.get(activeEnv.id) : null;
+  const sky = made && made.sky;
+  const mode = (state.bg === 'sky' && !sky) ? 'gradient' : state.bg;
+
+  const rot = THREE.MathUtils.degToRad(state.envRotation);
+
+  skyMesh.visible = mode === 'sky';
+  if (mode === 'sky'){
+    skyMat.uniforms.map.value = sky;
+    skyMat.uniforms.uOpacity.value = state.skyOpacity;
+    skyMat.uniforms.uIntensity.value = state.skyIntensity;
+    skyMat.uniforms.uBlur.value = state.blur;
+    skyMat.uniforms.uRot.value = rot;
+  }
+  scene.background = mode === 'color' ? new THREE.Color(state.bgColor) : null;
+
+  if (scene.environmentRotation) scene.environmentRotation.set(0, rot, 0);
+
+  document.querySelectorAll('#bg-modes [data-bg]').forEach(b => {
+    b.classList.toggle('on', b.dataset.bg === mode);
+    b.disabled = b.dataset.bg === 'sky' && !sky;
+    b.title = (b.dataset.bg === 'sky' && !sky) ? 'This environment has no sky to show' : '';
+  });
+  $('s-blur').disabled = mode !== 'sky';
+  $('s-sky').disabled  = mode !== 'sky';
+  $('s-op').disabled   = mode !== 'sky';
+}
 
 // a key light on top of the env, mostly for the contact shadow and specular bite
 const key = new THREE.DirectionalLight(0xffffff, 1.9);
@@ -556,6 +796,61 @@ const ground = new THREE.Mesh(
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
+
+/* ---------- skybox ----------
+   Drawn as a sphere pinned to the camera rather than scene.background, because a background
+   can't be partially transparent. Sampling direction, rotation and blur are handled in the
+   shader with three's own equirectUv() convention, so it lines up with the IBL exactly.
+   depthTest stays on and the sphere sits far out, so it can't paint over the model even though
+   a transparent material is drawn in the late pass. */
+const skyMat = new THREE.ShaderMaterial({
+  uniforms: { map: { value: null }, uOpacity: { value: 1 }, uIntensity: { value: 1 },
+              uBlur: { value: 0 }, uRot: { value: 0 } },
+  side: THREE.BackSide,
+  depthWrite: false,
+  transparent: true,
+  vertexShader: `
+    varying vec3 vDir;
+    void main(){
+      vDir = position;                       // sphere is centred on the camera, so this is the ray
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
+  fragmentShader: `
+    uniform sampler2D map;
+    uniform float uOpacity, uIntensity, uBlur, uRot;
+    varying vec3 vDir;
+    const float PI = 3.141592653589793;
+    vec2 eqUv(vec3 d){
+      return vec2(atan(d.z, -d.x) / (2.0 * PI) + 0.5, asin(clamp(d.y, -1.0, 1.0)) / PI + 0.5);
+    }
+    void main(){
+      vec3 d = normalize(vDir);
+      float c = cos(uRot), s = sin(uRot);
+      d = vec3(c * d.x + s * d.z, d.y, -s * d.x + c * d.z);   // matches scene.environmentRotation
+      vec2 uv = eqUv(d);
+      vec3 col = texture2D(map, uv).rgb;
+      if (uBlur > 0.002){
+        float r = uBlur * 0.10;
+        float w = 1.0 / max(0.25, sqrt(1.0 - d.y * d.y));     // widen u steps towards the poles
+        for (int i = 0; i < 12; i++){
+          float a = float(i) * (PI / 6.0);
+          float k = mod(float(i), 2.0) < 0.5 ? 1.0 : 0.55;
+          col += texture2D(map, uv + vec2(cos(a) * r * w, sin(a) * r * 0.5) * k).rgb;
+        }
+        col /= 13.0;
+      }
+      gl_FragColor = vec4(col * uIntensity, 1.0);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+      gl_FragColor.rgb *= uOpacity;                            // canvas is premultiplied
+      gl_FragColor.a = uOpacity;
+    }`
+});
+const skyMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 32), skyMat);
+skyMesh.frustumCulled = false;
+skyMesh.renderOrder = -1000;
+skyMesh.visible = false;
+scene.add(skyMesh);
 
 let grid = null;
 function buildGrid(radius){
@@ -625,6 +920,7 @@ async function loadManifestTextures(entry){
       status('Missing texture: ' + t[k], true);
     }
   }));
+  setLoading(false);
 }
 function disposeManifestTex(){
   Object.values(manifestTex).forEach(t => t.dispose());
@@ -639,6 +935,7 @@ const state = {
   normalScale: 1, aoIntensity: 1, emissive: '#ffffff', emissiveIntensity: 1,
   maps: { albedo: true, normal: true, roughness: true, metalness: true, ao: true, emissive: true },
   envIntensity: 1, wire: false, wireColor: WIRE_COLOR, exposure: 1,
+  bg: 'gradient', blur: 0, skyIntensity: 1, skyOpacity: 1, envRotation: 0, bgColor: '#15171c',
   grid: true, shadow: true, autoOrbit: true, turntable: false,
   shading: 'pbr'
 };
@@ -690,7 +987,11 @@ function disposeCurrent(){
 async function loadEntry(entry){
   setLoading(true, 'Loading ' + entry.name + '…');
   try {
-    const [g] = await Promise.all([gltf.loadAsync(entry.file), loadManifestTextures(entry)]);
+    const [g] = await Promise.all([
+      gltf.loadAsync(entry.file),
+      loadManifestTextures(entry),
+      useEnv(entry.env.id || (activeEnv ? activeEnv.id : (ENVS[0] && ENVS[0].id)))
+    ]);
     disposeCurrent();
     root = g.scene;
 
@@ -866,6 +1167,7 @@ function bindSlider(id, valId, onChange){
   const input = $(id), valEl = $(valId);
   const push = () => {
     setSlider(input, valEl, input.value);
+    if (input.step === '1') valEl.textContent = input.value + '°';
     onChange(parseFloat(input.value));
   };
   input.addEventListener('input', push);
@@ -900,6 +1202,18 @@ toggle('t-vcol', () => state.vertexColors, v => { state.vertexColors = v; applyM
 toggle('t-wire', () => state.wire,         v => { state.wire = v; applyMaterial(); });
 toggle('t-shadow', () => state.shadow,     v => { state.shadow = v; ground.visible = v; key.castShadow = v; syncChecks(); });
 toggle('t-turn', () => state.turntable,    v => { state.turntable = v; controls.autoRotateSpeed = ORBIT_SPEED * (v ? 2 : 1); });
+
+const sOp   = bindSlider('s-op','v-op',     v => { state.skyOpacity = v; applyWorld(); });
+const sBlur = bindSlider('s-blur','v-blur', v => { state.blur = v; applyWorld(); });
+const sSky  = bindSlider('s-sky','v-sky',   v => { state.skyIntensity = v; applyWorld(); });
+const sRot  = bindSlider('s-rot','v-rot',   v => { state.envRotation = v; applyWorld(); });
+$('v-rot').textContent = '0';
+$('s-bgc').addEventListener('input', e => { state.bgColor = e.target.value; applyWorld(); });
+$('s-envsel').addEventListener('change', e => useEnv(e.target.value));
+document.querySelectorAll('#bg-modes [data-bg]').forEach(b => b.onclick = () => {
+  state.bg = b.dataset.bg;
+  applyWorld();
+});
 
 $('s-wirec').addEventListener('input', e => { state.wireColor = e.target.value; applyMaterial(); });
 $('r-wirec').onclick = () => { state.wireColor = WIRE_COLOR; $('s-wirec').value = WIRE_COLOR; applyMaterial(); };
@@ -1016,6 +1330,15 @@ async function copyPreset(){
             wire: state.wire, wireColor: state.wireColor }
   };
   if (e && e.textures) preset.textures = e.textures;
+  preset.env = {
+    id: activeEnv ? activeEnv.id : 'room',
+    background: state.bg,
+    blur: +state.blur.toFixed(2),
+    intensity: +state.skyIntensity.toFixed(2),
+    opacity: +state.skyOpacity.toFixed(2),
+    rotation: state.envRotation,
+    color: state.bgColor
+  };
   const text = JSON.stringify(preset, null, 2);
   try {
     await navigator.clipboard.writeText(text);
@@ -1037,8 +1360,27 @@ function saveImage(){
 
 /* ---------- local files: drag & drop + File > Open ---------- */
 function addLocal(files){
-  const list = [...files].filter(f => /\.(glb|gltf)$/i.test(f.name));
-  if (!list.length){ status('That file type is not a glTF model', true); return; }
+  const all = [...files];
+
+  const hdris = all.filter(f => /\.(hdr|exr)$/i.test(f.name));
+  hdris.forEach(f => {
+    const id = 'local-' + slug(f.name);
+    ENVS = ENVS.filter(e => e.id !== id);
+    ENVS.push({ id, name: f.name.replace(/\.(hdr|exr)$/i, ''), file: URL.createObjectURL(f) });
+    envCache.delete(id);
+  });
+  if (hdris.length){
+    buildEnvSelect();
+    const last = ENVS[ENVS.length - 1].id;
+    state.bg = 'sky';
+    useEnv(last).then(() => status('Environment loaded: ' + last));
+  }
+
+  const list = all.filter(f => /\.(glb|gltf)$/i.test(f.name));
+  if (!list.length){
+    if (!hdris.length) status('Drop a .glb, .gltf, .hdr or .exr', true);
+    return;
+  }
   list.forEach(f => {
     const entry = normalize({
       file: URL.createObjectURL(f),
@@ -1053,9 +1395,17 @@ function addLocal(files){
   select(REGISTRY[REGISTRY.length - 1].id);
 }
 $('filepick').onchange = e => addLocal(e.target.files);
+$('filepick').accept = '.glb,.gltf,.hdr,.exr';
 ['dragenter','dragover'].forEach(ev => vp.addEventListener(ev, e => { e.preventDefault(); vp.classList.add('over'); }));
 ['dragleave','drop'].forEach(ev => vp.addEventListener(ev, e => { e.preventDefault(); vp.classList.remove('over'); }));
 vp.addEventListener('drop', e => addLocal(e.dataTransfer.files));
+
+/* ---------- environment picker ---------- */
+function buildEnvSelect(){
+  $('s-envsel').innerHTML = ENVS.map(e =>
+    `<option value="${e.id}">${e.name}${e.file && e.file.startsWith('blob:') ? ' (local)' : ''}</option>`).join('');
+  if (activeEnv) $('s-envsel').value = activeEnv.id;
+}
 
 /* ---------- outliner ---------- */
 function buildOutliner(){
@@ -1157,6 +1507,19 @@ function applyEntryState(entry){
   sNrm.set(state.normalScale); sAo.set(state.aoIntensity); sEmi.set(state.emissiveIntensity);
   $('s-tint').value = state.tint;
   $('s-emc').value = state.emissive;
+  const en = entry.env || DEFAULTS.env;
+  state.bg = en.background || 'gradient';
+  state.blur = en.blur != null ? en.blur : 0;
+  state.skyIntensity = en.intensity != null ? en.intensity : 1;
+  state.skyOpacity = en.opacity != null ? en.opacity : 1;
+  state.envRotation = en.rotation != null ? en.rotation : 0;
+  state.bgColor = en.color || '#15171c';
+  sBlur.set(state.blur); sSky.set(state.skyIntensity); sRot.set(state.envRotation);
+  sOp.set(state.skyOpacity);
+  $('v-rot').textContent = state.envRotation + '°';
+  $('s-bgc').value = state.bgColor;
+  applyWorld();
+
   state.wire = v.wire === true;
   state.wireColor = v.wireColor || WIRE_COLOR;
   $('t-vcol').classList.toggle('on', state.vertexColors);
@@ -1183,8 +1546,10 @@ function status(msg, warn = false){
   $('s-msg').classList.toggle('warn', warn);
   $('s-dot').classList.toggle('warn', warn);
 }
+let busy = 0;
 function setLoading(on, text){
-  $('vp-load').classList.toggle('show', on);
+  busy = Math.max(0, busy + (on ? 1 : -1));
+  $('vp-load').classList.toggle('show', busy > 0);
   if (text) $('vp-load-t').textContent = text;
 }
 
@@ -1237,6 +1602,10 @@ function tick(now){
   if (frames >= 30){ $('fps').textContent = Math.round(acc / frames) + ' fps'; acc = 0; frames = 0; }
 
   controls.update();
+  if (skyMesh.visible){
+    skyMesh.position.copy(camera.position);
+    skyMesh.scale.setScalar(camera.far * 0.45);
+  }
   renderer.render(scene, camera);
 
   gizT += dt;
@@ -1248,7 +1617,7 @@ requestAnimationFrame(tick);
 /* ---------- boot ---------- */
 async function boot(reload = false){
   setLoading(true, 'Reading ' + MANIFEST + '…');
-  let list = null, warn = '';
+  let list = null, warn = '', envList = [];
   try {
     const res = await fetch(MANIFEST, { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1256,13 +1625,19 @@ async function boot(reload = false){
     const arr = Array.isArray(raw) ? raw : raw.models;
     if (!Array.isArray(arr) || !arr.length) throw new Error(MANIFEST + ' has no "models" array');
     list = arr;
+    envList = Array.isArray(raw.environments) ? raw.environments : [];
   } catch (err){
     warn = 'Using the built-in sample — ' + MANIFEST + ' not readable (' + err.message + '). Serve this folder over http to load your own models.';
     list = BUILTIN;
   }
   REGISTRY = list.map(normalize);
+  // keep any HDRI the user dropped this session, then re-register the manifest's own
+  const dropped = ENVS.filter(e => e.file && e.file.startsWith('blob:'));
+  ENVS = BUILTIN_ENVS.concat(envList.map(normalizeEnv).filter(e => e.id && (e.file || e.builtin)), dropped);
+  buildEnvSelect();
   $('scene-name').textContent = warn ? 'built-in' : 'models';
   buildOutliner();
+  setLoading(false);
   const keep = reload && REGISTRY.some(m => m.id === current) ? current : REGISTRY[0].id;
   select(keep);
   if (warn) status(warn, true);

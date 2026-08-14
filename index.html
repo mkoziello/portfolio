@@ -1106,6 +1106,7 @@ function openApp(id){
   minimized.delete(id);
   focusApp(id);
   closeKickoff(); closeRunner();
+  syncHistory();
 }
 /* An iframe keeps running while hidden — a game closed with display:none
    carries on playing its audio. Closing a window has to unload the page. */
@@ -1128,13 +1129,13 @@ function closeApp(id){
   const t=document.getElementById('task-'+id); if(t) t.remove();
   if(id.startsWith('item-') || id.startsWith('embed-')){ w.remove(); WINREG.delete(id); }
   if(active===id){ active=null; const last=opened.filter(x=>!minimized.has(x)).pop(); if(last) focusApp(last); }
-  syncTasks();
+  syncTasks(); syncHistory();
 }
 function minimizeApp(id){
   const w=winEl(id); if(!w) return;
   w.classList.remove('open'); minimized.add(id);
   if(active===id) active=null;
-  syncTasks();
+  syncTasks(); syncHistory();
 }
 function focusApp(id){
   const w=winEl(id); if(!w) return;
@@ -1436,8 +1437,9 @@ function openRunner(){
   if(!bootEl.classList.contains('gone')) return;
   runner.classList.add('open'); runnerBg.classList.add('open');
   closeKickoff(); rq.value=''; renderResults(''); rq.focus();
+  syncHistory();
 }
-function closeRunner(){ runner.classList.remove('open'); runnerBg.classList.remove('open'); }
+function closeRunner(){ runner.classList.remove('open'); runnerBg.classList.remove('open'); syncHistory(); }
 function score(item,s){
   const label=item.label.toLowerCase(), hint=(item.hint||'').toLowerCase();
   if(label.startsWith(s)) return 4;
@@ -1482,6 +1484,44 @@ rq.addEventListener('keydown',e=>{
     btns[cur].scrollIntoView({block:'nearest'});
   } else if(e.key==='Enter'){ runResult(results[cur]); }
 });
+/* ============================================================
+   BACK BUTTON (mobile)
+   ------------------------------------------------------------
+   While anything is open we keep one sentinel entry on the
+   history stack. Android's back button pops it, which closes the
+   top window instead of leaving the site; if more are still open
+   we arm another. Desktop is left alone — there, back should
+   still mean back.
+   ============================================================ */
+let backArmed=false, backConsuming=false;
+
+function topWindow(){
+  if(active && opened.includes(active) && !minimized.has(active)) return active;
+  const vis=opened.filter(id=>!minimized.has(id));
+  return vis.length ? vis[vis.length-1] : null;
+}
+function syncHistory(){
+  if(!isMobile()) return;
+  const busy = !!topWindow() || runnerOpen();
+  if(busy && !backArmed){
+    history.pushState({vv:'window'},'');
+    backArmed=true;
+  } else if(!busy && backArmed){
+    backConsuming=true;          // drop our sentinel without closing anything
+    backArmed=false;
+    history.back();
+  }
+}
+addEventListener('popstate',()=>{
+  if(backConsuming){ backConsuming=false; return; }
+  if(!backArmed) return;         // not ours — let the browser navigate
+  backArmed=false;
+  if(runnerOpen()){ closeRunner(); return; }   /* closeRunner re-arms */
+  const top=topWindow();
+  if(top) closeApp(top);
+  else syncHistory();
+});
+
 document.getElementById('btn-search').onclick=openRunner;
 document.getElementById('kick-search').onclick=openRunner;
 runnerBg.onclick=closeRunner;
