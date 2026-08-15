@@ -1011,7 +1011,6 @@ function itemContent(item,kind){
     <p class="sub">${kind==='shipped'?'Shipped title':'Personal / R&D'}${item.type==='HIDDEN'?' · hidden in the viewport':''}</p>
     <h2>Object</h2>
     ${rows.filter(r=>r[1]!=null&&r[1]!=='').map(r=>`<div class="kv"><div class="k">${esc(r[0])}</div><div class="v">${esc(r[1])}</div></div>`).join('')}
-    <div class="kv"><div class="k">Base colour</div><div class="v"><span class="swatch" style="background:${esc(item.color||'#3daee9')}"></span>${esc(item.color||'—')}</div></div>
     ${Array.isArray(item.points)&&item.points.length?`<h2>Contribution</h2><ul class="bul">${item.points.map(pt=>`<li>${esc(pt)}</li>`).join('')}</ul>`:''}
     ${item.desc?`<h2>Notes</h2><p>${esc(item.desc)}</p>`:''}
     ${item.note?`<h2>Notes</h2><p>${esc(item.note)}</p>`:''}
