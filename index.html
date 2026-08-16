@@ -558,7 +558,7 @@ const DESKTOP_WIDGETS = [
   { id:'live', title:'Live builds', place:'center', cols:3,
     apps:['editor','viewer','live1'] },
   { id:'lab',  title:'Experiments', place:'center', cols:3,
-    apps:['lab1','lab2','lab3'] }
+    apps:['lab1','lab2','lab3','lab4','lab5','lab6'] }
 ];
 
 /* Simple launcher icons: an id, a label and a page to open. Give one
@@ -572,6 +572,10 @@ const SLOTS = [
     href:'harmony.html', icon:'orbit' },
   { id:'lab3',  name:'Point Clouds', sub:'Orbit scanned .pcld captures',
     href:'pointcloud_viewer.html', icon:'points', size:'max' },
+  { id:'lab4',  name:'XYZ Functions', sub:'Plot maths in three dimensions',
+    href:'xyz_functions.html', icon:'func', size:'max' },
+  { id:'lab5',  name:'Slot 05', sub:'Unassigned', href:'' },
+  { id:'lab6',  name:'Slot 06', sub:'Unassigned', href:'' },
   { id:'live1', name:'Gallery', sub:'Renders, breakdowns and clips',
     href:'gallery.html', icon:'gallery', size:'max' }
 ];
@@ -677,6 +681,7 @@ const ICONS={
   viewer:`<svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8 20.4 7v10L12 21.2 3.6 17V7z" stroke="#3daee9" stroke-width="1.6" stroke-linejoin="round"/><path d="M3.8 7.2 12 11.4l8.2-4.2M12 11.4v9.6" stroke="#3daee9" stroke-width="1.3" stroke-linejoin="round" opacity=".55"/><circle cx="12" cy="2.8" r="1.5" fill="#E4DCC9"/><circle cx="20.4" cy="7" r="1.5" fill="#E4DCC9"/><circle cx="3.6" cy="7" r="1.5" fill="#E4DCC9"/><circle cx="12" cy="11.4" r="1.4" fill="#C1272D"/></svg>`,
   gaia:`<svg viewBox="0 0 24 24" fill="none"><path d="M12 12c3.6-3.4 8-2.3 8.4.6.4 3-3.4 6.2-8.4 6.2s-8.8-3.2-8.4-6.2c.4-2.9 4.8-4 8.4-.6Z" stroke="#b38bd6" stroke-width="1.5" opacity=".7" transform="rotate(-24 12 12)"/><circle cx="12" cy="12" r="2.3" fill="#E4DCC9"/><circle cx="18.4" cy="7.4" r="1" fill="#b38bd6"/><circle cx="5.6" cy="16.4" r="1" fill="#b38bd6"/><circle cx="7" cy="5.6" r=".8" fill="#8fd4f5"/><circle cx="19" cy="17.6" r=".8" fill="#8fd4f5"/></svg>`,
   orbit:`<svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="12" rx="10" ry="5.2" stroke="#8fd4f5" stroke-width="1.5" opacity=".8" transform="rotate(-28 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="5.2" stroke="#b38bd6" stroke-width="1.3" opacity=".5" transform="rotate(34 12 12)"/><circle cx="12" cy="12" r="2.6" fill="#E4DCC9"/><circle cx="19.4" cy="8.1" r="1.8" fill="#27ae60"/><circle cx="5.4" cy="15.4" r="1.4" fill="#C1272D"/></svg>`,
+  func:`<svg viewBox="0 0 24 24" fill="none"><path d="M4 20V6M4 20h15" stroke="#8fd4f5" stroke-width="1.7" stroke-linecap="round"/><path d="m20 20-4.6-4.6" stroke="#8fd4f5" stroke-width="1.5" stroke-linecap="round" opacity=".6"/><path d="M6.5 16.5c2.2 0 2.4-7 4.6-7s2.4 5 4.6 5 2.3-3.6 2.3-3.6" stroke="#5fd3a8" stroke-width="1.8" stroke-linecap="round"/></svg>`,
   gallery:`<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5.4" width="18" height="13.2" rx="2.4" stroke="#3daee9" stroke-width="1.7"/><path d="M3.4 15.6 8.2 11l4 3.8 3-2.6 5.4 4.6" stroke="#5fd3a8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.6" cy="9.4" r="1.5" fill="#f6a04d"/></svg>`,
   points:`<svg viewBox="0 0 24 24"><circle cx="12" cy="5.4" r="1.5" fill="#E4DCC9"/><circle cx="7.4" cy="8.6" r="1.25" fill="#d8b26a"/><circle cx="16.6" cy="8.4" r="1.25" fill="#d8b26a"/><circle cx="12" cy="11.4" r="1.15" fill="#E4DCC9" opacity=".85"/><circle cx="4.6" cy="13.4" r="1.05" fill="#8fd4f5" opacity=".8"/><circle cx="19.5" cy="13.2" r="1.05" fill="#8fd4f5" opacity=".8"/><circle cx="8.4" cy="15.6" r="1.15" fill="#d8b26a" opacity=".8"/><circle cx="15.6" cy="15.8" r="1.15" fill="#d8b26a" opacity=".8"/><circle cx="12" cy="19" r="1.35" fill="#C1272D"/></svg>`,
   slot:`<svg viewBox="0 0 24 24" fill="none"><rect x="3.6" y="3.6" width="16.8" height="16.8" rx="4" stroke="#7c848c" stroke-width="1.6" stroke-dasharray="3.4 3"/><path d="M12 8.6v6.8M8.6 12h6.8" stroke="#7c848c" stroke-width="1.6" stroke-linecap="round"/></svg>`,
@@ -1239,7 +1244,7 @@ function wireWindow(w,id){
 /* ============================================================
    DESKTOP WIDGETS — placement, dragging, drop targets
    ============================================================ */
-const LS_KEY='vv.desktop.layout.v5';   /* bump when the default arrangement changes */
+const LS_KEY='vv.desktop.layout.v6';   /* bump when the default arrangement changes */
 function loadLayout(){
   try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}')||{}; }catch(e){ return {}; }
 }

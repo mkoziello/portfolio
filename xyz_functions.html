@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Point Cloud Studio</title>
+<style>
+  /* ---- Breeze-inspired token system ---------------------------------- */
+  :root{
+    --accent:#3daee9;
+    --accent-strong:#1d99f3;
+    --accent-dim:rgba(61,174,233,.22);
+    --radius:3px;
+    --font: "Noto Sans","Segoe UI",Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+    --mono:"Hack","JetBrains Mono","DejaVu Sans Mono",ui-monospace,monospace;
+  }
+  html[data-theme="dark"]{
+    --bg:#232629; --panel:#2a2e32; --panel-2:#31363b; --header:#31363b;
+    --border:#3d4348; --border-soft:#33383d;
+    --text:#eff0f1; --text-dim:#a7adb3; --text-faint:#7d8489;
+    --track:#4d5257; --thumb:#eff0f1; --btn:#31363b; --btn-hover:#3b4045;
+    --view-top:#1a1d1f; --view-bottom:#101213;
+  }
+  html[data-theme="light"]{
+    --bg:#eff0f1; --panel:#fcfcfc; --panel-2:#f3f4f5; --header:#eff0f1;
+    --border:#c7cbcf; --border-soft:#dcdfe1;
+    --text:#232629; --text-dim:#5b6165; --text-faint:#8a9195;
+    --track:#c9cdd1; --thumb:#ffffff; --btn:#fcfcfc; --btn-hover:#ffffff;
+    --view-top:#e7eaec; --view-bottom:#cfd4d8;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:var(--font); font-size:13px; color:var(--text);
+    background:var(--bg); overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:flex;flex-direction:column;height:100%}
+
+  /* ---- Header -------------------------------------------------------- */
+  .titlebar{
+    display:flex;align-items:center;gap:10px;
+    height:38px;padding:0 10px;flex:0 0 auto;
+    background:var(--header);border-bottom:1px solid var(--border);
+  }
+  .logo{width:18px;height:18px;flex:0 0 auto}
+  .title{font-weight:600;letter-spacing:.2px}
+  .title small{font-weight:400;color:var(--text-faint);margin-left:8px}
+  .spacer{flex:1}
+  .tool{
+    height:26px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;
+    background:transparent;border:1px solid transparent;border-radius:var(--radius);
+    color:var(--text);font:inherit;cursor:pointer;
+  }
+  .tool:hover{background:var(--btn-hover);border-color:var(--border)}
+  .tool:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+  .body{display:flex;flex:1;min-height:0}
+
+  /* ---- Sidebar ------------------------------------------------------- */
+  .sidebar{
+    width:302px;flex:0 0 302px;background:var(--panel);
+    border-right:1px solid var(--border);overflow-y:auto;overscroll-behavior:contain;
+  }
+  .sidebar::-webkit-scrollbar{width:10px}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--track);border-radius:5px;border:3px solid var(--panel)}
+  .sidebar::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+  .group{padding:12px 14px 14px;border-bottom:1px solid var(--border-soft)}
+  .group h2{
+    margin:0 0 10px;font-size:10.5px;font-weight:700;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--text-faint);
+  }
+  .desc{margin:8px 0 0;color:var(--text-dim);font-size:12px;line-height:1.45}
+
+  label.field{display:block;margin:0 0 9px}
+  .field-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+  .field-head span:first-child{color:var(--text-dim)}
+  .val{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+
+  select,button.push,input[type=text]{
+    width:100%;height:28px;padding:0 8px;color:var(--text);
+    background:var(--btn);border:1px solid var(--border);border-radius:var(--radius);
+    font:inherit;
+  }
+  select{
+    appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--text-dim) 50%),linear-gradient(135deg,var(--text-dim) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 12px,calc(100% - 10px) 12px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:26px;
+  }
+  select:hover,button.push:hover{border-color:var(--accent);background-color:var(--btn-hover)}
+  select:focus-visible,button.push:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:-1px}
+  button.push{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  button.push:active{background:var(--accent-dim)}
+  .row{display:flex;gap:8px}
+  .row>*{flex:1}
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:16px;background:transparent;margin:0;
+    --pct:50%;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px;border-radius:2px;
+    background:linear-gradient(to right,var(--accent) var(--pct),var(--track) var(--pct));
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:14px;height:14px;margin-top:-5px;border-radius:50%;
+    background:var(--thumb);border:1px solid var(--accent);cursor:pointer;
+  }
+  input[type=range]:hover::-webkit-slider-thumb{background:var(--accent)}
+  input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--track)}
+  input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--accent)}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--thumb);border:1px solid var(--accent);cursor:pointer}
+  input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+  .check{display:flex;align-items:center;gap:8px;margin:0 0 8px;cursor:pointer;color:var(--text-dim)}
+  .check input{
+    appearance:none;width:15px;height:15px;flex:0 0 auto;margin:0;
+    border:1px solid var(--border);border-radius:2px;background:var(--btn);cursor:pointer;
+  }
+  .check input:checked{background:var(--accent);border-color:var(--accent-strong)}
+  .check input:checked::after{content:"";display:block;width:4px;height:8px;margin:1px 0 0 4px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(43deg)}
+  .check input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .check:hover{color:var(--text)}
+
+  /* ---- Viewport ------------------------------------------------------ */
+  .viewport{position:relative;flex:1;min-width:0;background:var(--view-bottom)}
+  canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+  canvas.dragging{cursor:grabbing}
+  .hud{
+    position:absolute;top:10px;left:12px;pointer-events:none;
+    font-family:var(--mono);font-size:11px;color:var(--text-dim);
+    text-shadow:0 1px 2px rgba(0,0,0,.5);line-height:1.6;
+  }
+  html[data-theme="light"] .hud{text-shadow:0 1px 2px rgba(255,255,255,.6)}
+  .hud b{color:var(--accent);font-weight:600}
+
+  /* ---- Status bar ---------------------------------------------------- */
+  .statusbar{
+    flex:0 0 auto;height:26px;display:flex;align-items:center;gap:14px;padding:0 12px;
+    background:var(--panel);border-top:1px solid var(--border);
+    color:var(--text-faint);font-size:11.5px;
+  }
+  .statusbar .sep{width:1px;height:13px;background:var(--border)}
+  .statusbar b{color:var(--text-dim);font-weight:500}
+
+  .sidebar-toggle{display:none}
+  @media (max-width:820px){
+    .sidebar{
+      position:absolute;z-index:5;top:38px;bottom:26px;left:0;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);transform:translateX(-100%);
+      transition:transform .18s ease;
+    }
+    .sidebar.open{transform:none}
+    .sidebar-toggle{display:inline-flex}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="titlebar">
+    <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
+      <g fill="#3daee9">
+        <circle cx="12" cy="4" r="2"/><circle cx="5" cy="9" r="1.7"/><circle cx="19" cy="9" r="1.7"/>
+        <circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/><circle cx="12" cy="12" r="1.3"/>
+      </g>
+    </svg>
+    <div class="title">Point Cloud Studio<small id="fnLabel">Djinni Vessel</small></div>
+    <div class="spacer"></div>
+    <button class="tool sidebar-toggle" id="btnPanel">Controls</button>
+    <button class="tool" id="btnTheme">Breeze Light</button>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar" id="sidebar">
+
+      <section class="group">
+        <h2>Generator</h2>
+        <select id="fnSelect"></select>
+        <p class="desc" id="fnDesc"></p>
+      </section>
+
+      <section class="group">
+        <h2>Shape parameters</h2>
+        <div id="params"></div>
+      </section>
+
+      <section class="group">
+        <h2>Sampling</h2>
+        <label class="field">
+          <span class="field-head"><span>Points</span><span class="val" id="vCount">120 000</span></span>
+          <input type="range" id="sCount" min="5000" max="400000" step="5000" value="120000">
+        </label>
+        <div class="row">
+          <button class="push" id="btnShuffle">Shuffle scatter</button>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Appearance</h2>
+        <label class="field">
+          <span class="field-head"><span>Point size</span><span class="val" id="vSize">4.0</span></span>
+          <input type="range" id="sSize" min="1" max="6" step="0.5" value="4">
+        </label>
+        <label class="field">
+          <span class="field-head"><span>Colour map</span></span>
+          <select id="cmap">
+            <option value="breeze">Breeze</option>
+            <option value="viridis">Viridis</option>
+            <option value="magma">Magma</option>
+            <option value="ember">Ember</option>
+            <option value="ice">Ice</option>
+            <option value="mono">Monochrome</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-head"><span>Colour by</span></span>
+          <select id="csrc">
+            <option value="attr">Surface parameter</option>
+            <option value="height">Height</option>
+            <option value="depth" selected>Distance from camera</option>
+            <option value="radius">Radius from centre</option>
+            <option value="axis">Position (RGB)</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-head"><span>Depth fade</span><span class="val" id="vFog">0.55</span></span>
+          <input type="range" id="sFog" min="0" max="1" step="0.05" value="0.55">
+        </label>
+        <label class="check"><input type="checkbox" id="cPersp" checked><span>Perspective projection</span></label>
+      </section>
+
+      <section class="group">
+        <h2>View</h2>
+        <label class="check"><input type="checkbox" id="cSpin" checked><span>Orbit automatically</span></label>
+        <label class="field">
+          <span class="field-head"><span>Orbit speed</span><span class="val" id="vSpin">0.25</span></span>
+          <input type="range" id="sSpin" min="0" max="1.5" step="0.05" value="0.25">
+        </label>
+        <div class="row">
+          <button class="push" id="btnReset">Reset camera</button>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Export</h2>
+        <div class="row">
+          <button class="push" id="btnXYZ">Save .xyz</button>
+          <button class="push" id="btnPNG">Save .png</button>
+        </div>
+      </section>
+    </aside>
+
+    <main class="viewport">
+      <canvas id="cv"></canvas>
+      <div class="hud" id="hud"></div>
+    </main>
+  </div>
+
+  <footer class="statusbar">
+    <span id="stPoints">—</span>
+    <span class="sep"></span>
+    <span id="stFps">—</span>
+    <span class="sep"></span>
+    <span>Drag to orbit · scroll to zoom · right-drag to pan · <b>Space</b> orbit · <b>R</b> reset</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const TAU = Math.PI * 2;
+const BASE_DIST = 3.4;      // camera distance that reads as 1.00x
+const DEFAULT_ZOOM = 0.71;  // startup / reset zoom
+
+/* ===================================================================== */
+/* Generators                                                            */
+/* ===================================================================== */
+
+const FUNCS = [
+{
+  id:"djinni", name:"Djinni Vessel",
+  desc:"A fluted lamp of revolution whose ribs shear as they climb. Twist rotates each ring against the one below.",
+  params:[
+    {k:"taper", label:"Taper", min:0.3, max:3, step:0.05, val:1.1},
+    {k:"lobes", label:"Ribs", min:0, max:14, step:1, val:7},
+    {k:"twist", label:"Twist", min:-3, max:3, step:0.05, val:1.1},
+    {k:"ripples", label:"Ripples", min:0, max:10, step:0.5, val:3},
+    {k:"amp", label:"Ripple depth", min:0, max:0.5, step:0.01, val:0.16}
+  ],
+  map(o,u,v,p){
+    const h = v*2-1, ang = u*TAU;
+    let r = Math.pow(Math.max(0,1-h*h), p.taper*0.5);
+    r *= 1 + p.amp*Math.sin(p.ripples*Math.PI*v);
+    r *= 1 + 0.28*Math.sin(p.lobes*(ang + p.twist*v*TAU));
+    o[0]=r*Math.cos(ang); o[1]=h*1.35; o[2]=r*Math.sin(ang); o[3]=v;
+  }
+},
+{
+  id:"hypercolloidal", name:"Hypercolloidal Bloom",
+  desc:"A 3D superformula shell. Two symmetry counts fight over the same surface; the exponents decide whether it puffs or pinches.",
+  params:[
+    {k:"m1", label:"Longitude symmetry", min:1, max:16, step:1, val:7},
+    {k:"m2", label:"Latitude symmetry", min:1, max:16, step:1, val:3},
+    {k:"n1", label:"Roundness", min:0.2, max:6, step:0.05, val:0.5},
+    {k:"n2", label:"Pinch", min:0.2, max:6, step:0.05, val:1.7}
+  ],
+  map(o,u,v,p){
+    const sf=(t,m)=>{
+      const q=m*t/4;
+      const a=Math.pow(Math.abs(Math.cos(q)),p.n2)+Math.pow(Math.abs(Math.sin(q)),p.n2);
+      return Math.min(4, Math.pow(a, -1/p.n1));
+    };
+    const lon=(u-0.5)*TAU, lat=(v-0.5)*Math.PI;
+    const r1=sf(lon,p.m1), r2=sf(lat,p.m2);
+    o[0]=r1*Math.cos(lon)*r2*Math.cos(lat);
+    o[1]=r2*Math.sin(lat);
+    o[2]=r1*Math.sin(lon)*r2*Math.cos(lat);
+    o[3]=u;
+  }
+},
+{
+  id:"klein", name:"Klein Manifold",
+  desc:"Figure-eight immersion of the Klein bottle: a band given a half twist and then closed through itself, so it has no inside.",
+  params:[
+    {k:"a", label:"Ring radius", min:1.2, max:5, step:0.05, val:2.6},
+    {k:"pinch", label:"Pinch", min:0, max:2, step:0.02, val:1},
+    {k:"twist", label:"Half twists", min:0.5, max:3, step:0.5, val:0.5}
+  ],
+  map(o,u,v,p){
+    const U=u*TAU, V=v*TAU, hv=V*p.twist;
+    const s = p.a + Math.cos(hv)*Math.sin(U) - p.pinch*Math.sin(hv)*Math.sin(2*U);
+    o[0]=s*Math.cos(V); o[2]=s*Math.sin(V);
+    o[1]=Math.sin(hv)*Math.sin(U) + p.pinch*Math.cos(hv)*Math.sin(2*U);
+    o[3]=v;
+  }
+},
+{
+  id:"dini", name:"Dini Spiral",
+  desc:"A pseudosphere dragged along its own axis — constant negative curvature, wound into a screw.",
+  params:[
+    {k:"turns", label:"Turns", min:0.5, max:6, step:0.25, val:2.5},
+    {k:"pitch", label:"Pitch", min:0.02, max:0.5, step:0.01, val:0.18},
+    {k:"cone", label:"Cone angle", min:0.4, max:2.6, step:0.05, val:1.9}
+  ],
+  map(o,u,v,p){
+    const U=u*p.turns*TAU, V=0.04 + v*p.cone;
+    o[0]=Math.cos(U)*Math.sin(V);
+    o[2]=Math.sin(U)*Math.sin(V);
+    o[1]=Math.cos(V) + Math.log(Math.tan(V/2)) + p.pitch*U;
+    o[3]=u;
+  }
+},
+{
+  id:"breather", name:"Breather Wave",
+  desc:"A soliton surface from the sine-Gordon equation. The aether parameter sets how tightly the pulse breathes along the strip.",
+  params:[
+    {k:"b", label:"Aether", min:0.1, max:0.72, step:0.01, val:0.4},
+    {k:"uSpan", label:"Length", min:4, max:16, step:0.5, val:13},
+    {k:"vSpan", label:"Wraps", min:8, max:46, step:1, val:37}
+  ],
+  map(o,u,v,p){
+    const b=p.b, w=Math.sqrt(1-b*b);
+    const U=(u*2-1)*p.uSpan, V=(v*2-1)*p.vSpan;
+    const ch=Math.cosh(b*U), sh=Math.sinh(b*U);
+    const den=b*((w*ch)*(w*ch) + (b*Math.sin(w*V))*(b*Math.sin(w*V)));
+    o[0]=-U + (2*(1-b*b)*ch*sh)/den;
+    o[1]=2*w*ch*(-(w*Math.cos(V)*Math.cos(w*V)) - Math.sin(V)*Math.sin(w*V))/den;
+    o[2]=2*w*ch*(-(w*Math.sin(V)*Math.cos(w*V)) + Math.cos(V)*Math.sin(w*V))/den;
+    o[3]=v;
+  }
+},
+{
+  id:"knot", name:"Torus Knot Filament",
+  desc:"A tube swept along a (p,q) torus knot. When the two winding numbers share a factor the knot falls apart into linked rings.",
+  params:[
+    {k:"p", label:"Meridian winds", min:1, max:9, step:1, val:2},
+    {k:"q", label:"Longitude winds", min:1, max:9, step:1, val:3},
+    {k:"tube", label:"Tube radius", min:0.05, max:1.2, step:0.02, val:0.4},
+    {k:"bulge", label:"Ring bulge", min:0.2, max:2, step:0.05, val:1}
+  ],
+  map(o,u,v,p){
+    const c=(t,r)=>{
+      const s = 2 + p.bulge*Math.cos(p.q*t);
+      r[0]=s*Math.cos(p.p*t); r[1]=s*Math.sin(p.p*t); r[2]=Math.sin(p.q*t);
+    };
+    const t=u*TAU, h=1e-3, A=[0,0,0], B=[0,0,0];
+    c(t,A); c(t+h,B);
+    let tx=B[0]-A[0], ty=B[1]-A[1], tz=B[2]-A[2];
+    let tl=Math.hypot(tx,ty,tz)||1; tx/=tl; ty/=tl; tz/=tl;
+    // normal = T x up
+    let nx=ty*1-tz*0, ny=tz*0-tx*1, nz=tx*0-ty*0;
+    let nl=Math.hypot(nx,ny,nz); if(nl<1e-6){nx=1;ny=0;nz=0;nl=1;} nx/=nl;ny/=nl;nz/=nl;
+    const bx=ty*nz-tz*ny, by=tz*nx-tx*nz, bz=tx*ny-ty*nx;
+    const a=v*TAU, ca=Math.cos(a)*p.tube, sa=Math.sin(a)*p.tube;
+    o[0]=A[0]+nx*ca+bx*sa; o[1]=A[2]+nz*ca+bz*sa; o[2]=A[1]+ny*ca+by*sa;
+    o[3]=u;
+  }
+},
+{
+  id:"gyroid", name:"Gyroid Cell",
+  desc:"Points Newton-projected onto a triply periodic minimal surface — the lattice that shows up in butterfly wings and block copolymers.",
+  type:"custom",
+  params:[
+    {k:"cells", label:"Cells", min:1, max:4, step:1, val:2},
+    {k:"level", label:"Level set", min:-1.2, max:1.2, step:0.05, val:0},
+    {k:"squash", label:"Vertical squash", min:0.3, max:2, step:0.05, val:1}
+  ],
+  generate(n,p,rng){
+    const pos=new Float32Array(n*3), att=new Float32Array(n);
+    const L=Math.PI*p.cells, f=(x,y,z)=>
+      Math.sin(x)*Math.cos(y)+Math.sin(y)*Math.cos(z)+Math.sin(z)*Math.cos(x)-p.level;
+    let c=0, guard=0;
+    while(c<n && guard<n*12){
+      guard++;
+      let x=(rng()*2-1)*L, y=(rng()*2-1)*L, z=(rng()*2-1)*L;
+      for(let k=0;k<5;k++){
+        const val=f(x,y,z);
+        const gx=Math.cos(x)*Math.cos(y)-Math.sin(z)*Math.sin(x);
+        const gy=Math.cos(y)*Math.cos(z)-Math.sin(x)*Math.sin(y);
+        const gz=Math.cos(z)*Math.cos(x)-Math.sin(y)*Math.sin(z);
+        const g2=gx*gx+gy*gy+gz*gz;
+        if(g2<1e-6) break;
+        x-=val*gx/g2; y-=val*gy/g2; z-=val*gz/g2;
+      }
+      if(Math.abs(f(x,y,z))>0.02) continue;
+      if(Math.abs(x)>L||Math.abs(y)>L||Math.abs(z)>L) continue;
+      pos[c*3]=x; pos[c*3+1]=y/p.squash; pos[c*3+2]=z;
+      att[c]=0.5+0.5*Math.sin(x)*Math.cos(y);
+      c++;
+    }
+    return {pos,att,count:c};
+  }
+},
+{
+  id:"aizawa", name:"Aizawa Attractor",
+  desc:"A single trajectory of a chaotic flow, sampled step by step. Never repeats, never escapes — the cloud is one very long line.",
+  type:"custom",
+  params:[
+    {k:"a", label:"a", min:0.5, max:1.4, step:0.01, val:0.95},
+    {k:"b", label:"b", min:0.2, max:1.2, step:0.01, val:0.7},
+    {k:"e", label:"e", min:0, max:0.6, step:0.01, val:0.25},
+    {k:"dt", label:"Step", min:0.001, max:0.012, step:0.0005, val:0.005}
+  ],
+  generate(n,p){
+    const pos=new Float32Array(n*3), att=new Float32Array(n);
+    const a=p.a,b=p.b,c=0.6,d=3.5,e=p.e,f=0.1,dt=p.dt;
+    let x=0.1,y=0,z=0, c2=0;
+    for(let i=0;i<n+2000;i++){
+      const dx=(z-b)*x - d*y;
+      const dy=d*x + (z-b)*y;
+      const dz=c + a*z - z*z*z/3 - (x*x+y*y)*(1+e*z) + f*z*x*x*x;
+      x+=dx*dt; y+=dy*dt; z+=dz*dt;
+      if(!isFinite(x)||!isFinite(y)||!isFinite(z)){x=0.1;y=0;z=0;continue;}
+      if(i<2000) continue;
+      pos[c2*3]=x; pos[c2*3+1]=z; pos[c2*3+2]=y;
+      att[c2]=(i-2000)/n; c2++;
+    }
+    return {pos,att,count:c2};
+  }
+},
+{
+  id:"nautilus", name:"Nautilus Whorl",
+  desc:"A logarithmic spiral tube: every whorl is the previous one scaled by a constant, which is why real shells keep their shape as they grow.",
+  params:[
+    {k:"whorls", label:"Whorls", min:1, max:6, step:0.25, val:3.25},
+    {k:"growth", label:"Growth rate", min:0.05, max:0.9, step:0.01, val:0.34},
+    {k:"tube", label:"Tube width", min:0.1, max:0.9, step:0.02, val:0.42},
+    {k:"rise", label:"Rise", min:0, max:1.2, step:0.02, val:0.35}
+  ],
+  map(o,u,v,p){
+    const U=u*TAU, V=v*TAU*p.whorls;
+    const k=Math.exp(p.growth*V/TAU);
+    const t=k*p.tube;
+    const r=k + t*Math.cos(U);
+    o[0]=r*Math.cos(V); o[2]=r*Math.sin(V);
+    o[1]=p.rise*k + t*Math.sin(U);
+    o[3]=v;
+  }
+},
+{
+  id:"boy", name:"Boy–Roman Morph",
+  desc:"The projective plane immersed in 3-space. Slide the morph from Steiner's Roman surface (with its pinch points) to Boy's smooth immersion.",
+  params:[
+    {k:"morph", label:"Roman ⟶ Boy", min:0, max:1, step:0.01, val:1},
+    {k:"fold", label:"Folds", min:1, max:7, step:1, val:3},
+    {k:"flatten", label:"Flatten", min:0.3, max:1.6, step:0.02, val:1}
+  ],
+  map(o,u,v,p){
+    const U=u*Math.PI, V=v*Math.PI, s2=Math.SQRT2, cv=Math.cos(V);
+    const den=2 - p.morph*s2*Math.sin(p.fold*U)*Math.sin(2*V);
+    o[0]=(s2*Math.cos(2*U)*cv*cv + Math.cos(U)*Math.sin(2*V))/den;
+    o[2]=(s2*Math.sin(2*U)*cv*cv - Math.sin(U)*Math.sin(2*V))/den;
+    o[1]=p.flatten*3*cv*cv/den - 1.1;
+    o[3]=u;
+  }
+},
+{
+  id:"lorenz", name:"Lorenz Attractor",
+  desc:"The original butterfly. Two lobes the trajectory swaps between at unpredictable intervals — the standard picture of deterministic chaos.",
+  type:"custom",
+  params:[
+    {k:"sigma", label:"Prandtl σ", min:4, max:20, step:0.1, val:10},
+    {k:"rho", label:"Rayleigh ρ", min:14, max:60, step:0.2, val:28},
+    {k:"beta", label:"Geometry β", min:0.5, max:5, step:0.05, val:2.667},
+    {k:"dt", label:"Step", min:0.0005, max:0.006, step:0.0002, val:0.003}
+  ],
+  generate(n,p){
+    const pos=new Float32Array(n*3), att=new Float32Array(n);
+    let x=0.1,y=0,z=0,c=0;
+    for(let i=0;i<n+2000;i++){
+      const dx=p.sigma*(y-x), dy=x*(p.rho-z)-y, dz=x*y-p.beta*z;
+      x+=dx*p.dt; y+=dy*p.dt; z+=dz*p.dt;
+      if(!isFinite(x)||!isFinite(y)||!isFinite(z)){x=0.1;y=0;z=0;continue;}
+      if(i<2000) continue;
+      pos[c*3]=x; pos[c*3+1]=z-27; pos[c*3+2]=y;
+      att[c]=(i-2000)/n; c++;
+    }
+    return {pos,att,count:c};
+  }
+},
+{
+  id:"mobius", name:"Möbius Ribbon",
+  desc:"A strip closed after an odd number of half twists, so it has one side and one edge. Even counts quietly give you an ordinary cylinder back.",
+  params:[
+    {k:"radius", label:"Ring radius", min:0.6, max:3, step:0.05, val:1.4},
+    {k:"width", label:"Ribbon width", min:0.1, max:1.4, step:0.02, val:0.62},
+    {k:"twists", label:"Half twists", min:1, max:9, step:1, val:1},
+    {k:"wave", label:"Edge wave", min:0, max:0.6, step:0.02, val:0}
+  ],
+  map(o,u,v,p){
+    const U=u*TAU, V=(v*2-1)*p.width;
+    const h=p.twists*U/2;
+    const r=p.radius + V*Math.cos(h) + p.wave*Math.sin(3*U);
+    o[0]=r*Math.cos(U); o[2]=r*Math.sin(U);
+    o[1]=V*Math.sin(h);
+    o[3]=v;
+  }
+},
+{
+  id:"harmonic", name:"Harmonic Shell",
+  desc:"A sphere whose radius is driven by four standing-wave modes. Integer mode numbers close the surface; the lobe count is the mode number itself.",
+  params:[
+    {k:"m0", label:"Polar mode A", min:0, max:8, step:1, val:4},
+    {k:"m2", label:"Polar mode B", min:0, max:8, step:1, val:3},
+    {k:"m4", label:"Azimuth mode A", min:0, max:8, step:1, val:2},
+    {k:"m6", label:"Azimuth mode B", min:0, max:8, step:1, val:6}
+  ],
+  map(o,u,v,p){
+    const phi=v*Math.PI, th=u*TAU;
+    const sq=x=>x*x;
+    const r = sq(Math.sin(p.m0*phi)) + sq(Math.cos(p.m2*phi))
+            + sq(Math.sin(p.m4*th))  + sq(Math.cos(p.m6*th));
+    o[0]=r*Math.sin(phi)*Math.cos(th);
+    o[1]=r*Math.cos(phi);
+    o[2]=r*Math.sin(phi)*Math.sin(th);
+    o[3]=r/4;
+  }
+},
+{
+  id:"hopf", name:"Hopf Fibration",
+  desc:"Circles on the 3-sphere, one per point of an ordinary sphere, stereographically dropped into 3D. Every pair of circles is linked exactly once.",
+  params:[
+    {k:"fibers", label:"Fibres", min:3, max:60, step:1, val:26},
+    {k:"shells", label:"Nested tori", min:1, max:6, step:1, val:3},
+    {k:"polar", label:"Opening angle", min:0.2, max:2.9, step:0.02, val:2.1}
+  ],
+  map(o,u,v,p){
+    const N=Math.round(p.fibers), S=Math.round(p.shells);
+    const idx=Math.min(N-1,Math.floor(v*N));
+    const a=p.polar*((idx%S)+1)/S;
+    const b=idx/N*TAU, t=u*TAU;
+    const c=Math.cos(a/2), s=Math.sin(a/2);
+    const q0=c*Math.cos(t), q1=c*Math.sin(t);
+    const q2=s*Math.cos(t+b), q3=s*Math.sin(t+b);
+    const d=1-q3;
+    if(Math.abs(d)<0.05){o[0]=NaN;return;}
+    o[0]=q0/d; o[1]=q2/d; o[2]=q1/d; o[3]=(idx%S)/S;
+  }
+},
+{
+  id:"catenoid", name:"Catenoid ⟶ Helicoid",
+  desc:"The associate family of minimal surfaces: a soap-film catenoid bends into a helicoid without ever stretching. Every frame in between is minimal too.",
+  params:[
+    {k:"morph", label:"Catenoid ⟶ helicoid", min:0, max:1, step:0.01, val:0.35},
+    {k:"turns", label:"Turns", min:0.5, max:4, step:0.25, val:1.5},
+    {k:"height", label:"Height", min:0.4, max:3, step:0.05, val:1.4}
+  ],
+  map(o,u,v,p){
+    const al=(1-p.morph)*Math.PI/2;
+    const U=u*p.turns*TAU, V=(v*2-1)*p.height;
+    const ca=Math.cos(al), sa=Math.sin(al);
+    o[0]=ca*Math.sinh(V)*Math.sin(U) + sa*Math.cosh(V)*Math.cos(U);
+    o[2]=-ca*Math.sinh(V)*Math.cos(U) + sa*Math.cosh(V)*Math.sin(U);
+    o[1]=(U*ca + V*sa)*1.0;
+    o[3]=v;
+  }
+},
+{
+  id:"kuen", name:"Kuen Surface",
+  desc:"Another constant-negative-curvature surface, this one with a horn and a flared skirt. Related to the pseudosphere by a Bäcklund transformation.",
+  params:[
+    {k:"span", label:"Horn length", min:1, max:8, step:0.1, val:4},
+    {k:"vmin", label:"Skirt start", min:0.05, max:1.2, step:0.01, val:0.25},
+    {k:"vmax", label:"Skirt end", min:1.3, max:3.05, step:0.01, val:2.9}
+  ],
+  map(o,u,v,p){
+    const U=(u*2-1)*p.span, V=p.vmin+v*(p.vmax-p.vmin);
+    const sv=Math.sin(V), den=1+U*U*sv*sv;
+    o[0]=2*(Math.cos(U)+U*Math.sin(U))*sv/den;
+    o[2]=2*(Math.sin(U)-U*Math.cos(U))*sv/den;
+    o[1]=Math.log(Math.tan(V/2))+2*Math.cos(V)/den;
+    o[3]=u;
+  }
+},
+{
+  id:"enneper", name:"Enneper Sheet",
+  desc:"A minimal surface that crosses through itself as it grows. Raising the order adds folds in rotational symmetry, like a pressed flower.",
+  params:[
+    {k:"order", label:"Order", min:1, max:6, step:1, val:2},
+    {k:"extent", label:"Extent", min:0.4, max:1.6, step:0.02, val:1.05},
+    {k:"lift", label:"Lift", min:0.2, max:2.5, step:0.05, val:1}
+  ],
+  map(o,u,v,p){
+    const n=Math.round(p.order), R=v*p.extent, th=u*TAU;
+    const k=2*n+1, rk=Math.pow(R,k);
+    o[0]=R*Math.cos(th) - rk*Math.cos(k*th)/k;
+    o[2]=-R*Math.sin(th) - rk*Math.sin(k*th)/k;
+    o[1]=p.lift*2*Math.pow(R,n+1)*Math.cos((n+1)*th)/(n+1);
+    o[3]=v;
+  }
+},
+{
+  id:"sierpinski", name:"Chaos Game Fractal",
+  desc:"Jump repeatedly a fixed fraction of the way toward a randomly chosen anchor point. Four anchors give the Sierpiński tetrahedron; more give stranger dust.",
+  type:"custom",
+  params:[
+    {k:"verts", label:"Anchors", min:4, max:12, step:1, val:4},
+    {k:"ratio", label:"Jump fraction", min:0.3, max:0.72, step:0.005, val:0.5},
+    {k:"jitter", label:"Scatter", min:0, max:0.08, step:0.002, val:0}
+  ],
+  generate(n,p,rng){
+    const pos=new Float32Array(n*3), att=new Float32Array(n);
+    const nv=Math.round(p.verts), V=[];
+    if(nv===4){
+      V.push([1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]);
+    }else{
+      const ga=Math.PI*(3-Math.sqrt(5));
+      for(let i=0;i<nv;i++){
+        const y=1-2*(i+0.5)/nv, r=Math.sqrt(Math.max(0,1-y*y)), th=ga*i;
+        V.push([Math.cos(th)*r, y, Math.sin(th)*r]);
+      }
+    }
+    let x=0,y=0,z=0,c=0;
+    for(let i=0;i<n+60;i++){
+      const k=Math.min(nv-1,Math.floor(rng()*nv)), t=p.ratio;
+      x+=(V[k][0]-x)*t; y+=(V[k][1]-y)*t; z+=(V[k][2]-z)*t;
+      if(i<60) continue;
+      pos[c*3]=x+(rng()-0.5)*p.jitter;
+      pos[c*3+1]=y+(rng()-0.5)*p.jitter;
+      pos[c*3+2]=z+(rng()-0.5)*p.jitter;
+      att[c]=k/nv; c++;
+    }
+    return {pos,att,count:c};
+  }
+},
+{
+  id:"tesseract", name:"Tesseract Shadow",
+  desc:"The 32 edges of a 4D hypercube, spun in the XW and YZ planes and cast into 3D. Cells appear to turn inside out because the projection foreshortens the fourth axis.",
+  params:[
+    {k:"xw", label:"XW rotation", min:0, max:6.28, step:0.01, val:0.6},
+    {k:"yz", label:"YZ rotation", min:0, max:6.28, step:0.01, val:0.4},
+    {k:"eye", label:"4D eye distance", min:2, max:6, step:0.05, val:2.6},
+    {k:"thick", label:"Edge thickness", min:0, max:0.25, step:0.005, val:0.05}
+  ],
+  map(o,u,v,p){
+    const e=Math.min(31,Math.floor(u*32)), f=u*32-e;
+    const d=e>>3, k=e&7;
+    const low=k&((1<<d)-1), high=k>>d;
+    const vert=low|(high<<(d+1));
+    const c=[0,0,0,0];
+    for(let i=0;i<4;i++) c[i]=(vert>>i&1)?1:-1;
+    c[d]=-1+2*v;                       // travel along the edge
+    const j1=(f-0.5)*p.thick, j2=(((v*937)%1)-0.5)*p.thick;
+    c[(d+1)&3]+=j1; c[(d+2)&3]+=j2;
+    const cx=Math.cos(p.xw), sx=Math.sin(p.xw);
+    const cy=Math.cos(p.yz), sy=Math.sin(p.yz);
+    const x=c[0]*cx-c[3]*sx, w=c[0]*sx+c[3]*cx;
+    const y=c[1]*cy-c[2]*sy, z=c[1]*sy+c[2]*cy;
+    const s=p.eye/Math.max(0.3,p.eye-w);
+    o[0]=x*s; o[1]=y*s; o[2]=z*s; o[3]=(w+1.5)/3;
+  }
+},
+{
+  id:"chladni", name:"Chladni Plate",
+  desc:"A square plate's standing wave, the mode you get by bowing its edge. Sand collects on the still lines; here the sheet is displaced by the same amplitude.",
+  params:[
+    {k:"n", label:"Mode n", min:1, max:9, step:1, val:3},
+    {k:"m", label:"Mode m", min:1, max:9, step:1, val:5},
+    {k:"amp", label:"Amplitude", min:0.05, max:1.2, step:0.02, val:0.34},
+    {k:"bow", label:"Bowl", min:0, max:1, step:0.02, val:0}
+  ],
+  map(o,u,v,p){
+    const x=u*2-1, y=v*2-1;
+    const z=Math.cos(p.n*Math.PI*x)*Math.cos(p.m*Math.PI*y)
+          - Math.cos(p.m*Math.PI*x)*Math.cos(p.n*Math.PI*y);
+    o[0]=x*1.7; o[2]=y*1.7;
+    o[1]=p.amp*z - p.bow*(x*x+y*y);
+    o[3]=0.5+z/4;
+  }
+}
+];
+
+/* ===================================================================== */
+/* Sampling                                                              */
+/* ===================================================================== */
+
+function mulberry32(a){
+  return function(){
+    a|=0; a=a+0x6D2B79F5|0;
+    let t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+
+function sampleSurface(n,map,p,rng){
+  const pos=new Float32Array(n*3), att=new Float32Array(n), o=[0,0,0,0];
+  const cols=Math.ceil(Math.sqrt(n)), rows=Math.ceil(n/cols);
+  let c=0;
+  for(let i=0;i<n;i++){
+    const u=((i%cols)+rng())/cols;
+    const v=((i/cols|0)+rng())/rows;
+    map(o,u,v,p);
+    if(!isFinite(o[0])||!isFinite(o[1])||!isFinite(o[2])) continue;
+    if(Math.abs(o[0])>1e4||Math.abs(o[1])>1e4||Math.abs(o[2])>1e4) continue;
+    pos[c*3]=o[0]; pos[c*3+1]=o[1]; pos[c*3+2]=o[2];
+    att[c]=Math.min(1,Math.max(0,o[3]));
+    c++;
+  }
+  return {pos,att,count:c};
+}
+
+function normalize(d){
+  const {pos,count}=d;
+  let mnx=1e30,mny=1e30,mnz=1e30,mxx=-1e30,mxy=-1e30,mxz=-1e30;
+  for(let i=0;i<count;i++){
+    const x=pos[i*3],y=pos[i*3+1],z=pos[i*3+2];
+    if(x<mnx)mnx=x; if(x>mxx)mxx=x;
+    if(y<mny)mny=y; if(y>mxy)mxy=y;
+    if(z<mnz)mnz=z; if(z>mxz)mxz=z;
+  }
+  const cx=(mnx+mxx)/2, cy=(mny+mxy)/2, cz=(mnz+mxz)/2;
+  const half=Math.max(mxx-mnx,mxy-mny,mxz-mnz)/2 || 1;
+  const s=1/half;
+  let rmax=0;
+  for(let i=0;i<count;i++){
+    const x=(pos[i*3]-cx)*s, y=(pos[i*3+1]-cy)*s, z=(pos[i*3+2]-cz)*s;
+    pos[i*3]=x; pos[i*3+1]=y; pos[i*3+2]=z;
+    const r=x*x+y*y+z*z; if(r>rmax) rmax=r;
+  }
+  d.rmax=Math.sqrt(rmax)||1;
+  return d;
+}
+
+/* ===================================================================== */
+/* Colour maps                                                           */
+/* ===================================================================== */
+
+const MAPS={
+  breeze:["#14202b","#1d5f8f","#3daee9","#93cee9","#f4f8fb"],
+  viridis:["#440154","#414487","#2a788e","#22a884","#7ad151","#fde725"],
+  magma:["#000004","#3b0f70","#8c2981","#de4968","#fe9f6d","#fcfdbf"],
+  ember:["#150500","#6d1a06","#c94b12","#f2a020","#fff2b8"],
+  ice:["#04121d","#0a5f8c","#2fb5d9","#a6ebf7","#ffffff"],
+  mono:["#2b3136","#5d666d","#98a2a9","#d3d9dd","#ffffff"]
+};
+function hex2rgb(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+function buildLUT(name){
+  const stops=MAPS[name].map(hex2rgb), lut=new Uint8Array(256*3), n=stops.length-1;
+  for(let i=0;i<256;i++){
+    const t=i/255*n, k=Math.min(n-1,t|0), f=t-k;
+    for(let c=0;c<3;c++) lut[i*3+c]=stops[k][c]+(stops[k+1][c]-stops[k][c])*f;
+  }
+  return lut;
+}
+
+/* ===================================================================== */
+/* State + renderer                                                      */
+/* ===================================================================== */
+
+const cv=document.getElementById("cv");
+const ctx=cv.getContext("2d",{alpha:false});
+let img=null, buf=null, depth=null, bgLayer=null;
+
+const state={
+  fi:0, count:120000, seed:1337, size:4, fog:0.55, persp:true,
+  cmap:"breeze", csrc:"depth", spin:true, spinSpeed:0.25,
+  yaw:0.7, pitch:0.35, dist:BASE_DIST/DEFAULT_ZOOM, panX:0, panY:0
+};
+let cloud=null, lut=buildLUT("breeze"), dirty=true;
+
+function viewColors(){
+  const cs=getComputedStyle(document.documentElement);
+  return {top:hex2rgb(cs.getPropertyValue("--view-top").trim()),
+          bot:hex2rgb(cs.getPropertyValue("--view-bottom").trim())};
+}
+const pack=(r,g,b)=>(((255<<24)|(b<<16)|(g<<8)|r)>>>0);
+
+function resize(){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.max(1,Math.round(cv.clientWidth*dpr)), h=Math.max(1,Math.round(cv.clientHeight*dpr));
+  if(cv.width!==w||cv.height!==h){
+    cv.width=w; cv.height=h;
+    img=ctx.createImageData(w,h);
+    buf=new Uint32Array(img.data.buffer);
+    depth=new Float32Array(w*h);
+    buildBg();
+  }
+  dirty=true;
+}
+function buildBg(){
+  const W=cv.width,H=cv.height, c=viewColors();
+  bgLayer=new Uint32Array(W*H);
+  for(let y=0;y<H;y++){
+    const t=y/(H-1||1), e=t*t*0.85+t*0.15;
+    const r=c.top[0]+(c.bot[0]-c.top[0])*e|0;
+    const g=c.top[1]+(c.bot[1]-c.top[1])*e|0;
+    const b=c.top[2]+(c.bot[2]-c.top[2])*e|0;
+    const px=pack(r,g,b);
+    bgLayer.fill(px, y*W, y*W+W);
+  }
+  window.__fog=c.bot;
+}
+
+function render(){
+  if(!cloud||!buf) return;
+  const W=cv.width, H=cv.height;
+  buf.set(bgLayer);
+  depth.fill(1e30);
+
+  const {pos,att,count,rmax}=cloud;
+  const cy=Math.cos(state.yaw), sy=Math.sin(state.yaw);
+  const cp=Math.cos(state.pitch), sp=Math.sin(state.pitch);
+  const focal=0.9*Math.min(W,H);
+  const dist=state.dist, persp=state.persp;
+  const orthoScale=focal/dist;
+  const fog=state.fog, fogC=window.__fog||[0,0,0];
+  const near=dist-rmax, far=dist+rmax, span=(far-near)||1;
+  const baseSize=state.size*(Math.min(W,H)/900);
+  const src=state.csrc, L=lut;
+  const cxp=W/2+state.panX, cyp=H/2+state.panY;
+  let drawn=0;
+
+  for(let i=0;i<count;i++){
+    const x=pos[i*3], y=pos[i*3+1], z=pos[i*3+2];
+    const x1=x*cy+z*sy, z1=z*cy-x*sy;
+    const y2=y*cp-z1*sp, z2=y*sp+z1*cp;
+    const zc=z2+dist;
+    if(zc<0.05) continue;
+    const sc=persp?focal/zc:orthoScale;
+    const sx=(cxp+x1*sc)|0, sy2=(cyp-y2*sc)|0;
+    if(sx<0||sy2<0||sx>=W||sy2>=H) continue;
+
+    // colour index
+    let t;
+    if(src==="attr") t=att[i];
+    else if(src==="height") t=0.5+y/(2*rmax);
+    else if(src==="depth") t=1-(zc-near)/span;
+    else if(src==="radius") t=Math.sqrt(x*x+y*y+z*z)/rmax;
+    else t=-1;
+    let r,g,b;
+    if(t<0){
+      r=128+127*x/rmax|0; g=128+127*y/rmax|0; b=128+127*z/rmax|0;
+    }else{
+      const idx=(t<0?0:t>1?1:t)*255|0;
+      r=L[idx*3]; g=L[idx*3+1]; b=L[idx*3+2];
+    }
+    if(fog>0){
+      let f=(zc-near)/span; f=f<0?0:f>1?1:f; f*=fog;
+      r=r+(fogC[0]-r)*f|0; g=g+(fogC[1]-g)*f|0; b=b+(fogC[2]-b)*f|0;
+    }
+    const col=pack(r,g,b);
+
+    let ps=Math.round(persp?baseSize*dist/zc:baseSize);
+    if(ps<1)ps=1; else if(ps>8)ps=8;
+    if(ps===1){
+      const o=sy2*W+sx;
+      if(zc<depth[o]){depth[o]=zc; buf[o]=col;}
+    }else{
+      const h=ps>>1;
+      let x0=sx-h, y0=sy2-h, x1e=x0+ps, y1e=y0+ps;
+      if(x0<0)x0=0; if(y0<0)y0=0; if(x1e>W)x1e=W; if(y1e>H)y1e=H;
+      for(let py=y0;py<y1e;py++){
+        let o=py*W+x0;
+        for(let px=x0;px<x1e;px++,o++){
+          if(zc<depth[o]){depth[o]=zc; buf[o]=col;}
+        }
+      }
+    }
+    drawn++;
+  }
+  ctx.putImageData(img,0,0);
+  return drawn;
+}
+
+/* ===================================================================== */
+/* UI wiring                                                             */
+/* ===================================================================== */
+
+const $=id=>document.getElementById(id);
+const fnSelect=$("fnSelect"), paramsBox=$("params");
+let paramInputs=[];
+
+FUNCS.forEach((f,i)=>{
+  const op=document.createElement("option");
+  op.value=i; op.textContent=f.name; fnSelect.appendChild(op);
+});
+
+function setPct(el){
+  const pct=(el.value-el.min)/(el.max-el.min)*100;
+  el.style.setProperty("--pct",pct+"%");
+}
+function fmt(v,step){
+  const d=step>=1?0:step>=0.1?1:step>=0.01?2:step>=0.001?3:4;
+  return Number(v).toFixed(d);
+}
+
+function buildParams(){
+  const f=FUNCS[state.fi];
+  paramsBox.innerHTML=""; paramInputs=[];
+  f.params.forEach(pd=>{
+    const wrap=document.createElement("label"); wrap.className="field";
+    wrap.innerHTML=`<span class="field-head"><span>${pd.label}</span><span class="val"></span></span>`;
+    const inp=document.createElement("input");
+    inp.type="range"; inp.min=pd.min; inp.max=pd.max; inp.step=pd.step;
+    inp.value=(pd.cur!==undefined?pd.cur:pd.val);
+    const out=wrap.querySelector(".val");
+    const sync=()=>{out.textContent=fmt(inp.value,pd.step); setPct(inp);};
+    inp.addEventListener("input",()=>{pd.cur=parseFloat(inp.value); sync(); regen();});
+    sync(); wrap.appendChild(inp); paramsBox.appendChild(wrap);
+    paramInputs.push({pd,inp});
+  });
+  $("fnDesc").textContent=f.desc;
+  $("fnLabel").textContent=f.name;
+}
+
+function paramValues(){
+  const p={};
+  FUNCS[state.fi].params.forEach(pd=>p[pd.k]=(pd.cur!==undefined?pd.cur:pd.val));
+  return p;
+}
+
+let regenQueued=false;
+function regen(){
+  if(regenQueued) return;
+  regenQueued=true;
+  requestAnimationFrame(()=>{ regenQueued=false; build(); });
+}
+function build(){
+  const f=FUNCS[state.fi], p=paramValues(), rng=mulberry32(state.seed);
+  const d = f.type==="custom" ? f.generate(state.count,p,rng)
+                              : sampleSurface(state.count,f.map,p,rng);
+  cloud=normalize(d);
+  $("stPoints").innerHTML=`<b>${cloud.count.toLocaleString("en-US").replace(/,/g," ")}</b> points`;
+  dirty=true;
+}
+
+fnSelect.addEventListener("change",()=>{ state.fi=+fnSelect.value; buildParams(); build(); });
+
+function slider(id,valId,key,transform){
+  const el=$(id), out=$(valId);
+  const sync=()=>{
+    const v=parseFloat(el.value);
+    state[key]=v;
+    out.textContent=transform?transform(v):fmt(v,parseFloat(el.step));
+    setPct(el);
+  };
+  el.addEventListener("input",()=>{ sync(); if(key==="count") regen(); else dirty=true; });
+  sync();
+}
+slider("sCount","vCount","count",v=>v.toLocaleString("en-US").replace(/,/g," "));
+slider("sSize","vSize","size");
+slider("sFog","vFog","fog");
+slider("sSpin","vSpin","spinSpeed");
+
+$("cmap").addEventListener("change",e=>{ state.cmap=e.target.value; lut=buildLUT(state.cmap); dirty=true; });
+$("csrc").addEventListener("change",e=>{ state.csrc=e.target.value; dirty=true; });
+$("cPersp").addEventListener("change",e=>{ state.persp=e.target.checked; dirty=true; });
+$("cSpin").addEventListener("change",e=>{ state.spin=e.target.checked; });
+$("btnShuffle").addEventListener("click",()=>{ state.seed=(Math.random()*1e9)|0; build(); });
+$("btnReset").addEventListener("click",resetView);
+$("btnPanel").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+
+function resetView(){
+  state.yaw=0.7; state.pitch=0.35; state.dist=BASE_DIST/DEFAULT_ZOOM;
+  state.panX=0; state.panY=0; dirty=true;
+}
+
+/* theme */
+const btnTheme=$("btnTheme");
+btnTheme.addEventListener("click",()=>{
+  const dark=document.documentElement.dataset.theme==="dark";
+  document.documentElement.dataset.theme=dark?"light":"dark";
+  btnTheme.textContent=dark?"Breeze Dark":"Breeze Light";
+  buildBg(); dirty=true;
+});
+document.documentElement.dataset.theme="dark";
+
+/* pointer interaction */
+let drag=null, pointers=new Map(), pinch=0;
+cv.addEventListener("pointerdown",e=>{
+  cv.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){ drag={x:e.clientX,y:e.clientY,pan:e.button===2||e.button===1}; cv.classList.add("dragging"); }
+  else if(pointers.size===2){ const [a,b]=[...pointers.values()]; pinch=Math.hypot(a.x-b.x,a.y-b.y); drag=null; }
+});
+cv.addEventListener("pointermove",e=>{
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===2){
+    const [a,b]=[...pointers.values()], d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(pinch>0){ state.dist=Math.min(14,Math.max(1.2,state.dist*pinch/d)); dirty=true; }
+    pinch=d; return;
+  }
+  if(!drag) return;
+  const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+  drag.x=e.clientX; drag.y=e.clientY;
+  if(drag.pan){
+    const dpr=cv.width/cv.clientWidth;
+    state.panX+=dx*dpr; state.panY+=dy*dpr;
+  }else{
+    state.yaw+=dx*0.0065;
+    state.pitch=Math.max(-1.53,Math.min(1.53,state.pitch+dy*0.0065));
+  }
+  dirty=true;
+});
+["pointerup","pointercancel"].forEach(ev=>cv.addEventListener(ev,e=>{
+  pointers.delete(e.pointerId);
+  if(pointers.size<2) pinch=0;
+  if(pointers.size===0){ drag=null; cv.classList.remove("dragging"); }
+}));
+cv.addEventListener("contextmenu",e=>e.preventDefault());
+cv.addEventListener("wheel",e=>{
+  e.preventDefault();
+  state.dist=Math.min(14,Math.max(1.2,state.dist*(1+Math.sign(e.deltaY)*0.09)));
+  dirty=true;
+},{passive:false});
+
+addEventListener("keydown",e=>{
+  if(e.target.matches("input,select,button")&&e.key!=="r") return;
+  if(e.code==="Space"){ e.preventDefault(); state.spin=!state.spin; $("cSpin").checked=state.spin; }
+  if(e.key==="r"||e.key==="R") resetView();
+});
+
+/* export */
+function download(blob,name){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+$("btnXYZ").addEventListener("click",()=>{
+  const {pos,count}=cloud, parts=[], chunk=[];
+  for(let i=0;i<count;i++){
+    chunk.push(pos[i*3].toFixed(5)+" "+pos[i*3+1].toFixed(5)+" "+pos[i*3+2].toFixed(5));
+    if(chunk.length>20000){ parts.push(chunk.join("\n")+"\n"); chunk.length=0; }
+  }
+  parts.push(chunk.join("\n")+"\n");
+  download(new Blob(parts,{type:"text/plain"}), FUNCS[state.fi].id+".xyz");
+});
+$("btnPNG").addEventListener("click",()=>{
+  render();
+  cv.toBlob(b=>download(b,FUNCS[state.fi].id+".png"),"image/png");
+});
+
+/* main loop */
+let last=performance.now(), fpsAcc=0, fpsN=0;
+function loop(now){
+  const dt=Math.min(0.1,(now-last)/1000); last=now;
+  if(state.spin&&state.spinSpeed>0){ state.yaw+=state.spinSpeed*dt; dirty=true; }
+  if(dirty){
+    const t0=performance.now();
+    render();
+    dirty=state.spin&&state.spinSpeed>0;
+    fpsAcc+=performance.now()-t0; fpsN++;
+    if(fpsN>=20){
+      const ms=fpsAcc/fpsN;
+      $("stFps").innerHTML=`<b>${ms.toFixed(1)} ms</b> / frame`;
+      fpsAcc=0; fpsN=0;
+    }
+  }
+  $("hud").innerHTML=
+    `<div>yaw <b>${(state.yaw%TAU*57.3).toFixed(0)}°</b> &nbsp; pitch <b>${(state.pitch*57.3).toFixed(0)}°</b></div>`+
+    `<div>zoom <b>${(BASE_DIST/state.dist).toFixed(2)}×</b></div>`;
+  requestAnimationFrame(loop);
+}
+
+new ResizeObserver(resize).observe(cv);
+buildParams();
+resize();
+build();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
