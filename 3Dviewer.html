@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Michał Koziełło — VertexVoodoo Model Viewer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20120%20120'%3E%3Crect%20width='120'%20height='120'%20rx='24'%20fill='%23262626'/%3E%3Cg%20transform='translate%2821.45%2C1.22%29%20scale%280.964%29'%3E%3Cpath%20d='M8%2048%20L40%20116%20L72%2048%20H54%20L40%2078%20L26%2048%20Z'%20fill='%23E4DCC9'/%3E%3Cpath%20d='M40%206%20L52%2028%20L40%2044%20L28%2028%20Z'%20fill='%23C1272D'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20120%20120'%3E%3Crect%20width='120'%20height='120'%20rx='24'%20fill='%23262626'/%3E%3Cg%20transform='translate%2821.45%2C1.22%29%20scale%280.964%29'%3E%3Cpath%20d='M8%2048%20L40%20116%20L72%2048%20H54%20L40%2078%20L26%2048%20Z'%20fill='%23E4DCC9'/%3E%3Cpath%20d='M40%206%20L52%2028%20L40%2044%20L28%2028%20Z'%20fill='%23C1272D'/%3E%3C/g%3E%3C/svg%3E">
+<meta name="theme-color" content="#151515">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -31,7 +34,10 @@
     grid-template-rows:26px 1fr 20px;
     grid-template-columns:216px 1fr 300px;
     grid-template-areas:"menu menu menu" "out vp props" "stat stat stat";
-    gap:2px;padding:2px;background:var(--edge);}
+    gap:2px;padding:2px;background:var(--edge);max-width:100vw;overflow:hidden;}
+  /* grid items default to min-width:auto, so one wide flex row (the menu) can push the whole
+     layout past the viewport. Every area opts out of that. */
+  #app > *{min-width:0;min-height:0;}
 
   /* ---------- menu ---------- */
   #menu{grid-area:menu;background:var(--head);display:flex;align-items:center;gap:2px;padding:0 6px;position:relative;z-index:70;}
@@ -99,14 +105,16 @@ function buildEnvSelect(){
   .ov{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:10px;pointer-events:none;color:#9aa4b4;}
   #vp-head{top:0;left:0;right:0;height:24px;display:flex;align-items:center;gap:8px;padding:0 8px;
     background:rgba(20,22,27,.72);border-bottom:1px solid rgba(255,255,255,.06);pointer-events:auto;z-index:4;}
-  #vp-head .mode{background:#3a3f4a;color:#dfe4ec;padding:2px 7px;border-radius:3px;font-size:10px;}
-  #vp-head .path{color:#7e8797;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  #vp-head .mode{background:#3a3f4a;color:#dfe4ec;padding:2px 7px;border-radius:3px;font-size:10px;
+    white-space:nowrap;flex-shrink:0;}
+  #vp-head .path{color:#7e8797;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0;}
   #vp-head .path b{color:var(--acc);font-weight:500;}
   #vp-head .sp{flex:1;}
   #vp-head button{color:#7e8797;padding:2px 6px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;}
   #vp-head button:hover{background:#3a3f4a;color:#dfe4ec;}
   #vp-head button.on{color:var(--acc);}
-  #shading{display:flex;gap:3px;margin-right:2px;}
+  #shading{display:flex;gap:3px;margin-right:2px;flex-shrink:0;}
+  #vp-head button{flex-shrink:0;}
   #shading button{padding:2px 7px;background:rgba(255,255,255,.07);border:1px solid transparent;}
   #shading button.on{background:var(--acc);color:#1a1004;border-color:var(--acc);}
   #vp-stats{top:32px;left:10px;line-height:1.65;color:#7e8797;}
@@ -194,6 +202,14 @@ function buildEnvSelect(){
   .btn.pri:hover{filter:brightness(1.12);color:#1a1004;}
 
   /* ---------- status ---------- */
+  #app.hide-stat{grid-template-rows:26px 1fr;
+    grid-template-areas:"menu menu menu" "out vp props";}
+  #app.hide-stat #stat{display:none;}
+  #app.hide-props{grid-template-columns:216px 1fr;
+    grid-template-areas:"menu menu" "out vp" "stat stat";}
+  #app.hide-props.hide-stat{grid-template-columns:216px 1fr;grid-template-rows:26px 1fr;
+    grid-template-areas:"menu menu" "out vp";}
+  #app.hide-props #props{display:none;}
   #stat{grid-area:stat;background:var(--head);display:flex;align-items:center;gap:14px;padding:0 9px;
     font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);overflow:hidden;white-space:nowrap;}
   #stat .sp{flex:1;}
@@ -204,24 +220,52 @@ function buildEnvSelect(){
 
   /* ---------- mobile ---------- */
   @media (max-width:900px){
-    #app{grid-template-columns:1fr;grid-template-rows:26px 112px 44vh 1fr 20px;
+    #app,#app.hide-props,#app.hide-stat,#app.hide-props.hide-stat{grid-template-columns:100%;}
+    #app{grid-template-rows:30px auto 46vh minmax(0,1fr) 20px;
       grid-template-areas:"menu" "out" "vp" "props" "stat";}
-    #out{max-height:112px;}
-    #tree{display:flex;overflow-x:auto;overflow-y:hidden;padding:5px;gap:5px;}
-    .grp{margin:0;flex-shrink:0;}
+    #app.hide-stat{grid-template-rows:30px auto 46vh minmax(0,1fr);
+      grid-template-areas:"menu" "out" "vp" "props";}
+    #app.hide-props{grid-template-rows:30px auto minmax(0,1fr) 20px;
+      grid-template-areas:"menu" "out" "vp" "stat";}
+    #app.hide-props.hide-stat{grid-template-rows:30px auto minmax(0,1fr);
+      grid-template-areas:"menu" "out" "vp";}
+
+    /* menu: keep the brand and the three menus, drop the read-outs that push it wide */
+    #menu{gap:0;padding:0 4px;}
+    #menu .logo{padding-right:7px;margin-right:2px;}
+    #menu .badge{display:none;}
+    #menu .mi{padding:4px 7px;}
+
+    /* outliner: one scrolling strip, group name kept inline as a label */
+    #out{height:auto;}
+    /* two wrapped rows rather than one scrolling strip: a phone shows ~4 models at a glance
+       instead of 2, and there's no hidden content off the right edge */
+    #tree{display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;
+      overflow-x:hidden;overflow-y:auto;padding:6px;gap:5px 8px;max-height:76px;
+      -webkit-overflow-scrolling:touch;}
+    .grp{margin:0;flex-shrink:0;display:flex;flex-wrap:wrap;align-items:center;gap:5px;}
     .grp.closed .kids{display:flex;}
-    .kids{display:flex;gap:4px;}
-    .gh{display:none;}
+    .kids{display:flex;flex-wrap:wrap;gap:5px;}
+    .gh{display:flex;width:auto;padding:0 2px;font-size:9.5px;letter-spacing:.05em;
+      text-transform:uppercase;color:#6f6f6f;flex-shrink:0;}
+    .gh:hover{background:none;}
+    .gh .car,.gh .cnt{display:none;}
     .ob{padding:5px 9px;width:auto;white-space:nowrap;border:1px solid #383838;border-radius:3px;}
     .ob .tagx{display:none;}
-    #vp-stats{display:none;}
+
+    /* viewport chrome: on a phone the mode chip and breadcrumb are noise */
+    #vp-head{height:28px;}
+    #vp-head .mode,#vp-head .path{display:none;}
+    #vp-head button{padding:3px 7px;}
+    #vp-stats,#vp-hint{display:none;}
+    #gizmo{top:34px;right:8px;width:54px;height:54px;}
   }
   @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;}}
 </style>
 </head>
 <body>
 
-<div id="app">
+<div id="app" class="hide-stat">
   <div id="menu">
     <span class="logo">
       <svg width="12" height="18" viewBox="0 0 80 120" aria-hidden="true">
@@ -247,6 +291,9 @@ function buildEnvSelect(){
         <button class="di" id="mi-orbit" data-action="toggle-orbit"><span class="ck">✓</span><span class="lb">Auto-Orbit</span></button>
         <button class="di" id="mi-grid" data-action="toggle-grid"><span class="ck">✓</span><span class="lb">Grid</span></button>
         <button class="di" id="mi-shadow" data-action="toggle-shadow"><span class="ck">✓</span><span class="lb">Ground Shadow</span></button>
+        <div class="ddsep"></div>
+        <button class="di" id="mi-props" data-action="toggle-props"><span class="ck">✓</span><span class="lb">Properties Panel</span></button>
+        <button class="di" id="mi-stat" data-action="toggle-stat"><span class="ck">✓</span><span class="lb">Status Bar</span></button>
         <div class="ddsep"></div>
         <button class="di" data-action="frame"><span class="ck"></span><span class="lb">Frame Selected</span><span class="kx">F</span></button>
         <button class="di" data-action="fullscreen"><span class="ck"></span><span class="lb">Toggle Fullscreen</span></button>
@@ -282,6 +329,7 @@ function buildEnvSelect(){
         <button data-shade="normal">Nrm</button>
         <button data-shade="wire">Wire</button>
       </div>
+      <button id="btn-props">Props</button>
       <button id="btn-spin" class="on">Auto-orbit</button>
       <button id="btn-grid" class="on">Grid</button>
     </div>
@@ -936,7 +984,7 @@ const state = {
   maps: { albedo: true, normal: true, roughness: true, metalness: true, ao: true, emissive: true },
   envIntensity: 1, wire: false, wireColor: WIRE_COLOR, exposure: 1,
   bg: 'gradient', blur: 0, skyIntensity: 1, skyOpacity: 1, envRotation: 0, bgColor: '#15171c',
-  grid: true, shadow: true, autoOrbit: true, turntable: false,
+  grid: true, shadow: true, autoOrbit: true, turntable: false, statusBar: false, props: true,
   shading: 'pbr'
 };
 
@@ -1225,6 +1273,7 @@ document.querySelectorAll('#shading button').forEach(b => b.onclick = () => {
   if (currentEntry) updateStats(currentEntry);
 });
 
+$('btn-props').onclick = () => showProps(!state.props);
 $('btn-spin').onclick = () => { state.autoOrbit = !state.autoOrbit; controls.autoRotate = state.autoOrbit; syncChecks(); };
 $('btn-grid').onclick = () => { state.grid = !state.grid; if (grid) grid.visible = state.grid; syncChecks(); };
 
@@ -1235,6 +1284,9 @@ function syncChecks(){
   $('mi-orbit').classList.toggle('checked', state.autoOrbit);
   $('mi-grid').classList.toggle('checked', state.grid);
   $('mi-shadow').classList.toggle('checked', state.shadow);
+  $('mi-stat').classList.toggle('checked', state.statusBar);
+  $('mi-props').classList.toggle('checked', state.props);
+  $('btn-props').classList.toggle('on', state.props);
 }
 
 /* ---------- maps panel ---------- */
@@ -1301,6 +1353,8 @@ document.querySelectorAll('.di').forEach(b => b.onclick = () => {
   if (a === 'toggle-orbit'){ state.autoOrbit = !state.autoOrbit; controls.autoRotate = state.autoOrbit; syncChecks(); }
   if (a === 'toggle-grid'){ state.grid = !state.grid; if (grid) grid.visible = state.grid; syncChecks(); }
   if (a === 'toggle-shadow'){ $('t-shadow').click(); }
+  if (a === 'toggle-stat'){ showStatusBar(!state.statusBar); }
+  if (a === 'toggle-props'){ showProps(!state.props); }
   if (a === 'frame')       frame(currentEntry ? currentEntry.view.fit : 'ground');
   if (a === 'fullscreen')  document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
   if (a === 'save-image')  saveImage();
@@ -1541,10 +1595,27 @@ function select(id){
 }
 
 /* ---------- status / loading ---------- */
+function showStatusBar(on){
+  state.statusBar = on;
+  $('app').classList.toggle('hide-stat', !on);
+  $('mi-stat').classList.toggle('checked', on);
+  resize();                       // the viewport just changed height
+}
+
+function showProps(on){
+  state.props = on;
+  $('app').classList.toggle('hide-props', !on);
+  $('btn-props').classList.toggle('on', on);
+  $('mi-props').classList.toggle('checked', on);
+  resize();
+}
+
 function status(msg, warn = false){
   $('s-msg').textContent = msg;
   $('s-msg').classList.toggle('warn', warn);
   $('s-dot').classList.toggle('warn', warn);
+  // the bar is hidden by default, so a warning would otherwise vanish unseen
+  if (warn && !state.statusBar) showStatusBar(true);
 }
 let busy = 0;
 function setLoading(on, text){
@@ -1642,6 +1713,10 @@ async function boot(reload = false){
   select(keep);
   if (warn) status(warn, true);
 }
+// a phone has no room for viewport and properties at once, so properties starts collapsed
+// and rides on the Props button; desktop keeps it open
+showProps(!matchMedia('(max-width:900px)').matches);
+
 boot();
 </script>
 </body>
