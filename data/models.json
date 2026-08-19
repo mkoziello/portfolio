@@ -169,6 +169,39 @@
                 "shadow": true,
                 "fit": "ground"
             }
+        },
+        {
+            "id": "sfluger",
+            "name": "SF Luger",
+            "group": "Studies",
+            "file": "models/SFLuger.glb",
+            "tags": [ "glTF 2.0", "PBR", "Full map set" ],
+            "note": "Textured with a complete PBR set — base colour, metallic, roughness, ambient occlusion and normal.",
+            "textures": {
+                "albedo": "textures/SFLuger_A.png",
+                "metalness": "textures/SFLuger_M.png",
+                "roughness": "textures/SFLuger_R.png",
+                "ao": "textures/SFLuger_AO.png",
+                "normal": "textures/SFLuger_N.png",
+                "flipY": false,
+                "anisotropy": 8
+            },
+            "material": {
+                "metalness": 1.0,
+                "roughness": 1.0,
+                "tint": "#ffffff",
+                "vertexColors": false,
+                "envIntensity": 1.0,
+                "normalScale": 1.0,
+                "aoIntensity": 1.0
+            },
+            "view": {
+                "autoOrbit": true,
+                "exposure": 1.0,
+                "grid": true,
+                "shadow": true,
+                "fit": "ground"
+            }
         }
     ]
 }
