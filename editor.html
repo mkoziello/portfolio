@@ -531,7 +531,7 @@ function propsFor(id){
         fld("Status",p.status,"a"))+
       pnl("Notes",`<div class="note"><p>${p.bio}</p></div>`)+
       pnl("Statistics",
-        fld("Years",p.stats.years)+fld("Shipped",p.stats.shipped)+fld("Under NDA",p.stats.nda))};
+        fld("Years",p.stats.years)+fld("Shipped",p.stats.shipped))};
   }
 
   const s=SHIPPED.find(x=>x.id===id&&x.type!=="HIDDEN");

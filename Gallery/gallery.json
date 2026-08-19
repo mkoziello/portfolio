@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-13T21:40:31Z",
+  "generated": "2026-08-19T22:54:03Z",
   "root": {
     "name": "Gallery",
     "path": "",
@@ -105,6 +105,242 @@
             "total": 8
           },
           {
+            "name": "Other",
+            "path": "Models/Other",
+            "files": [
+              {
+                "name": "cc0001.png",
+                "path": "Models/Other/cc0001.png",
+                "type": "image",
+                "size": 4549932
+              },
+              {
+                "name": "cc0002.png",
+                "path": "Models/Other/cc0002.png",
+                "type": "image",
+                "size": 1827699
+              },
+              {
+                "name": "cc5.png",
+                "path": "Models/Other/cc5.png",
+                "type": "image",
+                "size": 696536
+              },
+              {
+                "name": "cc10.png",
+                "path": "Models/Other/cc10.png",
+                "type": "image",
+                "size": 193400
+              },
+              {
+                "name": "cc13.png",
+                "path": "Models/Other/cc13.png",
+                "type": "image",
+                "size": 148389
+              },
+              {
+                "name": "cc15.png",
+                "path": "Models/Other/cc15.png",
+                "type": "image",
+                "size": 3058804
+              },
+              {
+                "name": "cc20.png",
+                "path": "Models/Other/cc20.png",
+                "type": "image",
+                "size": 1848728
+              },
+              {
+                "name": "cc0030.png",
+                "path": "Models/Other/cc0030.png",
+                "type": "image",
+                "size": 424943
+              },
+              {
+                "name": "cc0031.png",
+                "path": "Models/Other/cc0031.png",
+                "type": "image",
+                "size": 516182
+              },
+              {
+                "name": "cc40.png",
+                "path": "Models/Other/cc40.png",
+                "type": "image",
+                "size": 1232470
+              },
+              {
+                "name": "cc41.png",
+                "path": "Models/Other/cc41.png",
+                "type": "image",
+                "size": 6193843
+              },
+              {
+                "name": "ccb03.png",
+                "path": "Models/Other/ccb03.png",
+                "type": "image",
+                "size": 586181
+              },
+              {
+                "name": "ccb04.png",
+                "path": "Models/Other/ccb04.png",
+                "type": "image",
+                "size": 1400006
+              },
+              {
+                "name": "ccb05.png",
+                "path": "Models/Other/ccb05.png",
+                "type": "image",
+                "size": 418985
+              },
+              {
+                "name": "ccb09.png",
+                "path": "Models/Other/ccb09.png",
+                "type": "image",
+                "size": 719686
+              },
+              {
+                "name": "ccb0010.png",
+                "path": "Models/Other/ccb0010.png",
+                "type": "image",
+                "size": 320496
+              },
+              {
+                "name": "ccb0011.png",
+                "path": "Models/Other/ccb0011.png",
+                "type": "image",
+                "size": 3246127
+              },
+              {
+                "name": "ccb0012.png",
+                "path": "Models/Other/ccb0012.png",
+                "type": "image",
+                "size": 4280301
+              },
+              {
+                "name": "ccb31.png",
+                "path": "Models/Other/ccb31.png",
+                "type": "image",
+                "size": 194530
+              },
+              {
+                "name": "ccb32.png",
+                "path": "Models/Other/ccb32.png",
+                "type": "image",
+                "size": 1293144
+              },
+              {
+                "name": "ccb33.png",
+                "path": "Models/Other/ccb33.png",
+                "type": "image",
+                "size": 1183532
+              },
+              {
+                "name": "ccb34.png",
+                "path": "Models/Other/ccb34.png",
+                "type": "image",
+                "size": 3972402
+              },
+              {
+                "name": "ccb35.png",
+                "path": "Models/Other/ccb35.png",
+                "type": "image",
+                "size": 5133392
+              },
+              {
+                "name": "ccf4.png",
+                "path": "Models/Other/ccf4.png",
+                "type": "image",
+                "size": 845073
+              },
+              {
+                "name": "ccg1.png",
+                "path": "Models/Other/ccg1.png",
+                "type": "image",
+                "size": 1331179
+              },
+              {
+                "name": "ccg2.png",
+                "path": "Models/Other/ccg2.png",
+                "type": "image",
+                "size": 3448607
+              },
+              {
+                "name": "ccg3.png",
+                "path": "Models/Other/ccg3.png",
+                "type": "image",
+                "size": 1278264
+              },
+              {
+                "name": "ccg4.png",
+                "path": "Models/Other/ccg4.png",
+                "type": "image",
+                "size": 1176885
+              },
+              {
+                "name": "ccg5.png",
+                "path": "Models/Other/ccg5.png",
+                "type": "image",
+                "size": 821943
+              },
+              {
+                "name": "ccm0041.png",
+                "path": "Models/Other/ccm0041.png",
+                "type": "image",
+                "size": 911857
+              },
+              {
+                "name": "ccm0043.png",
+                "path": "Models/Other/ccm0043.png",
+                "type": "image",
+                "size": 461465
+              },
+              {
+                "name": "ccm0050.png",
+                "path": "Models/Other/ccm0050.png",
+                "type": "image",
+                "size": 1156841
+              },
+              {
+                "name": "ccp01.png",
+                "path": "Models/Other/ccp01.png",
+                "type": "image",
+                "size": 2446489
+              },
+              {
+                "name": "ccp02.png",
+                "path": "Models/Other/ccp02.png",
+                "type": "image",
+                "size": 1362667
+              },
+              {
+                "name": "ccx1.png",
+                "path": "Models/Other/ccx1.png",
+                "type": "image",
+                "size": 631526
+              },
+              {
+                "name": "ccx2.png",
+                "path": "Models/Other/ccx2.png",
+                "type": "image",
+                "size": 182046
+              },
+              {
+                "name": "ccx3.png",
+                "path": "Models/Other/ccx3.png",
+                "type": "image",
+                "size": 275264
+              },
+              {
+                "name": "ccx4.png",
+                "path": "Models/Other/ccx4.png",
+                "type": "image",
+                "size": 4038748
+              }
+            ],
+            "folders": [],
+            "total": 38
+          },
+          {
             "name": "sierra no3",
             "path": "Models/sierra no3",
             "files": [
@@ -199,279 +435,13 @@
             "total": 6
           }
         ],
-        "total": 26
+        "total": 64
       },
       {
         "name": "Projects",
         "path": "Projects",
         "files": [],
         "folders": [
-          {
-            "name": "Copa City",
-            "path": "Projects/Copa City",
-            "files": [
-              {
-                "name": "cc0001.png",
-                "path": "Projects/Copa City/cc0001.png",
-                "type": "image",
-                "size": 4549932
-              },
-              {
-                "name": "cc0002.png",
-                "path": "Projects/Copa City/cc0002.png",
-                "type": "image",
-                "size": 1827699
-              },
-              {
-                "name": "cc5.png",
-                "path": "Projects/Copa City/cc5.png",
-                "type": "image",
-                "size": 696536
-              },
-              {
-                "name": "cc10.png",
-                "path": "Projects/Copa City/cc10.png",
-                "type": "image",
-                "size": 193400
-              },
-              {
-                "name": "cc13.png",
-                "path": "Projects/Copa City/cc13.png",
-                "type": "image",
-                "size": 148389
-              },
-              {
-                "name": "cc15.png",
-                "path": "Projects/Copa City/cc15.png",
-                "type": "image",
-                "size": 3058804
-              },
-              {
-                "name": "cc20.png",
-                "path": "Projects/Copa City/cc20.png",
-                "type": "image",
-                "size": 1848728
-              },
-              {
-                "name": "cc0030.png",
-                "path": "Projects/Copa City/cc0030.png",
-                "type": "image",
-                "size": 424943
-              },
-              {
-                "name": "cc0031.png",
-                "path": "Projects/Copa City/cc0031.png",
-                "type": "image",
-                "size": 516182
-              },
-              {
-                "name": "cc40.png",
-                "path": "Projects/Copa City/cc40.png",
-                "type": "image",
-                "size": 1232470
-              },
-              {
-                "name": "cc41.png",
-                "path": "Projects/Copa City/cc41.png",
-                "type": "image",
-                "size": 6193843
-              },
-              {
-                "name": "ccb03.png",
-                "path": "Projects/Copa City/ccb03.png",
-                "type": "image",
-                "size": 586181
-              },
-              {
-                "name": "ccb04.png",
-                "path": "Projects/Copa City/ccb04.png",
-                "type": "image",
-                "size": 1400006
-              },
-              {
-                "name": "ccb05.png",
-                "path": "Projects/Copa City/ccb05.png",
-                "type": "image",
-                "size": 418985
-              },
-              {
-                "name": "ccb09.png",
-                "path": "Projects/Copa City/ccb09.png",
-                "type": "image",
-                "size": 719686
-              },
-              {
-                "name": "ccb0010.png",
-                "path": "Projects/Copa City/ccb0010.png",
-                "type": "image",
-                "size": 320496
-              },
-              {
-                "name": "ccb0011.png",
-                "path": "Projects/Copa City/ccb0011.png",
-                "type": "image",
-                "size": 3246127
-              },
-              {
-                "name": "ccb0012.png",
-                "path": "Projects/Copa City/ccb0012.png",
-                "type": "image",
-                "size": 4280301
-              },
-              {
-                "name": "ccb31.png",
-                "path": "Projects/Copa City/ccb31.png",
-                "type": "image",
-                "size": 194530
-              },
-              {
-                "name": "ccb32.png",
-                "path": "Projects/Copa City/ccb32.png",
-                "type": "image",
-                "size": 1293144
-              },
-              {
-                "name": "ccb33.png",
-                "path": "Projects/Copa City/ccb33.png",
-                "type": "image",
-                "size": 1183532
-              },
-              {
-                "name": "ccb34.png",
-                "path": "Projects/Copa City/ccb34.png",
-                "type": "image",
-                "size": 3972402
-              },
-              {
-                "name": "ccb35.png",
-                "path": "Projects/Copa City/ccb35.png",
-                "type": "image",
-                "size": 5133392
-              },
-              {
-                "name": "ccf1.png",
-                "path": "Projects/Copa City/ccf1.png",
-                "type": "image",
-                "size": 5421698
-              },
-              {
-                "name": "ccf2.png",
-                "path": "Projects/Copa City/ccf2.png",
-                "type": "image",
-                "size": 4492543
-              },
-              {
-                "name": "ccf3.png",
-                "path": "Projects/Copa City/ccf3.png",
-                "type": "image",
-                "size": 4352117
-              },
-              {
-                "name": "ccf4.png",
-                "path": "Projects/Copa City/ccf4.png",
-                "type": "image",
-                "size": 845073
-              },
-              {
-                "name": "ccg1.png",
-                "path": "Projects/Copa City/ccg1.png",
-                "type": "image",
-                "size": 1331179
-              },
-              {
-                "name": "ccg2.png",
-                "path": "Projects/Copa City/ccg2.png",
-                "type": "image",
-                "size": 3448607
-              },
-              {
-                "name": "ccg3.png",
-                "path": "Projects/Copa City/ccg3.png",
-                "type": "image",
-                "size": 1278264
-              },
-              {
-                "name": "ccg4.png",
-                "path": "Projects/Copa City/ccg4.png",
-                "type": "image",
-                "size": 1176885
-              },
-              {
-                "name": "ccg5.png",
-                "path": "Projects/Copa City/ccg5.png",
-                "type": "image",
-                "size": 821943
-              },
-              {
-                "name": "ccg6-ref.png",
-                "path": "Projects/Copa City/ccg6-ref.png",
-                "type": "image",
-                "size": 326898
-              },
-              {
-                "name": "ccm0041.png",
-                "path": "Projects/Copa City/ccm0041.png",
-                "type": "image",
-                "size": 911857
-              },
-              {
-                "name": "ccm0042.png",
-                "path": "Projects/Copa City/ccm0042.png",
-                "type": "image",
-                "size": 3188407
-              },
-              {
-                "name": "ccm0043.png",
-                "path": "Projects/Copa City/ccm0043.png",
-                "type": "image",
-                "size": 461465
-              },
-              {
-                "name": "ccm0050.png",
-                "path": "Projects/Copa City/ccm0050.png",
-                "type": "image",
-                "size": 1156841
-              },
-              {
-                "name": "ccp01.png",
-                "path": "Projects/Copa City/ccp01.png",
-                "type": "image",
-                "size": 2446489
-              },
-              {
-                "name": "ccp02.png",
-                "path": "Projects/Copa City/ccp02.png",
-                "type": "image",
-                "size": 1362667
-              },
-              {
-                "name": "ccx1.png",
-                "path": "Projects/Copa City/ccx1.png",
-                "type": "image",
-                "size": 631526
-              },
-              {
-                "name": "ccx2.png",
-                "path": "Projects/Copa City/ccx2.png",
-                "type": "image",
-                "size": 182046
-              },
-              {
-                "name": "ccx3.png",
-                "path": "Projects/Copa City/ccx3.png",
-                "type": "image",
-                "size": 275264
-              },
-              {
-                "name": "ccx4.png",
-                "path": "Projects/Copa City/ccx4.png",
-                "type": "image",
-                "size": 4038748
-              }
-            ],
-            "folders": [],
-            "total": 43
-          },
           {
             "name": "Sea of Clouds",
             "path": "Projects/Sea of Clouds",
@@ -645,7 +615,7 @@
             "total": 18
           }
         ],
-        "total": 69
+        "total": 26
       },
       {
         "name": "Substance Designer",
@@ -680,6 +650,6 @@
         "total": 4
       }
     ],
-    "total": 99
+    "total": 94
   }
 }
